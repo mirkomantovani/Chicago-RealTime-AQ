@@ -1,0 +1,149 @@
+.js-irs-0 .irs-single, .irs-min .irs-max, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar, .irs-from .irs-to {
+background: #428bca00;color:white;
+}
+
+body {
+  /* margin: 0; 
+  height: 100%;  */
+  overflow: hidden}
+
+
+.irs-min, .irs-max {
+    color: rgb(255, 255, 255);
+    font-size: 10px;
+    line-height: 1.333;
+    text-shadow: none;
+    top: 0;
+    padding: 1px 3px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+}
+
+#ggvis-tooltip {
+  zoom: 40%;
+}
+
+h2 {
+    font-family: "Arial";
+    color: rgb(255, 255, 255);
+  }
+
+.content-wrapper, .right-side {
+background: rgb(88, 95, 146);
+}
+
+.box {
+background: rgb(188, 218, 224);
+border-radius: 5px;
+box-shadow: 0px 1px 20px 0px rgb(0, 24, 29);
+}
+
+
+label{
+color: rgb(255, 255, 255);
+}
+
+.selectize-input input {
+background: rgb(141, 149, 212);
+}
+.irs-grid-text {
+bottom: 5px;
+color: #ffffff;
+}
+
+.skin-blue .main-header .navbar {
+background: rgb(36, 40, 78);
+box-shadow: 2px 2px 2px #e2e2e2;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle {
+background: rgb(52, 57, 104);
+color: rgb(208, 208, 208);
+}
+
+/* sidebar: tab selected */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a {
+  color: rgb(255,255,255);
+  font-size: 13px;
+  border-radius: 0px 20px 20px 0px;
+  border-style: none none solid none;
+  border-color: rgb(75,126,151);
+  border-width: 1px;
+}
+
+.form-control, .selectize-input, .selectize-control.single .selectize-input {
+background: rgb(114, 121, 175);
+color: rgb(0,0,0);
+border-color: rgb(200,200,200);
+border-radius: 5px;
+height: 34px;
+min-height: 34px;
+padding: 6px 12px;
+}
+.selectize-input, .selectize-control.single .selectize-input.input-active {
+background: rgb(132, 140, 196);
+cursor: text;
+font-size: 20px;
+display: inline-block;
+}
+
+.selectize-dropdown, .selectize-dropdown.form-control {
+background: rgb(122, 129, 184);
+border-radius: 4px;
+}
+
+.recalculating {opacity: 1.0;}
+
+    /* Map */
+
+div.outer {
+    position: fixed;
+    top: 41px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+#controls, #counties_panel {
+    background-color:rgba(13, 32, 37, 0.767);
+    color: #ffffff;
+    padding: 0 20px 20px 20px;
+    cursor: move;
+    /* Fade out while not hovering */
+    opacity: 0.5;
+        /* Param to change for sage2 */
+
+    /*zoom: 0.9;*/
+    transition: opacity 1000ms 2ms;
+  }
+  #controls:hover {
+    /* Fade in while hovering */
+    opacity: 0.97;
+    transition-delay: 0;
+  }
+
+  #counties_panel:hover {
+    /* Fade in while hovering */
+    opacity: 0.97;
+    transition-delay: 0;
+  }
+
+  .leaflet-control {
+      zoom: 120%;
+  }
+  
+  /* Position and style citation */
+  #cite {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+  }
+  
+  /* If not using map tiles, show a white background */
+  .leaflet-container {
+    background-color: white !important;
+  }
