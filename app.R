@@ -466,7 +466,7 @@ server <- function(input, output, session) {
     df <- as.data.frame.list(data)
     attr(df, "node_vsn") <- data$node_vsn
     attr(df, "sensor_path") <- data$sensor_path
-    attr(df, "timestamp") <- as.POSIXlt(data$timestamp)
+    attr(df, "timestamp") <- data$timestamp # TODO modified because creates problems when no observations if as.POS.. as.POSIXlt(data$timestamp)
     attr(df, "value") <- data$value
     attr(df, "uom") <- data$uom
     attr(df, "location") <- data$location
@@ -485,9 +485,40 @@ server <- function(input, output, session) {
     df$location.geometry$coordinates <-NULL
     df$location.geometry <- NULL
     df$description <- NULL
+    temp <- do.call(rbind, df$coordinates)
+    colnames(temp) <- c("longitude","latitude")
+    df <- cbind(df[c("vsn", "address")], temp)
   }
   
   nodes <- get_and_preprocess_nodes()
+  
+  extract_sensor <- function(elem){
+    elem <- as.character(elem)
+    l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
+    if(l[3] == "concentration"){
+      return(l[2])
+    } else {
+      return(tail(l, n=1))
+    }
+  }
+
+  tracked_measures <- c("co","h2s","no2","o3","so2","temperature","humidity","intensity")
+
+  for(m in tracked_measures){
+    nodes[m] <- FALSE
+  }
+  
+  for(n in unique(nodes$vsn)){
+    df <- ls.observations(filters=list(node=n))
+    df$sensor_path <-lapply(df$sensor_path,extract_sensor)
+    u <- unique(df$sensor_path)
+    v <- unlist(u)
+    measures <- intersect(v,tracked_measures)
+    for(m in measures){
+      nodes[which(nodes$vsn == n), m] = TRUE
+    }
+  }
+  
 
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -766,7 +797,7 @@ server <- function(input, output, session) {
       return(if(sp < 0.4) ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)-0.2+sp else ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)+sp-0.2)
     }
 
-    leaflet() %>% addMarkers(initial_lng, initial_lat, group = "group1", popup = "g1") %>%
+    leaflet(nodes) %>% addMarkers(~longitude, ~latitude, group = "group1", popup = "g1", clusterOptions = markerClusterOptions()) %>%
       addMarkers(initial_lng, initial_lat, group = "group2", popup = "g2") %>%
       addLayersControl(
         # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
