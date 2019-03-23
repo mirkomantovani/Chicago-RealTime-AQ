@@ -29,17 +29,24 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 
+# R data APIs libraries
+library(ropenaq)
+library(darksky)
+
+library(base)
+Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+
 # importing datasets
-setwd("./csv/")
-temp = list.files(pattern="*.csv")
-datasets = lapply(temp, read.csv)
-dataset <- do.call(rbind, datasets)
-setwd("../")
+# setwd("./csv/")
+# temp = list.files(pattern="*.csv")
+# datasets = lapply(temp, read.csv)
+# dataset <- do.call(rbind, datasets)
+# setwd("../")
 
 # daily_df <- read_fst("fst/daily_all_aqi_by_county.fst")
 # names(daily_df) <- c("state","county","aqi","category","pollutant","year","month","day")
 
-daily_all <- read_fst("fst/daily_all_pollutants_2018.fst")
+# daily_all <- read_fst("fst/daily_all_pollutants_2018.fst")
 
 # hourly_df <- read_fst("fst/hourly_all_data_2018.fst")
 
@@ -67,9 +74,9 @@ H_months<-c("January","February","March","April","May","June","July","August","S
 # H_days<-unique(hourly_df$Day)
 
 
-states<-unique(dataset$State)
-t<-subset(dataset, State == 'Illinois')
-counties<-unique(t$County)
+# states<-unique(dataset$State)
+# t<-subset(dataset, State == 'Illinois')
+# counties<-unique(t$County)
 top12 <- c("Cook - Illinois","Hawaii - Hawaii","New York - New York","Los Angeles - California", "King - Washington","Harris - Texas","Miami - Dade-Florida",
            "San Juan - New Mexico","Hennepin - Minnesota","Wake - North Carolina", "San Francisco - California", "Maricopa - Arizona")
 pollutants <- c("CO","NO2","Ozone","SO2","PM2.5","PM10")
@@ -84,12 +91,12 @@ pie_chart_backgrounds_first <- "#bcdae0" #bcdae0
 
 # All counties with state
 all_counties <- c()
-for(s in states){
-  coun <- subset(dataset, State == s)
-  counti<-unique(coun$County)
-  counti <- paste(counti,"-",s)
-  all_counties <- c(all_counties,counti)
-}
+# for(s in states){
+#   coun <- subset(dataset, State == s)
+#   counti<-unique(coun$County)
+#   counti <- paste(counti,"-",s)
+#   all_counties <- c(all_counties,counti)
+# }
 
 ############################################### UI ################################################
 
@@ -344,6 +351,143 @@ ui <- dashboardPage(
 ############################################# SERVER ##############################################
 
 server <- function(input, output, session) {
+  
+  ########################## AoT R APIs modified ######################
+  
+  #' Sends a request to the API, ensures 200 response and returns the response
+  #'
+  #' Given a URL and optional filters/query params, this sends an HTTP GET request
+  #' to the URL. The response"s status is checked -- if it isn"t 200 then an
+  #' error message is logged and the process halts; it it"s 200 then the entire
+  #' response object is returned.
+  #'
+  #' @param url - The URL to send the request to
+  #' @param filters - A list of tuples to build filters/query params
+  #' @return The entire response
+  #' @importFrom httr GET
+  #' @noRd
+  send_request <- function (url, filters = NULL) {
+    # send request; get response
+    if (!is.null(filters)) {
+      resp <- httr::GET(url, query=filters)
+    } else {
+      resp <- httr::GET(url)
+    }
+    
+    # if not 200, log error
+    if (resp$status_code != 200) {
+      msg <- paste("Error in httr GET:", resp$status_code, resp$headers$statusmessage, url)
+      if(!is.null(resp$headers$`content-length`) && (resp$headers$`content-length` > 0)) {
+        details <- httr::content(resp)
+        msg <- paste(msg, details)
+      }
+      log_msg(msg)
+    }
+    
+    # stop or return
+    httr::stop_for_status(resp)
+    return(resp)
+  }
+  
+  
+  #' Parses a response object as JSON and returns the `data` object
+  #'
+  #' @param resp - The response object
+  #' @return The parsed JSON body
+  #' @importFrom jsonlite fromJSON
+  #' @noRd
+  parse_content <- function (resp) {
+    content <- httr::content(resp, as="text")
+    json <- jsonlite::fromJSON(content)
+    data <- json$data
+    return(data)
+  }
+  
+  
+  #' Sends a request and parses the result as a single map object
+  #'
+  #' Given a URL and optional filters, a request is sent and the response
+  #' is processed as a single map object -- the response content has a
+  #' `data` key that maps an object representing details for the metadata
+  #' record requested.
+  #'
+  #' @param url - The URL to send the request to
+  #' @param filters - A list of tuples to build query params
+  #' @return The metadata details
+  #' @noRd
+  stat <- function (url, filters) {
+    resp <- send_request(url, filters)
+    details <- parse_content(resp)
+    return(details)
+  }
+  
+  #' Gets a data frame of `node` metadata
+  #'
+  #' Nodes are the physical devices deployed to collect observations.
+  #' The are comprised of multiple sensors and are grouped by
+  #' projects.
+  #'
+  #' @param filters - A list of tuples to create filters/query params
+  #' @return A data frame of node metadata
+  #' @export
+  ls.nodes <- function (filters = NULL) {
+    # build url, send request, get response
+    url <- "https://api.arrayofthings.org/api/nodes"
+    resp <- send_request(url, filters)
+    
+    # build data frame
+    data <- parse_content(resp)
+    df <- as.data.frame.list(data)
+    attr(df, "vsn") <- data$vsn
+    attr(df, "location") <- data$location.geometry #location.geometry.coordinates
+    attr(df, "address") <- data$human_address
+    attr(df, "description") <- data$description
+    
+    # return data frame
+    return(df)
+  }
+  
+  #' Gets a data frame of `obserations` data.
+  #'
+  #' Observation data are the environmental measurements made
+  #' by the sensors. Data listed here is more or less tuned
+  #' and trustworthy.
+  #'
+  #' @param filters - A list of tuples to create filters/query params
+  #' @return A data frame of observation data
+  #' @export
+  ls.observations <- function (filters = NULL) {
+    # build url, send request, get response
+    url <- "https://api.arrayofthings.org/api/observations"
+    resp <- send_request(url, filters)
+    
+    # build data frame
+    data <- parse_content(resp)
+    df <- as.data.frame.list(data)
+    attr(df, "node_vsn") <- data$node_vsn
+    attr(df, "sensor_path") <- data$sensor_path
+    attr(df, "timestamp") <- as.POSIXlt(data$timestamp)
+    attr(df, "value") <- data$value
+    attr(df, "uom") <- data$uom
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+  get_and_preprocess_nodes <- function(){
+    df <- ls.nodes()
+    # filter out nodes not yet deployed
+    df <- subset(df, address != "TBD")
+    df$location.type <- NULL
+    df$location.geometry$type <- NULL
+    df$coordinates <- df$location.geometry$coordinates
+    df$location.geometry$coordinates <-NULL
+    df$location.geometry <- NULL
+    df$description <- NULL
+  }
+  
+  nodes <- get_and_preprocess_nodes()
 
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -454,42 +598,42 @@ server <- function(input, output, session) {
 
 
   # computing subset of data based on user selection of year, state, county
-  current <- reactive({
-    # print("reactive")
-    subset(dataset, County == input$County & State == input$State & Year == input$Year)
+  # current <- reactive({
+  #   # print("reactive")
+  #   subset(dataset, County == input$County & State == input$State & Year == input$Year)
+  # 
+  # })
 
-  })
-
-  observeEvent(priority = 10,input$State,{
-    selected_state_data <- subset(dataset, State == input$State)
-    counties_in_state <- unique(selected_state_data$County)
-
-    updateSelectInput(session, inputId = "County", choices = counties_in_state)
-    county <- input$County
-
-  })
+  # observeEvent(priority = 10,input$State,{
+  #   selected_state_data <- subset(dataset, State == input$State)
+  #   counties_in_state <- unique(selected_state_data$County)
+  # 
+  #   updateSelectInput(session, inputId = "County", choices = counties_in_state)
+  #   county <- input$County
+  # 
+  # })
   
-  observeEvent(priority = 10,input$StateD,{
-  if(!input$switch_top12_daily){
-  selected_state_data <- subset(dataset, State == input$StateD)
-  counties_in_state <- unique(selected_state_data$County)
-
-  updateSelectInput(session, inputId = "CountyD", choices = counties_in_state)
-  county <- input$CountyD
-  }
-
-  })
+  # observeEvent(priority = 10,input$StateD,{
+  # if(!input$switch_top12_daily){
+  # selected_state_data <- subset(dataset, State == input$StateD)
+  # counties_in_state <- unique(selected_state_data$County)
+  # 
+  # updateSelectInput(session, inputId = "CountyD", choices = counties_in_state)
+  # county <- input$CountyD
+  # }
+  # 
+  # })
 
 
   ###NEEDS MODIFICATION
-  observeEvent(priority = 10,input$location_italy,{
-    selected_state_data <- subset(dataset, State == input$State)
-    counties_in_state <- unique(selected_state_data$County)
-
-    updateSelectInput(session, inputId = "County", choices = counties_in_state)
-    county <- input$County
-
-  })
+  # observeEvent(priority = 10,input$location_italy,{
+  #   selected_state_data <- subset(dataset, State == input$State)
+  #   counties_in_state <- unique(selected_state_data$County)
+  # 
+  #   updateSelectInput(session, inputId = "County", choices = counties_in_state)
+  #   county <- input$County
+  # 
+  # })
 
 
   observeEvent(priority = 10,input$switch_daily,{
@@ -541,75 +685,80 @@ server <- function(input, output, session) {
 
   # MAP rendering
   output$map_controllers <- renderLeaflet({
+    
+    initial_lat <- 41.900613
+    initial_lng <- -87.678211
+    
+    
     feature <- translate_to_column_name(input$pollutant_map)
     # value = c((current()$Days.with.AQI-current()$Days.Ozone)/current()$Days.with.AQI*100, current()$Days.Ozone/current()$Days.with.AQI*100)
 
-    if(!input$switch_daily){ # Yearly
-      sub<-subset(dataset, Year == input$year_map)
-      if(feature !="Median.AQI"){
-        sub$sel_feat<-sub[[feature]]/sub$Days.with.AQI*100
-        suffx = "%"
-        pref = "Pollutant: "
-      } else {
-        sub$sel_feat<-sub[[feature]]
-        suffx = ""
-        pref = "AQI: "
-      }
-    } else { # Daily
-      pref = "Pollutant: "
-      sub<-subset(daily_all, Month == input$D_month & Day == input$D_day)
-      sub$sel_feat<-sub[[input$pollutant_map]]
-      if(input$switch_units){
-        if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
-          sub$sel_feat <- convert_to_imperial(sub$sel_feat)
-          suffx = "e-12 oz/ft3"
-        }
-      } else {
-        if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
-          suffx = " ug/m3"
-        }
-      }
-      if(input$pollutant_map == "CO" || input$pollutant_map == "Ozone"){
-        suffx = " ppm"
-      } else if(input$pollutant_map == "SO2" || input$pollutant_map == "NO2"){
-        suffx = " ppb"
-      }
-    }
+    # if(!input$switch_daily){ # Yearly
+    #   sub<-subset(dataset, Year == input$year_map)
+    #   if(feature !="Median.AQI"){
+    #     sub$sel_feat<-sub[[feature]]/sub$Days.with.AQI*100
+    #     suffx = "%"
+    #     pref = "Pollutant: "
+    #   } else {
+    #     sub$sel_feat<-sub[[feature]]
+    #     suffx = ""
+    #     pref = "AQI: "
+    #   }
+    # } else { # Daily
+    #   pref = "Pollutant: "
+    #   sub<-subset(daily_all, Month == input$D_month & Day == input$D_day)
+    #   sub$sel_feat<-sub[[input$pollutant_map]]
+    #   if(input$switch_units){
+    #     if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
+    #       sub$sel_feat <- convert_to_imperial(sub$sel_feat)
+    #       suffx = "e-12 oz/ft3"
+    #     }
+    #   } else {
+    #     if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
+    #       suffx = " ug/m3"
+    #     }
+    #   }
+    #   if(input$pollutant_map == "CO" || input$pollutant_map == "Ozone"){
+    #     suffx = " ppm"
+    #   } else if(input$pollutant_map == "SO2" || input$pollutant_map == "NO2"){
+    #     suffx = " ppb"
+    #   }
+    # }
 
-    sub <- sub[order(sub$sel_feat,decreasing = TRUE),]
-    df <- head(sub,delayes_num_counties_debounced())
+    # sub <- sub[order(sub$sel_feat,decreasing = TRUE),]
+    # df <- head(sub,delayes_num_counties_debounced())
 
-    if(!input$switch_daily){ # Yearly
-      temp <- merge(value(f_xy), df,
-                    by.x = c("STATENAME","NAME"), by.y = c("State","County"),
-                    all.x = TRUE)
-    } else { # Daily
-      temp <- merge(value(f_xy), df,
-                    by.x = c("STATENAME","NAME"), by.y = c("State Name","County Name"),
-                    all.x = TRUE)
-    }
+    # if(!input$switch_daily){ # Yearly
+    #   temp <- merge(value(f_xy), df,
+    #                 by.x = c("STATENAME","NAME"), by.y = c("State","County"),
+    #                 all.x = TRUE)
+    # } else { # Daily
+    #   temp <- merge(value(f_xy), df,
+    #                 by.x = c("STATENAME","NAME"), by.y = c("State Name","County Name"),
+    #                 all.x = TRUE)
+    # }
 
 
     # Create a color palette
-    mypal <- colorNumeric(palette = "viridis", reverse = TRUE, domain = temp$sel_feat
-                          ,na.color = "#ffffff11"
-    )
+    # mypal <- colorNumeric(palette = "viridis", reverse = TRUE, domain = temp$sel_feat
+    #                       ,na.color = "#ffffff11"
+    # )
 
-    pop <- if(!input$switch_daily) ~paste(sep = "<br/>",
-                                          paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
-                                          value(f_xy)$NAME,
-                                          value(f_xy)$STATENAME,
-                                          paste("Confidence level:",signif(temp$Days.with.AQI/365*100,3), "%"),
-                                          paste("Days with data:",temp$Days.with.AQI),
-                                          paste(pref,signif(temp$sel_feat,3),suffx)
-    )
-    else
-      ~paste(sep = "<br/>",
-             paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
-             value(f_xy)$NAME,
-             value(f_xy)$STATENAME,
-             paste(signif(temp$sel_feat,3),suffx)
-      )
+    # pop <- if(!input$switch_daily) ~paste(sep = "<br/>",
+    #                                       paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
+    #                                       value(f_xy)$NAME,
+    #                                       value(f_xy)$STATENAME,
+    #                                       paste("Confidence level:",signif(temp$Days.with.AQI/365*100,3), "%"),
+    #                                       paste("Days with data:",temp$Days.with.AQI),
+    #                                       paste(pref,signif(temp$sel_feat,3),suffx)
+    # )
+    # else
+    #   ~paste(sep = "<br/>",
+    #          paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
+    #          value(f_xy)$NAME,
+    #          value(f_xy)$STATENAME,
+    #          paste(signif(temp$sel_feat,3),suffx)
+    #   )
 
 
     spread <- function(num){
@@ -617,29 +766,31 @@ server <- function(input, output, session) {
       return(if(sp < 0.4) ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)-0.2+sp else ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)+sp-0.2)
     }
 
-
-    # factpal <- colorQuantile("Blues", ccc, n=20)
-    # year_map, pollutant_map
-    leaflet() %>%
-      # addPolygons(data = USA, color = ~factpal(ccc), weight = 0.8, smoothFactor = 0.2,
-      addPolygons(data = value(f_xy), color = ~mypal(temp$sel_feat), weight = 0.8, smoothFactor = 0.2,
-                  opacity = spread(temp$Days.with.AQI/365+0.2), fillOpacity = spread(temp$Days.with.AQI/365+0.2),#opacity will be a param
-                  label = ~htmlEscape(value(f_xy)$NAME),
-                  popup = pop,
-                  # fillColor = ~colorQuantile("YlOrRd"),
-                  highlightOptions = highlightOptions(color = "white", weight = 3,
-                                                      bringToFront = TRUE)) %>%
+    leaflet() %>% addMarkers(initial_lng, initial_lat, group = "group1", popup = "g1") %>%
+      addMarkers(initial_lng, initial_lat, group = "group2", popup = "g2") %>%
+      addLayersControl(
+        # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+        overlayGroups = c("group1", "group2"),
+        options = layersControlOptions(collapsed = TRUE)
+      ) %>%
+      # addPolygons(data = value(f_xy), color = ~mypal(temp$sel_feat), weight = 0.8, smoothFactor = 0.2,
+      #             opacity = spread(temp$Days.with.AQI/365+0.2), fillOpacity = spread(temp$Days.with.AQI/365+0.2),
+      #             label = ~htmlEscape(value(f_xy)$NAME),
+      #             popup = pop,
+      #             highlightOptions = highlightOptions(color = "white", weight = 3,
+      #                                                 bringToFront = TRUE)) %>%
       addTiles(
         urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
         attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = zoom_level()) %>%
-      addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
-                title = "Legend",
-                labFormat = labelFormat(suffix = suffx,
-                                        digits = 3
-                ),
-                opacity = 1)
+      ) %>% 
+      setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
+    # %>%
+    #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
+    #             title = "Legend",
+    #             labFormat = labelFormat(suffix = suffx,
+    #                                     digits = 3
+    #             ),
+    #             opacity = 1)
   })
 
 
