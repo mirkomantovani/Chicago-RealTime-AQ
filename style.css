@@ -19,6 +19,13 @@ body {
     border-radius: 3px;
     -moz-border-radius: 3px;
 }
+/* layers in map */
+.leaflet-control-layers-expanded {
+  background: rgb(52, 57, 104);
+}
+.leaflet-control-layers {
+  background: rgb(52, 57, 104);
+}
 
 #ggvis-tooltip {
   zoom: 40%;

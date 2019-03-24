@@ -490,34 +490,35 @@ server <- function(input, output, session) {
     df <- cbind(df[c("vsn", "address")], temp)
   }
   
-  nodes <- get_and_preprocess_nodes()
-  
-  extract_sensor <- function(elem){
-    elem <- as.character(elem)
-    l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
-    if(l[3] == "concentration"){
-      return(l[2])
-    } else {
-      return(tail(l, n=1))
-    }
-  }
-
   tracked_measures <- c("co","h2s","no2","o3","so2","temperature","humidity","intensity")
 
-  for(m in tracked_measures){
-    nodes[m] <- FALSE
-  }
-  
-  for(n in unique(nodes$vsn)){
-    df <- ls.observations(filters=list(node=n))
-    df$sensor_path <-lapply(df$sensor_path,extract_sensor)
-    u <- unique(df$sensor_path)
-    v <- unlist(u)
-    measures <- intersect(v,tracked_measures)
-    for(m in measures){
-      nodes[which(nodes$vsn == n), m] = TRUE
-    }
-  }
+  # nodes <- get_and_preprocess_nodes()
+  # 
+  # extract_sensor <- function(elem){
+  #   elem <- as.character(elem)
+  #   l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
+  #   if(l[3] == "concentration"){
+  #     return(l[2])
+  #   } else {
+  #     return(tail(l, n=1))
+  #   }
+  # }
+  # 
+  # 
+  # for(m in tracked_measures){
+  #   nodes[m] <- FALSE
+  # }
+  # 
+  # for(n in unique(nodes$vsn)){
+  #   df <- ls.observations(filters=list(node=n))
+  #   df$sensor_path <-lapply(df$sensor_path,extract_sensor)
+  #   u <- unique(df$sensor_path)
+  #   v <- unlist(u)
+  #   measures <- intersect(v,tracked_measures)
+  #   for(m in measures){
+  #     nodes[which(nodes$vsn == n), m] = TRUE
+  #   }
+  # }
   
 
   # customizing values for responsitivity in normal display and SAGE display
@@ -554,7 +555,7 @@ server <- function(input, output, session) {
       v$pie_text_size <<- 15
       v$slant_text_angle <<- 0
       v$point_size <<- 4
-      v$zoom_level <<- 6
+      v$zoom_level <<- 8
       v$tooltip_width <<- 180
       v$tooltip_height <<- 80
       v$tooltip_text_size <<- 28
@@ -582,7 +583,7 @@ server <- function(input, output, session) {
       v$pie_text_size = 5
       v$slant_text_angle = 45
       v$point_size = 1
-      v$zoom_level = 5
+      v$zoom_level = 9
       v$tooltip_width = 100
       v$tooltip_hieght = 60
       v$tooltip_text_size = 14
@@ -791,17 +792,48 @@ server <- function(input, output, session) {
     #          paste(signif(temp$sel_feat,3),suffx)
     #   )
 
+    # icons <- awesomeIcons(
+    #   icon = 'close-circle',
+    #   iconColor = 'black',
+    #   library = 'ion'
+    #   # markerColor = getColor(df.20)
+    # )
 
     spread <- function(num){
       sp <- input$Opacity
       return(if(sp < 0.4) ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)-0.2+sp else ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)+sp-0.2)
     }
-
-    leaflet(nodes) %>% addMarkers(~longitude, ~latitude, group = "group1", popup = "g1", clusterOptions = markerClusterOptions()) %>%
-      addMarkers(initial_lng, initial_lat, group = "group2", popup = "g2") %>%
+    
+    nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
+    
+    nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
+                                   nodes[[tracked_measures[2]]] == FALSE &
+                                   nodes[[tracked_measures[3]]] == FALSE &
+                                   nodes[[tracked_measures[4]]] == FALSE &
+                                   nodes[[tracked_measures[5]]] == FALSE &
+                                   nodes[[tracked_measures[6]]] == FALSE &
+                                   nodes[[tracked_measures[7]]] == FALSE &
+                                   nodes[[tracked_measures[8]]] == FALSE )
+    
+    opacity <- 0.1
+    inactiveColor <- "red"
+    inactiveOpacity <- 0.5
+    normalColor <- "navy"
+    
+    leaflet(nodes) %>% 
+      addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
+      addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, color = inactiveColor) %>%
+      # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
       addLayersControl(
         # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
-        overlayGroups = c("group1", "group2"),
+        overlayGroups = c(tracked_measures, "Inactive"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       # addPolygons(data = value(f_xy), color = ~mypal(temp$sel_feat), weight = 0.8, smoothFactor = 0.2,
