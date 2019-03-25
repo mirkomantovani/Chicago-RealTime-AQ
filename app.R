@@ -81,6 +81,8 @@ top12 <- c("Cook - Illinois","Hawaii - Hawaii","New York - New York","Los Angele
            "San Juan - New Mexico","Hennepin - Minnesota","Wake - North Carolina", "San Francisco - California", "Maricopa - Arizona")
 pollutants <- c("CO","NO2","Ozone","SO2","PM2.5","PM10")
 pollutants_2 <- c("PM2.5","PM10","CO","NO2","Ozone","SO2")
+time_ranges <- c("Current","Last 24 hours","Last 7 days")
+tracked_measures <- c("co","h2s","no2","o3","so2","temperature","humidity","intensity")
 
 statistics <- c("Median","Max","90th percentile")
 
@@ -275,6 +277,12 @@ ui <- dashboardPage(
       menuItem("Inputs",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                startExpanded = TRUE),
+      menuItem("Inputs",
+               materialSwitch(inputId = "nodes_location", label = "Visualize sensor nodes", status = "primary"),
+               startExpanded = TRUE),
+      menuItem("Inputs",
+               materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
+               startExpanded = TRUE),
       menuItem("About", tabName = "about")
 
     ),
@@ -293,17 +301,37 @@ ui <- dashboardPage(
     tabItem("geospatial_viz",
             div(class="outer",
                 # If not using custom CSS, set height of leafletOutput to a number instead of percent
-                leafletOutput("map_controllers", width="100%", height="100%"),
+                leafletOutput("map", width="100%", height="100%"),
 
                 # Shiny versions prior to 0.11 should use class = "modal" instead.
                 absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                               draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
-                              width = 330, height = "auto",
+                              width = 500, height = "auto",
 
-                              h2("Time and Pollutant"),
-                              selectizeInput(inputId = "pollutant_map", "Select Pollutant", c(pollutants_2,"AQI"), selected = 'PM2.5',width = "100%"),
-                              materialSwitch(inputId = "switch_daily", label = "Switch to Daily Data (for 2018)", status = "primary"),
-                              numericInput("year_map", "Select Year", min=1990, max=2018, value=2018)
+                              h2("Node Data"),
+                              selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
+                              tabsetPanel(
+                                tabPanel("Graphical",
+                                         # plotOutput("hourly_data",height = "85vmin"),
+                                         h1("WIP")
+                                ),
+                                tabPanel("Tabular",
+                                         h1("Wip2")
+                                )
+                              ),
+                              checkboxGroupButtons(
+                                inputId = "hourly_data",
+                                choices = tracked_measures[1:4],
+                                justified = TRUE, status = "primary", selected = tracked_measures[1:4],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              ),
+                              checkboxGroupButtons(
+                                inputId = "hourly_data", 
+                                choices = tracked_measures[5:8],
+                                justified = TRUE, status = "primary", selected = tracked_measures[5:8],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              ),
+                              materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")                             
                               # div( id="yearly_inputs",
                               #      selectizeInput(inputId = "D_month", "Select Month", H_months, selected = 'January',width = "100%"),
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
@@ -490,19 +518,41 @@ server <- function(input, output, session) {
     df <- cbind(df[c("vsn", "address")], temp)
   }
   
-  tracked_measures <- c("co","h2s","no2","o3","so2","temperature","humidity","intensity")
-
+  get_and_preprocess_observations <- function(vsn){
+    df1 <- ls.observations(filters=list(node=vsn))
+    # filter out nodes not yet deployed
+    # df <- subset(df, address != "TBD")
+    df <- data.frame(df1$node_vsn)
+    names(df) <- c("vsn")
+    df$time <- df1$timestamp
+    df$measure <- df1$sensor_path
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df <- filter_out_untracked_measures(df)
+    
+    df$measure <- unlist(df$measure)
+    df <-aggregate(df$value, by=list(df$vsn,df$time,df$measure), 
+                        FUN=mean)
+    names(df) <- c("vsn","time","measure","value")
+    return(df)
+  }
+  
+  filter_out_untracked_measures <- function(df){
+    subset(df, measure %in% tracked_measures)
+  }
+  
   # nodes <- get_and_preprocess_nodes()
   # 
-  # extract_sensor <- function(elem){
-  #   elem <- as.character(elem)
-  #   l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
-  #   if(l[3] == "concentration"){
-  #     return(l[2])
-  #   } else {
-  #     return(tail(l, n=1))
-  #   }
-  # }
+  extract_sensor <- function(elem){
+    elem <- as.character(elem)
+    l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
+    if(l[3] == "concentration"){
+      return(l[2])
+    } else {
+      return(tail(l, n=1))
+    }
+  }
+  # IMPORTANT CODE
   # 
   # 
   # for(m in tracked_measures){
@@ -583,7 +633,7 @@ server <- function(input, output, session) {
       v$pie_text_size = 5
       v$slant_text_angle = 45
       v$point_size = 1
-      v$zoom_level = 9
+      v$zoom_level = 11
       v$tooltip_width = 100
       v$tooltip_hieght = 60
       v$tooltip_text_size = 14
@@ -629,54 +679,6 @@ server <- function(input, output, session) {
   })
 
 
-  # computing subset of data based on user selection of year, state, county
-  # current <- reactive({
-  #   # print("reactive")
-  #   subset(dataset, County == input$County & State == input$State & Year == input$Year)
-  # 
-  # })
-
-  # observeEvent(priority = 10,input$State,{
-  #   selected_state_data <- subset(dataset, State == input$State)
-  #   counties_in_state <- unique(selected_state_data$County)
-  # 
-  #   updateSelectInput(session, inputId = "County", choices = counties_in_state)
-  #   county <- input$County
-  # 
-  # })
-  
-  # observeEvent(priority = 10,input$StateD,{
-  # if(!input$switch_top12_daily){
-  # selected_state_data <- subset(dataset, State == input$StateD)
-  # counties_in_state <- unique(selected_state_data$County)
-  # 
-  # updateSelectInput(session, inputId = "CountyD", choices = counties_in_state)
-  # county <- input$CountyD
-  # }
-  # 
-  # })
-
-
-  ###NEEDS MODIFICATION
-  # observeEvent(priority = 10,input$location_italy,{
-  #   selected_state_data <- subset(dataset, State == input$State)
-  #   counties_in_state <- unique(selected_state_data$County)
-  # 
-  #   updateSelectInput(session, inputId = "County", choices = counties_in_state)
-  #   county <- input$County
-  # 
-  # })
-
-
-  observeEvent(priority = 10,input$switch_daily,{
-    if(input$switch_daily){
-      updateSelectInput(session, inputId = "pollutant_map", choices = pollutants_2)
-    } else {
-      updateSelectInput(session, inputId = "pollutant_map", choices = c(pollutants_2,"AQI"))
-    }
-
-  })
-
   translate_to_column_name <- function(pollutant) {
     if(pollutant == "CO"){
       return("Days.CO")
@@ -716,65 +718,10 @@ server <- function(input, output, session) {
   delayes_num_counties_debounced <- delayes_num_counties %>% debounce(300)
 
   # MAP rendering
-  output$map_controllers <- renderLeaflet({
+  output$map <- renderLeaflet({
     
     initial_lat <- 41.900613
     initial_lng <- -87.678211
-    
-    
-    feature <- translate_to_column_name(input$pollutant_map)
-    # value = c((current()$Days.with.AQI-current()$Days.Ozone)/current()$Days.with.AQI*100, current()$Days.Ozone/current()$Days.with.AQI*100)
-
-    # if(!input$switch_daily){ # Yearly
-    #   sub<-subset(dataset, Year == input$year_map)
-    #   if(feature !="Median.AQI"){
-    #     sub$sel_feat<-sub[[feature]]/sub$Days.with.AQI*100
-    #     suffx = "%"
-    #     pref = "Pollutant: "
-    #   } else {
-    #     sub$sel_feat<-sub[[feature]]
-    #     suffx = ""
-    #     pref = "AQI: "
-    #   }
-    # } else { # Daily
-    #   pref = "Pollutant: "
-    #   sub<-subset(daily_all, Month == input$D_month & Day == input$D_day)
-    #   sub$sel_feat<-sub[[input$pollutant_map]]
-    #   if(input$switch_units){
-    #     if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
-    #       sub$sel_feat <- convert_to_imperial(sub$sel_feat)
-    #       suffx = "e-12 oz/ft3"
-    #     }
-    #   } else {
-    #     if(input$pollutant_map == "PM2.5" || input$pollutant_map == "PM10"){
-    #       suffx = " ug/m3"
-    #     }
-    #   }
-    #   if(input$pollutant_map == "CO" || input$pollutant_map == "Ozone"){
-    #     suffx = " ppm"
-    #   } else if(input$pollutant_map == "SO2" || input$pollutant_map == "NO2"){
-    #     suffx = " ppb"
-    #   }
-    # }
-
-    # sub <- sub[order(sub$sel_feat,decreasing = TRUE),]
-    # df <- head(sub,delayes_num_counties_debounced())
-
-    # if(!input$switch_daily){ # Yearly
-    #   temp <- merge(value(f_xy), df,
-    #                 by.x = c("STATENAME","NAME"), by.y = c("State","County"),
-    #                 all.x = TRUE)
-    # } else { # Daily
-    #   temp <- merge(value(f_xy), df,
-    #                 by.x = c("STATENAME","NAME"), by.y = c("State Name","County Name"),
-    #                 all.x = TRUE)
-    # }
-
-
-    # Create a color palette
-    # mypal <- colorNumeric(palette = "viridis", reverse = TRUE, domain = temp$sel_feat
-    #                       ,na.color = "#ffffff11"
-    # )
 
     # pop <- if(!input$switch_daily) ~paste(sep = "<br/>",
     #                                       paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
@@ -792,18 +739,6 @@ server <- function(input, output, session) {
     #          paste(signif(temp$sel_feat,3),suffx)
     #   )
 
-    # icons <- awesomeIcons(
-    #   icon = 'close-circle',
-    #   iconColor = 'black',
-    #   library = 'ion'
-    #   # markerColor = getColor(df.20)
-    # )
-
-    spread <- function(num){
-      sp <- input$Opacity
-      return(if(sp < 0.4) ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)-0.2+sp else ((num+sp)*(num+sp)-sp*sp)/(1+sp*2)+sp-0.2)
-    }
-    
     nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
     
     nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
@@ -821,15 +756,15 @@ server <- function(input, output, session) {
     normalColor <- "navy"
     
     leaflet(nodes) %>% 
-      addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
-      addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, color = inactiveColor) %>%
+      addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=~paste(vsn,tracked_measures[1]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
+      addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=~paste(vsn,tracked_measures[2]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], layerId=~paste(vsn,tracked_measures[3]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], layerId=~paste(vsn,tracked_measures[4]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], layerId=~paste(vsn,tracked_measures[5]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], layerId=~paste(vsn,tracked_measures[6]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], layerId=~paste(vsn,tracked_measures[7]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], layerId=~paste(vsn,tracked_measures[8]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", layerId=~paste(vsn,"Inactive"), popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, color = inactiveColor) %>%
       # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
       addLayersControl(
         # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
@@ -855,6 +790,39 @@ server <- function(input, output, session) {
     #             ),
     #             opacity = 1)
   })
+  
+  observe({
+    a <- input$map_marker_click
+    print(a)
+    
+  })
+  
+  # DYNAMIC RENDERING of things in the map
+  # observe({
+  #   opacity <- 0.1
+  #   inactiveColor <- "red"
+  #   inactiveOpacity <- 0.5
+  #   normalColor <- "navy"
+  #   hello <- input$switch_units
+  #   print("refresh")
+  #   leafletProxy("map", data = nodes) %>%
+  #     # clearShapes() %>%
+  #     addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
+  #     addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+  #     addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, color = inactiveColor) %>%
+  #     # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
+  #     addLayersControl(
+  #       # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+  #       overlayGroups = c(tracked_measures, "Inactive"),
+  #       options = layersControlOptions(collapsed = TRUE)
+  #     )
+  # })
 
 
   # About HTML
