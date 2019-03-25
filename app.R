@@ -72,10 +72,12 @@ H_years_italy<-c(2018,2019)
 H_months<-c("January","February","March","April","May","June","July","August","September","October","November","December")
 
 # H_days<-unique(df$Day)
-
+# Constants
 TIME_RANGE_CURRENT = "Current"
 TIME_RANGE_24HOURS = "Last 24 hours"
 TIME_RANGE_7DAYS = "Last 7 days"
+
+UPDATE_NODES_STATUS <- FALSE
 
 
 top12 <- c("Cook - Illinois","Hawaii - Hawaii","New York - New York","Los Angeles - California", "King - Washington","Harris - Texas","Miami - Dade-Florida",
@@ -559,8 +561,10 @@ server <- function(input, output, session) {
     subset(df, measure %in% tracked_measures)
   }
   
-  # nodes <- get_and_preprocess_nodes()
-  # 
+  save_df_as_fst <- function(df,path){
+    write.fst(df, path)
+  }
+  
   extract_sensor <- function(elem){
     elem <- as.character(elem)
     l <- strsplit(elem, ".", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]]
@@ -571,24 +575,34 @@ server <- function(input, output, session) {
     }
   }
   # IMPORTANT CODE
-  # 
-  # 
-  # for(m in tracked_measures){
-  #   nodes[m] <- FALSE
-  # }
-  # 
-  # for(n in unique(nodes$vsn)){
-  #   df <- ls.observations(filters=list(node=n))
-  #   df$sensor_path <-lapply(df$sensor_path,extract_sensor)
-  #   u <- unique(df$sensor_path)
-  #   v <- unlist(u)
-  #   measures <- intersect(v,tracked_measures)
-  #   for(m in measures){
-  #     nodes[which(nodes$vsn == n), m] = TRUE
-  #   }
-  # }
-  
 
+  update_nodes_status <- function(){
+    nodes <- get_and_preprocess_nodes()
+    
+    for(m in tracked_measures){
+      nodes[m] <- FALSE
+    }
+    
+    for(n in unique(nodes$vsn)){
+      df <- ls.observations(filters=list(node=n))
+      df$sensor_path <-lapply(df$sensor_path,extract_sensor)
+      u <- unique(df$sensor_path)
+      v <- unlist(u)
+      measures <- intersect(v,tracked_measures)
+      for(m in measures){
+        nodes[which(nodes$vsn == n), m] = TRUE
+      }
+    }
+    #save to file
+    save_df_as_fst(nodes,"fst/nodes.fst")
+  }
+  
+  if(UPDATE_NODES_STATUS){
+    update_nodes_status()
+  }
+  
+  nodes <- read_fst("fst/nodes.fst")
+  
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
                       axis_text_size = 12,
