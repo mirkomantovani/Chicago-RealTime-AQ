@@ -115,7 +115,7 @@ div.outer {
   }
 
 #controls, #counties_panel {
-    background-color:rgba(13, 32, 37, 0.767);
+    background-color:rgba(13, 32, 37, 1);
     color: #ffffff;
     padding: 0 20px 20px 20px;
     cursor: move;
@@ -128,13 +128,13 @@ div.outer {
   }
   #controls:hover {
     /* Fade in while hovering */
-    opacity: 0.97;
+    opacity: 1;
     transition-delay: 0;
   }
 
   #counties_panel:hover {
     /* Fade in while hovering */
-    opacity: 0.97;
+    opacity: 1;
     transition-delay: 0;
   }
 

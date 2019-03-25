@@ -858,6 +858,32 @@ server <- function(input, output, session) {
   
   output$graphical_data <- renderPlot({
     vsn <- input$map_marker_click
+    if(is.null(vsn)){
+      
+      plot_title <- "No node selected"
+      
+      gl <- ggplot() +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+          panel.border = element_blank(),
+          plot.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.key = element_rect(color = NA, fill = "#0d2025"),
+          panel.background = element_rect(fill = "#0d2025", color  =  NA),
+          panel.grid.major = element_line(color = "#FFFFFF"),
+          panel.grid.minor = element_line(color = "#FFFFFF"),
+          legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+          legend.key.size = unit(legend_key_size(), 'line'),
+          axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+          legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+        )+labs(title=plot_title,x = "Time", y = "Measurement")
+      
+      gl
+    }
+    else{
     vsn <- vsn$id
     print(vsn)
     time_range <- input$time_range
@@ -874,7 +900,6 @@ server <- function(input, output, session) {
     # df <- convert_timestamp_to_chicago_timezone(df)
     df <- extract_date_fields(df)
     
-    # df<-subset(df, df$`State Name` == selected_state_hp() & df$`County Name` == selected_county_hp() & df$Year== selected_year_hp() & df$Month == selected_month_hp() & df$Day == selected_day_hp())
     plot_title <- paste("Data for node:",df$vsn[1])
     # df <- subset(df, measure == "co")
     df <- as.data.frame(lapply(df, unlist))
@@ -902,10 +927,24 @@ server <- function(input, output, session) {
       
       labs <-c()
       vals <-c()
+      # This doesnt work because R sucks
+      # for(m in tracked_measures){
+      #   g <- 1
+      #   if (m %in% c(input$measures1,input$measures2)){
+      #     suffx_co = "(ppm)" #TODO get uom from measure function
+      #     labs <-c(labs,m = paste(m,suffx_co, sep=" "))
+      #     vals <-c(vals,c("#c6c60f"))  #TODO get color from measure
+      #     gl <- gl + geom_line(aes(y = subset(df, measure == m)$value, x = subset(df, measure == m)$hms, color = m), size = line_size(), group = g) +
+      #       geom_point(aes(y = subset(df, measure == m)$value, x = subset(df, measure == m)$hms , color = m), size = line_size()*3)
+      #   }
+      #   g <- g+1
+      # }
+      
       if ("co" %in% c(input$measures1,input$measures2)){
         suffx_co = "(ppm)"
         labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
-        vals <-c(vals,c("co" = "#c6c60f"))
+        vals <-c(vals,"co" = "#c6c60f")
+        print(vals)
         gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
           geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
       }
@@ -1013,6 +1052,7 @@ server <- function(input, output, session) {
       gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                     values = vals)
       gl
+    }
   })
 
 
