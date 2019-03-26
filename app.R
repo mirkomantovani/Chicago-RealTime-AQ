@@ -85,7 +85,7 @@ top12 <- c("Cook - Illinois","Hawaii - Hawaii","New York - New York","Los Angele
 pollutants <- c("CO","NO2","Ozone","SO2","PM2.5","PM10")
 pollutants_2 <- c("PM2.5","PM10","CO","NO2","Ozone","SO2")
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
-tracked_measures <- c("co","h2s","no2","o3","so2","temperature","humidity","intensity")
+tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
 
 statistics <- c("Median","Max","90th percentile")
 
@@ -319,14 +319,14 @@ ui <- dashboardPage(
                               ),
                               checkboxGroupButtons(
                                 inputId = "measures1",
-                                choices = tracked_measures[1:4],
-                                justified = TRUE, status = "primary", selected = tracked_measures[1:4],
+                                choices = tracked_measures[1:5],
+                                justified = TRUE, status = "primary", selected = tracked_measures[1:5],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               checkboxGroupButtons(
                                 inputId = "measures2", 
-                                choices = tracked_measures[5:8],
-                                justified = TRUE, status = "primary", selected = tracked_measures[5:8],
+                                choices = tracked_measures[6:10],
+                                justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")                             
@@ -571,6 +571,11 @@ server <- function(input, output, session) {
     if(l[3] == "concentration"){
       return(l[2])
     } else {
+      if(l[3] == "pm10" || l[3] == "pm10_atm"){
+        return("pm10")
+      } else if(l[3] == "pm2_5" || l[3] == "pm25_atm"){
+        return("pm2.5")
+      }
       return(tail(l, n=1))
     }
   }
@@ -780,7 +785,9 @@ server <- function(input, output, session) {
                                    nodes[[tracked_measures[5]]] == FALSE &
                                    nodes[[tracked_measures[6]]] == FALSE &
                                    nodes[[tracked_measures[7]]] == FALSE &
-                                   nodes[[tracked_measures[8]]] == FALSE )
+                                   nodes[[tracked_measures[8]]] == FALSE &
+                                   nodes[[tracked_measures[9]]] == FALSE &
+                                   nodes[[tracked_measures[10]]] == FALSE )
     
     opacity <- 0.1
     inactiveColor <- "red"
@@ -796,6 +803,8 @@ server <- function(input, output, session) {
       addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], layerId=~paste(vsn,tracked_measures[6]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], layerId=~paste(vsn,tracked_measures[7]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], layerId=~paste(vsn,tracked_measures[8]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[9]]$longitude, nodes_by_sensor[[9]]$latitude, group = tracked_measures[9], layerId=~paste(vsn,tracked_measures[9]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[10]]$longitude, nodes_by_sensor[[10]]$latitude, group = tracked_measures[10], layerId=~paste(vsn,tracked_measures[10]), popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", layerId=~paste(vsn,"Inactive"), popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, color = inactiveColor) %>%
       # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
       addLayersControl(
