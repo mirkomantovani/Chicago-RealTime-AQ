@@ -114,6 +114,12 @@ div.outer {
     padding: 0;
   }
 
+.leaflet-top .leaflet-control {
+    margin-top: 70px;
+    margin-right: 30px;
+    zoom: 300%;
+}
+
 #controls, #counties_panel {
     background-color:rgba(13, 32, 37, 1);
     color: #ffffff;

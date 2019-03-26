@@ -91,7 +91,7 @@ $(document).on("shiny:connected", function (e) {
         //WHOLE CONTENT PANEL SIZE
         cont = document.getElementsByClassName("content");
         cont[0].style.zoom = "40%";
-        cont[0].style.fontSize = "250%";
+        cont[0].style.fontSize = "100%";
 
         //BOX TITLES SIZE
         titles = document.getElementsByClassName("box-title");
@@ -111,18 +111,18 @@ $(document).on("shiny:connected", function (e) {
         document.getElementById("counties_panel").style.top = "500px";
         document.getElementById("counties_panel").style.bottom = "auto";
         document.getElementById("controls").style.left = "500px";
-        document.getElementById("controls").style.top = "150px";
+        document.getElementById("controls").style.top = "100px";
 
 
 
 
         // SECOND SLIDER
-        nozoomslider = document.getElementById("nozoomslider");
-        nozoomslider.style.zoom = "40%";
+        // nozoomslider = document.getElementById("nozoomslider");
+        // nozoomslider.style.zoom = "40%";
         
         //CONTROLS for map
         controls = document.getElementById("controls");
-        controls.style.zoom = "150%";
+        controls.style.zoom = "140%";
 
         //map LEGEND ZOOM
         // document.getElementsByClassName("leaflet-control")[0].style.zoom = "300%";
@@ -137,19 +137,19 @@ $(document).on("shiny:connected", function (e) {
         //drop.style.zoom = "40%";
 
         //Range slider no numbers
-        tags = nozoomslider.getElementsByClassName("irs-grid-text");
-        for (var i = 0; i < tags.length; i++) {
-            tags[i].style.fontSize = "80%";
-        }
-        document.getElementsByClassName("irs-single")[0].style.fontSize = "200%";
-        document.getElementsByClassName("irs-min")[0].style.fontSize = "200%";
-        document.getElementsByClassName("irs-from")[1].style.fontSize = "200%";
-        document.getElementsByClassName("irs-from")[1].style.background = "#428bca00";
-        document.getElementsByClassName("irs-to")[1].style.fontSize = "200%";
-        document.getElementsByClassName("irs-to")[1].style.background = "#428bca00";
+        // tags = nozoomslider.getElementsByClassName("irs-grid-text");
+        // for (var i = 0; i < tags.length; i++) {
+        //     tags[i].style.fontSize = "80%";
+        // }
+        // document.getElementsByClassName("irs-single")[0].style.fontSize = "200%";
+        // document.getElementsByClassName("irs-min")[0].style.fontSize = "200%";
+        // document.getElementsByClassName("irs-from")[1].style.fontSize = "200%";
+        // document.getElementsByClassName("irs-from")[1].style.background = "#428bca00";
+        // document.getElementsByClassName("irs-to")[1].style.fontSize = "200%";
+        // document.getElementsByClassName("irs-to")[1].style.background = "#428bca00";
 
-        labels = document.getElementsByClassName("control-label");
-        labels[2].style.fontSize = "60px";
+        // labels = document.getElementsByClassName("control-label");
+        // labels[2].style.fontSize = "60px";
 
 
     }
