@@ -43,13 +43,6 @@ Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 # dataset <- do.call(rbind, datasets)
 # setwd("../")
 
-# daily_df <- read_fst("fst/daily_all_aqi_by_county.fst")
-# names(daily_df) <- c("state","county","aqi","category","pollutant","year","month","day")
-
-# daily_all <- read_fst("fst/daily_all_pollutants_2018.fst")
-
-# df <- read_fst("fst/hourly_all_data_2018.fst")
-
 # needed for counties coordinates
 # sites <- fread(file = "sites/aqs_sites.csv", sep=",",header = TRUE)
 # geojson file for counties shape
@@ -256,9 +249,9 @@ ui <- dashboardPage(
       useShinyalert(),
       span(h2("  Main Menu", style = "margin-left: 10px; font-size: 20px;")),
       menuItem("Geospatial Visualizations", tabName = "geospatial_viz"),
-      menuItem("Tabular Visualizations", tabName = "tabular_viz"),
+      # menuItem("Tabular Visualizations", tabName = "tabular_viz"),
 
-      menuItem("Inputs",
+      menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "nodes_location", label = "Visualize sensor nodes", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
@@ -282,12 +275,12 @@ ui <- dashboardPage(
             div(class="outer",
                 # If not using custom CSS, set height of leafletOutput to a number instead of percent
                 leafletOutput("map", width="100%", height="100%"),
-
+                
                 # Shiny versions prior to 0.11 should use class = "modal" instead.
                 absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                               draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
                               width = 800, height = "auto",
-
+                              br(),
                               # h2("Node Data"),
                               selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
                               tabsetPanel(
@@ -310,37 +303,37 @@ ui <- dashboardPage(
                                 choices = tracked_measures[6:10],
                                 justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              ),
-                              materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")                             
+                              )
+                              # ,materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")                             
                               # div( id="yearly_inputs",
                               #      selectizeInput(inputId = "D_month", "Select Month", H_months, selected = 'January',width = "100%"),
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
                               # )
                 ),
 
-                absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
-                              draggable = FALSE, top = "auto", left = "auto", right = 20, bottom = -40,
-                              width = 330, height = "auto",
-                              h2("Shown counties"),
-                              knobInput(
-                                inputId = "num_counties",
-                                label = "Select number of counties",
-                                value = 1000,
-                                min = 0,
-                                max = 1100,
-                                displayPrevious = TRUE,
-                                lineCap = "round",
-                                fgColor = "#428BCA",
-                                inputColor = "#428BCA"
-                              ),
-                              sliderInput(inputId = "Opacity",
-                                          sep = "",
-                                          label = "Confidence level control",
-                                          step = 0.1,
-                                          value = 0, min = 0, max = 1
-                                          # ,width = "90%"
-                              )
-                ),
+                # absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
+                #               draggable = FALSE, top = "auto", left = "auto", right = 20, bottom = -40,
+                #               width = 330, height = "auto",
+                #               h2("Shown counties"),
+                #               knobInput(
+                #                 inputId = "num_counties",
+                #                 label = "Select number of counties",
+                #                 value = 1000,
+                #                 min = 0,
+                #                 max = 1100,
+                #                 displayPrevious = TRUE,
+                #                 lineCap = "round",
+                #                 fgColor = "#428BCA",
+                #                 inputColor = "#428BCA"
+                #               ),
+                #               sliderInput(inputId = "Opacity",
+                #                           sep = "",
+                #                           label = "Confidence level control",
+                #                           step = 0.1,
+                #                           value = 0, min = 0, max = 1
+                #                           # ,width = "90%"
+                #               )
+                # ),
 
                 tags$div(id="cite",
                          'Visual Analytics, University of Illinois at Chicago 2019'
@@ -610,7 +603,7 @@ server <- function(input, output, session) {
                       legend_key_size = 1,
                       pie_text_size = 5,
                       slant_text_angle = 45,
-                      point_size = 1,
+                      point_size = 15,
                       zoom_level = 5,
                       tooltip_width = 100,
                       tooltip_hieght = 60,
@@ -664,7 +657,7 @@ server <- function(input, output, session) {
       v$legend_key_size = 2
       v$pie_text_size = 5
       v$slant_text_angle = 45
-      v$point_size = 1
+      v$point_size = 15
       v$zoom_level = 11
       v$tooltip_width = 100
       v$tooltip_hieght = 60
@@ -862,8 +855,7 @@ server <- function(input, output, session) {
   
   
   output$graphical_data <- renderPlot({
-    print(paste("last vsn in normal at the beginning:",last_vsn()))
-    
+
     vsn <- input$map_marker_click
     if(is.null(vsn)){
       plot_title <- "No node selected"
@@ -891,14 +883,13 @@ server <- function(input, output, session) {
     }
     else {
     vsn_ <- vsn$id
-    # print(vsn_)
     time_range <- input$time_range
     
     vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
     active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
     if(!(active == "Inactive")){
     # TODO check if AoT node or openAQ and get corresponding dataset
-    # print(vsn)
+
     v$lastvsn <- vsn
     df <- get_and_preprocess_observations(vsn)
     # if(time_range == TIME_RANGE_CURRENT){
@@ -954,7 +945,6 @@ server <- function(input, output, session) {
         suffx_co = "(ppm)"
         labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
         vals <-c(vals,"co" = "#c6c60f")
-        print(vals)
         gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
           geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
       }
@@ -1099,8 +1089,6 @@ server <- function(input, output, session) {
   
   
   last_vsn <- reactive({
-    
-    print(paste("last in lastvsn",last))
     input_id <- input$map_marker_click
     if(!is.null(input_id)){
       vsn_ <- input_id$id
@@ -1122,7 +1110,7 @@ server <- function(input, output, session) {
   output$graphical_data_last <- renderPlot({
     vsn <- input$map_marker_click
     vsn <- isolate(v$lastvsn)
-    print(paste("last vsn in comp:",last_vsn()))
+    # || input$switch_compare
     if(is.null(vsn)){
 
       plot_title <- "No node selected"
@@ -1152,7 +1140,6 @@ server <- function(input, output, session) {
       if(!(vsn == "Inactive")){
         
         # TODO check if AoT node or openAQ and get corresponding dataset
-        print(vsn)
         df <- get_and_preprocess_observations(vsn)
         # if(time_range == TIME_RANGE_CURRENT){
         #   df <-
@@ -1207,7 +1194,6 @@ server <- function(input, output, session) {
           suffx_co = "(ppm)"
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
           vals <-c(vals,"co" = "#c6c60f")
-          print(vals)
           gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
             geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
         }

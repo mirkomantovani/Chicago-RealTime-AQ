@@ -7,20 +7,18 @@ $(document).on("shiny:connected", function (e) {
     dimension[0] = window.innerWidth;
     dimension[1] = window.innerHeight;
 
-    switch_daily = document.getElementById("switch_daily");
+    // switch_compare = document.getElementById("switch_compare");
 
-    // document.getElementById("yearly_inputs").hidden = true;
+    // document.getElementById("graphical_data_la").hidden = true;
 
-    // switch_daily.onclick = function() {
-    //     if(switch_daily.checked){
-    //         switch_daily.parentNode.getElementsByTagName('span')[0].innerText = "Switch to Yearly Data";
-    //         document.getElementById("year_map").parentNode.hidden = true;
-    //         document.getElementById("yearly_inputs").hidden = false;
+    // switch_compare.onclick = function() {
+    //     if(switch_compare.checked){
+    //         // switch_compare.parentNode.getElementsByTagName('span')[0].innerText = "Show only one node data";
+    //         document.getElementById("graphical_data_la").hidden = false;
 
     //     } else {
-    //         switch_daily.parentNode.getElementsByTagName('span')[0].innerText = "Switch to Daily Data (for 2018)";
-    //         document.getElementById("year_map").parentNode.hidden = false;
-    //         document.getElementById("yearly_inputs").hidden = true;
+    //         // switch_compare.parentNode.getElementsByTagName('span')[0].innerText = "Switch to Daily Data (for 2018)";
+    //         document.getElementById("graphical_data_la").hidden = true;
     //     }
     // };
 
@@ -100,16 +98,16 @@ $(document).on("shiny:connected", function (e) {
         }
 
         // FIRST SLIDER TEXT SIZE
-        slider = document.getElementsByClassName("irs-grid-text");
-        for (var i = 0; i < slider.length; i++) {
-            if(slider[i].parentElement.parentElement.parentElement.parentElement.id == "nozoom")
-            slider[i].style.fontSize = "200%";
-        }
+        // slider = document.getElementsByClassName("irs-grid-text");
+        // for (var i = 0; i < slider.length; i++) {
+        //     if(slider[i].parentElement.parentElement.parentElement.parentElement.id == "nozoom")
+        //     slider[i].style.fontSize = "200%";
+        // }
 
         //change panels position in map
-        document.getElementById("counties_panel").style.right = "160px";
-        document.getElementById("counties_panel").style.top = "500px";
-        document.getElementById("counties_panel").style.bottom = "auto";
+        // document.getElementById("counties_panel").style.right = "160px";
+        // document.getElementById("counties_panel").style.top = "500px";
+        // document.getElementById("counties_panel").style.bottom = "auto";
         document.getElementById("controls").style.left = "500px";
         document.getElementById("controls").style.top = "100px";
 
