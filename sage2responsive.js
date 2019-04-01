@@ -108,8 +108,8 @@ $(document).on("shiny:connected", function (e) {
         // document.getElementById("counties_panel").style.right = "160px";
         // document.getElementById("counties_panel").style.top = "500px";
         // document.getElementById("counties_panel").style.bottom = "auto";
-        document.getElementById("controls").style.left = "500px";
-        document.getElementById("controls").style.top = "100px";
+        document.getElementById("nodes").style.left = "450px";
+        document.getElementById("nodes").style.top = "100px";
 
 
 
@@ -121,6 +121,12 @@ $(document).on("shiny:connected", function (e) {
         //CONTROLS for map
         controls = document.getElementById("controls");
         controls.style.zoom = "140%";
+
+        darksky = document.getElementById("darksky");
+        darksky.style.zoom = "140%";
+
+        nodes = document.getElementById("nodes");
+        nodes.style.zoom = "140%";
 
         //map LEGEND ZOOM
         // document.getElementsByClassName("leaflet-control")[0].style.zoom = "300%";

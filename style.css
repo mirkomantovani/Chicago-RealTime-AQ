@@ -41,7 +41,7 @@ background: rgb(88, 95, 146);
 }
 
 .box {
-background: rgb(188, 218, 224);
+background: rgba(13, 32, 37, 1);
 border-radius: 5px;
 box-shadow: 0px 1px 20px 0px rgb(0, 24, 29);
 }
@@ -120,7 +120,7 @@ div.outer {
     zoom: 300%;
 }
 
-#controls, #counties_panel {
+#controls, #darksky,#nodes,#counties_panel {
     background-color:rgba(13, 32, 37, 1);
     color: #ffffff;
     padding: 0 20px 20px 20px;
@@ -133,6 +133,17 @@ div.outer {
     transition: opacity 1000ms 2ms;
   }
   #controls:hover {
+    /* Fade in while hovering */
+    opacity: 1;
+    transition-delay: 0;
+  }
+  #nodes:hover {
+    /* Fade in while hovering */
+    opacity: 1;
+    transition-delay: 0;
+  }
+
+  #darksky:hover {
     /* Fade in while hovering */
     opacity: 1;
     transition-delay: 0;

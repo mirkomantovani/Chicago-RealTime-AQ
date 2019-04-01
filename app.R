@@ -313,7 +313,7 @@ ui <- dashboardPage(
                               # )
                 ),
                 absolutePanel(id = "darksky", class = "panel panel-default", fixed = TRUE,
-                              draggable = TRUE, top = 60, left = "auto", right = 40, bottom = "auto",
+                              draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
                               width = 800, height = "auto",
                               br(),
                               selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
@@ -338,6 +338,29 @@ ui <- dashboardPage(
                                 justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               )
+                ),
+                absolutePanel(id = "nodes", class = "panel panel-default", fixed = TRUE,
+                              draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
+                              width = 1200, height = "auto",
+                              br(),
+                              box(width=NULL,height=NULL,
+                              div(dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
+                              )
+                              ,
+                              checkboxGroupButtons(
+                                inputId = "measures1_ds",
+                                choices = darksky_tracked_measures[1:5],
+                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              ),
+                              checkboxGroupButtons(
+                                inputId = "measures2_ids", 
+                                choices = darksky_tracked_measures[6:9],
+                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              )
+                              
+                              
                 ),
                 
                 # absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
@@ -889,8 +912,6 @@ server <- function(input, output, session) {
   output$graphical_data <- renderPlot({
 
     vsn <- input$map_marker_click
-    print(vsn)
-    
     if(is.null(vsn)){
       plot_title <- "No node selected"
       
@@ -1448,6 +1469,31 @@ server <- function(input, output, session) {
       )
     }
     )
+  output$nodes_table <- DT::renderDataTable(
+  DT::datatable({
+    nodes_table <- read_fst("fst/nodes.fst")
+    tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
+    
+    # nodes[nodes_with_no_data,nodes$status] <-"inactive"
+    nodes_table$status <- "Active"
+    nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
+            nodes_table[[tracked_measures[2]]] == FALSE &
+            nodes_table[[tracked_measures[3]]] == FALSE &
+            nodes_table[[tracked_measures[4]]] == FALSE &
+            nodes_table[[tracked_measures[5]]] == FALSE &
+            nodes_table[[tracked_measures[6]]] == FALSE &
+            nodes_table[[tracked_measures[7]]] == FALSE &
+            nodes_table[[tracked_measures[8]]] == FALSE &
+            nodes_table[[tracked_measures[9]]] == FALSE &
+            nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
+    nodes_table   
+    },
+      options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
+      ), rownames = FALSE,
+      caption = 'Nodes infomration for the various sensors availability'
+      )
+  )
+  
     
 
 
