@@ -69,6 +69,8 @@ UPDATE_NODES_STATUS <- FALSE
 
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
+darksky_tracked_measures <- c("temperature", "humidity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+
 last <- NULL
 
 statistics <- c("Median","Max","90th percentile")
@@ -310,7 +312,34 @@ ui <- dashboardPage(
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
                               # )
                 ),
-
+                absolutePanel(id = "darksky", class = "panel panel-default", fixed = TRUE,
+                              draggable = TRUE, top = 60, left = "auto", right = 40, bottom = "auto",
+                              width = 800, height = "auto",
+                              br(),
+                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
+                              tabsetPanel(
+                                tabPanel("Graphical",
+                                         plotOutput("graphical_data_ds",height = "22vmin"),
+                                         plotOutput("graphical_data_last_ds",height = "22vmin")
+                                ),
+                                tabPanel("Tabular",
+                                         dataTableOutput("table_ds", height = "22vmin")
+                                )
+                              ),
+                              checkboxGroupButtons(
+                                inputId = "measures1_ds",
+                                choices = darksky_tracked_measures[1:5],
+                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              ),
+                              checkboxGroupButtons(
+                                inputId = "measures2_ids", 
+                                choices = darksky_tracked_measures[6:9],
+                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              )
+                ),
+                
                 # absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
                 #               draggable = FALSE, top = "auto", left = "auto", right = 20, bottom = -40,
                 #               width = 330, height = "auto",
@@ -860,6 +889,8 @@ server <- function(input, output, session) {
   output$graphical_data <- renderPlot({
 
     vsn <- input$map_marker_click
+    print(vsn)
+    
     if(is.null(vsn)){
       plot_title <- "No node selected"
       
@@ -1059,9 +1090,7 @@ server <- function(input, output, session) {
       # to be changed accordingly based on the units in the dataset
       
       if ("temperature" %in% c(input$measures1,input$measures2)){
-        print(paste0("plotting for temperature: "))
         if(input$switch_units){
-          print(paste0("plotting for temperature: "))
           temp_suffx = unique(subset(df, measure == "temperature")$uom)
           gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
@@ -1072,8 +1101,6 @@ server <- function(input, output, session) {
           # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
           
           y = subset(df, measure == "temperature")$value
-          print(paste0("records for temperature: ", length(y)))
-          
           if(length(y)>0){
             temp_suffx = unique(subset(df, measure == "temperature")$uom)
             gl <- gl + geom_line(aes(y, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
@@ -1393,6 +1420,35 @@ server <- function(input, output, session) {
       }
     } 
   })
+  
+  # Darksky table for current time 
+  output$table_ds <- DT::renderDataTable(
+    if(is.null(input$map_marker_click$lat) && is.null(input$map_marker_click$lat)){
+      DT::datatable({
+        empty <- data.frame()
+        empty
+        })
+    }
+    else{
+        DT::datatable({
+        current_forecast = get_current_forecast(input$map_marker_click$lat, input$map_marker_click$lng,exclude="minutely,hourly,daily")
+        curr = data.frame(current_forecast['currently'])
+        names(curr) <- substring(names(curr),11,nchar((names(curr))))
+        darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
+        df <- data.frame(t(subset(curr,select = darksky_tracked_measures)))
+        names(df) <- c("value")
+        measures <-darksky_tracked_measures
+        curr_data <- data.frame(measures = darksky_tracked_measures,
+                                  value = df)
+      },
+      options = list(searching = FALSE, pageLength = 4, lengthChange = FALSE, order = list(list(1, 'desc'))
+      ), rownames = FALSE,
+      caption = 'Current Time measures from Datasky'
+      
+      )
+    }
+    )
+    
 
 
   # About HTML
