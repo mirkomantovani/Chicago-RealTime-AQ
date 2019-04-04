@@ -323,7 +323,7 @@ ui <- dashboardPage(
                                          plotOutput("graphical_data_last_ds",height = "22vmin")
                                 ),
                                 tabPanel("Tabular",
-                                         dataTableOutput("table_ds", height = "22vmin")
+                                         DT::dataTableOutput("table_ds", height = "22vmin")
                                 )
                               ),
                               checkboxGroupButtons(
@@ -344,7 +344,7 @@ ui <- dashboardPage(
                               width = 1200, height = "auto",
                               br(),
                               box(width=NULL,height=NULL,
-                              div(dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
+                              div(DT::dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
                               )
                               ,
                               checkboxGroupButtons(
