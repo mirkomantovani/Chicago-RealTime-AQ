@@ -323,7 +323,7 @@ ui <- dashboardPage(
                                          plotOutput("graphical_data_last_ds",height = "22vmin")
                                 ),
                                 tabPanel("Tabular",
-                                         dataTableOutput("table_ds", height = "22vmin")
+                                         dataTableOutput("table_ds")
                                 )
                               ),
                               checkboxGroupButtons(
@@ -344,7 +344,7 @@ ui <- dashboardPage(
                               width = 1200, height = "auto",
                               br(),
                               box(width=NULL,height=NULL,
-                              div(dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
+                              div(dataTableOutput("nodes_table"),style = "font-size:80%")
                               )
                               ,
                               checkboxGroupButtons(
@@ -528,6 +528,23 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  #gets the observations relative to h hours ago
+  get_h_hours_observations <- function(h, vsn){
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
+    
+    t1 <- sub_hour_to_timestamp(timestamp,h-1)
+    t2 <- sub_hour_to_timestamp(timestamp,h)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+  }
+  
   get_and_preprocess_nodes <- function(){
     df <- ls.nodes()
     # filter out nodes not yet deployed
@@ -541,6 +558,33 @@ server <- function(input, output, session) {
     temp <- do.call(rbind, df$coordinates)
     colnames(temp) <- c("longitude","latitude")
     df <- cbind(df[c("vsn", "address")], temp)
+  }
+  
+  get_and_preprocess_observations_24h <- function(vsn){
+    # Every 5210 observations it's 1 hour
+    hours <- c(0:23)
+    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    
+    df1 <- ls.observations(filters=list(node=vsn))
+    
+    df <- data.frame(df1$node_vsn)
+    names(df) <- c("vsn")
+    df$measure <- df1$sensor_path
+    df$time <- df1$timestamp
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df$uom <- df1$uom
+    df <- filter_out_untracked_measures(df)
+    
+    df$measure <- unlist(df$measure)
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","time","uom","value")
+    
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields(df)
+    
+    return(df)
   }
   
   get_and_preprocess_observations <- function(vsn){
@@ -564,7 +608,31 @@ server <- function(input, output, session) {
     df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
                         FUN=mean)
     names(df) <- c("vsn","measure","time","uom","value")
+    
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields(df)
+    
     return(df)
+  }
+  
+  sub_hour_to_timestamp <- function(timestamp, h){
+    pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
+    pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
+    t <- pb.date - 60*60*h+180
+    return(paste(strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1],
+                 "T",
+                 strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2],sep=""))
+    
+  }
+  
+  sub_day_to_timestamp <- function(timestamp, d){
+    pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
+    pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
+    t <- pb.date - 60*60*24*d+180
+    return(paste(strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1],
+                 "T",
+                 strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2],sep=""))
+    
   }
   
   convert_timestamp_to_chicago_timezone <- function(timestamp){
@@ -583,7 +651,22 @@ server <- function(input, output, session) {
     df$day <- format(df$time, format = "%d")
     df$time <- NULL
     return(df)
-  }
+    }
+    
+    get_last_available_date <- function(){
+      timestamp <- ls.observations(filters=list(size=1))$timestamp
+      
+      year <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      month <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      rest <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+      day <- strsplit(as.character(rest),"T", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      rest <- strsplit(as.character(rest),"T", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      hour <- strsplit(as.character(rest),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      
+      date <- list("year" = year, "month" = month, "day" = day, "hour" = hour)
+      
+      return(date)
+    }
   
   #get the measures required for the plots 
   filter_out_untracked_measures <- function(df){
@@ -946,14 +1029,14 @@ server <- function(input, output, session) {
     # TODO check if AoT node or openAQ and get corresponding dataset
 
     v$lastvsn <- vsn
-    df <- get_and_preprocess_observations(vsn)
-    # if(time_range == TIME_RANGE_CURRENT){
-    #   df <-
-    # }
-    
-    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-    # df <- convert_timestamp_to_chicago_timezone(df)
-    df <- extract_date_fields(df)
+    # df <- get_and_preprocess_observations(vsn)
+    if(time_range == TIME_RANGE_CURRENT){
+      df <- get_and_preprocess_observations(vsn)
+    } else if(time_range == TIME_RANGE_24HOURS){
+      df <- get_and_preprocess_observations_24h(vsn)
+    } else if(time_range == TIME_RANGE_7DAYS){
+      df <- get_and_preprocess_observations(vsn)
+    }
     
     plot_title <- paste("Data for node:",df$vsn[1])
     # df <- subset(df, measure == "co")
@@ -1228,10 +1311,7 @@ server <- function(input, output, session) {
         # if(time_range == TIME_RANGE_CURRENT){
         #   df <-
         # }
-        
-        df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-        # df <- convert_timestamp_to_chicago_timezone(df)
-        df <- extract_date_fields(df)
+
         
         plot_title <- paste("Data for node:",df$vsn[1])
         # df <- subset(df, measure == "co")
