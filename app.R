@@ -530,23 +530,6 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  #gets the observations relative to h hours ago
-  get_h_hours_observations <- function(h, vsn){
-    # d <- get_last_available_date()
-    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
-    
-    t1 <- sub_hour_to_timestamp(timestamp,h-1)
-    t2 <- sub_hour_to_timestamp(timestamp,h)
-    df <- ls.observations(filters=list(
-      node=vsn,
-      timestamp=paste("ge:",t2,sep=""),
-      timestamp=paste("lt:",t1,sep=""),
-      size=200
-      # timestamp="ge:2018-08-01T00:00:00",
-      # timestamp="lt:2018-09-01T00:00:00"
-    ))
-  }
-  
   get_and_preprocess_nodes <- function(){
     df <- ls.nodes()
     # filter out nodes not yet deployed
@@ -562,12 +545,60 @@ server <- function(input, output, session) {
     df <- cbind(df[c("vsn", "address")], temp)
   }
   
-  get_and_preprocess_observations_24h <- function(vsn){
-    # Every 5210 observations it's 1 hour
-    hours <- c(0:23)
-    dfs <- lapply(hours, get_h_hours_observations, vsn)
+  #gets the observations relative to h hours ago
+  get_h_hours_observations <- function(h, vsn){
+    # print(h)
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
     
-    df1 <- ls.observations(filters=list(node=vsn))
+    t1 <- sub_hour_to_timestamp(timestamp,h-1)
+    t2 <- sub_hour_to_timestamp(timestamp,h)
+    # print(t1)
+    # print(t2)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    # print(df$timestamp[1])
+    # print("")
+    return(df)
+  }
+  
+  #gets the observations relative to h hours ago
+  get_d_days_observations <- function(d, vsn){
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
+    
+    t1 <- sub_day_to_timestamp(timestamp,d-1)
+    t2 <- sub_day_to_timestamp(timestamp,d)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
+  get_and_preprocess_observations_7d <- function(vsn){
+    hours <- c(1:24)
+    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    df1 <- do.call(rbind, dfs)
     
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -579,12 +610,40 @@ server <- function(input, output, session) {
     df <- filter_out_untracked_measures(df)
     
     df$measure <- unlist(df$measure)
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
-                   FUN=mean)
-    names(df) <- c("vsn","measure","time","uom","value")
     
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-    df <- extract_date_fields(df)
+    df <- extract_date_fields_h(df)
+    
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","hms","year","month","day", "value")
+    
+    return(df)
+  }
+
+  get_and_preprocess_observations_24h <- function(vsn){
+    # Every 5210 observations it's 1 hour
+    hours <- c(1:24)
+    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    df1 <- do.call(rbind, dfs)
+
+    df <- data.frame(df1$node_vsn)
+    names(df) <- c("vsn")
+    df$measure <- df1$sensor_path
+    df$time <- df1$timestamp
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df$uom <- df1$uom
+    df <- filter_out_untracked_measures(df)
+    
+    df$measure <- unlist(df$measure)
+    
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields_h(df)
+    
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","hms","year","month","day", "value")
     
     return(df)
   }
@@ -653,6 +712,20 @@ server <- function(input, output, session) {
     df$day <- format(df$time, format = "%d")
     df$time <- NULL
     return(df)
+    }
+    
+    extract_date_fields_h <- function(df){
+      df$hsm <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2])
+      df$h <- lapply(df$hsm, function(t) strsplit(as.character(t),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$h <- as.numeric(unlist(df$h))
+      df$hsm <- NULL
+      df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$time <- as.Date(unlist(df$time))
+      df$year <- format(df$time, format = "%Y")
+      df$month <- format(df$time, format = "%B")
+      df$day <- format(df$time, format = "%d")
+      df$time <- NULL
+      return(df)
     }
     
     get_last_available_date <- function(){
@@ -994,6 +1067,10 @@ server <- function(input, output, session) {
   # })
   
   
+  
+  
+  
+#####################################################  GRAPHICAL DATA    #####################################################  
   output$graphical_data <- renderPlot({
 
     vsn <- input$map_marker_click
@@ -1037,7 +1114,7 @@ server <- function(input, output, session) {
     } else if(time_range == TIME_RANGE_24HOURS){
       df <- get_and_preprocess_observations_24h(vsn)
     } else if(time_range == TIME_RANGE_7DAYS){
-      df <- get_and_preprocess_observations(vsn)
+      df <- get_and_preprocess_observations_7d(vsn)
     }
     
     plot_title <- paste("Data for node:",df$vsn[1])
@@ -1080,7 +1157,7 @@ server <- function(input, output, session) {
       #   g <- g+1
       # }
       # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-      if ("co" %in% c(input$measures1,input$measures2)){
+      if ("co" %in% c(input$measures1,input$measures2)){ # TODO compute subset only once and reuse to improve speed
         suffx_co = unique(subset(df, measure == "co")$uom)
         labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
         vals <-c(vals,"co" = "#c6c60f")
@@ -1105,9 +1182,9 @@ server <- function(input, output, session) {
         }
       }
       if ("intensity" %in% c(input$measures1,input$measures2)){
-        suffx_intensity = unique(subset(df, measure == "intensity")$uom)
-          gl <- gl + geom_line(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms, color = "intensity"), size = line_size(), group = 2) +
-            geom_point(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms , color = "intensity"), size = line_size()*3)
+        suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 2) +
+            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
           labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
           vals <-c(vals,"intensity" = "#a3d659")
       }
