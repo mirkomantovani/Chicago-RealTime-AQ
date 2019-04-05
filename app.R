@@ -614,10 +614,10 @@ server <- function(input, output, session) {
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
     df <- extract_date_fields_h(df)
     
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day), 
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms), 
                    FUN=mean)
-    names(df) <- c("vsn","measure","uom","hms","year","month","day", "value")
-    
+    names(df) <- c("vsn","measure","uom","h","year","month","day", "value","hms")
+
     return(df)
   }
 
@@ -635,26 +635,18 @@ server <- function(input, output, session) {
     df$measure <-lapply(df$measure,extract_sensor)
     df$uom <- df1$uom
     df <- filter_out_untracked_measures(df)
-    
     df$measure <- unlist(df$measure)
-    
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
     df <- extract_date_fields_h(df)
-    
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day), 
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms), 
                    FUN=mean)
-    names(df) <- c("vsn","measure","uom","hms","year","month","day", "value")
-    
+    names(df) <- c("vsn","measure","uom","h","year","month","day", "hms", "value")
+
     return(df)
   }
   
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
-    
-    # If only the current time is requested then filter out all unnecessary timestamp and keep only obs from the most recent
-    # if(time_range == TIME_RANGE_CURRENT){
-    #   df1 <- subset(df1, timestamp == df1$timestamp[1])
-    # }
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -717,13 +709,14 @@ server <- function(input, output, session) {
     extract_date_fields_h <- function(df){
       df$hsm <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2])
       df$h <- lapply(df$hsm, function(t) strsplit(as.character(t),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
-      df$h <- as.numeric(unlist(df$h))
       df$hsm <- NULL
       df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
       df$time <- as.Date(unlist(df$time))
       df$year <- format(df$time, format = "%Y")
       df$month <- format(df$time, format = "%B")
       df$day <- format(df$time, format = "%d")
+      df$hms <- paste("d:",df$day, "h:", df$h)
+      df$h <- as.numeric(unlist(df$h))
       df$time <- NULL
       return(df)
     }
