@@ -1157,9 +1157,9 @@ server <- function(input, output, session) {
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             vals <-c(vals,"pm2.5" = "#cc8112")
           }
-          else{
-            print(paste0("No records for pm2.5: ", length(y)))
-          }
+          # else{
+          #   print(paste0("No records for pm2.5: ", length(y)))
+          # }
         }
       }
       # currently the same values is shown for both imperial and metric 
@@ -1183,10 +1183,10 @@ server <- function(input, output, session) {
           labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
           vals <-c(vals,"pm10" = "#ba1010")
           }
-          else{
-            print(paste0("No records for pm10: ", length(y)))
-            
-          }
+          # else{
+          #   print(paste0("No records for pm10: ", length(y)))
+          #   
+          # }
         }
       }
       convert_temp_to_metric <- function(values){
@@ -1214,9 +1214,9 @@ server <- function(input, output, session) {
           labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
           vals <-c(vals,"temperature" = "#6B1F13")
           }
-          else{
-            print(paste0("No records for temperature: ", length(y)))
-          }
+          # else{
+          #   print(paste0("No records for temperature: ", length(y)))
+          # }
         }
       }
       
@@ -1431,9 +1431,9 @@ server <- function(input, output, session) {
               labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
               vals <-c(vals,"pm2.5" = "#cc8112")
             }
-            else{
-              print(paste0("No records for pm2.5: ", length(y)))
-            }
+            # else{
+            #   print(paste0("No records for pm2.5: ", length(y)))
+            # }
           }
         }
         # currently the same values is shown for both imperial and metric 
@@ -1457,10 +1457,9 @@ server <- function(input, output, session) {
               labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
               vals <-c(vals,"pm10" = "#ba1010")
             }
-            else{
-              print(paste0("No records for pm10: ", length(y)))
-              
-            }
+            # else{
+            #   print(paste0("No records for pm10: ", length(y)))
+            # }
           }
         }
         convert_temp_to_metric <- function(values){
@@ -1480,8 +1479,7 @@ server <- function(input, output, session) {
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
             y = subset(df, measure == "temperature")$value
-            print(paste0(" records for temperature: ", length(y)))
-            
+
             if(length(y)>0){
               temp_suffx = "(Degrees Celsius)"
               gl <- gl + geom_line(aes(y, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
@@ -1489,9 +1487,9 @@ server <- function(input, output, session) {
               labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
               vals <-c(vals,"temperature" = "#6B1F13")
             }
-            else{
-              print(paste0("No records for temperature: ", length(y)))
-            }
+            # else{
+            #   print(paste0("No records for temperature: ", length(y)))
+            # }
           }
         }
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
