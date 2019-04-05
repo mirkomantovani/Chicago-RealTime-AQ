@@ -770,18 +770,16 @@
                     We then moved forward with using the AoT API directly. We discussed about the various project requirements and how to implement them.
                     I worked on creating some of the graphical charts for the Array of Things data and added corresponding units of measure for them.
               
-<!--
+
                     <h1 style="font-size: 32pt">Week 2</h1>
                     <h2>Mirko</h2>
-
-                    During this week I implemented a date picker for the hourly data plot which allows the user to select Year, Month and Day for a county by showing to him only the available dates with data. I was also trying to figure out how to produce the heatmap but I got stuck because the incorrect data that we got from the source.
+                    If I thought the Array of Things data source was bad from the first week impressions, now I can confirm this is the worst APIs and service I've ever used. The challenges I faced this week were related to showing the last 24 hours and last 7 days of data in a line chart upon clicking on a sensor. I discovered that a lot of sensor that have data, randomly shut down and turn back on disrupting the service and making it difficult to understand what is going on with the data. I had trouble in finding a node which was pretty good in terms of providing data constantly, eventually I picked node 08D. The issue now was on how to query the APIs to get the data I wanted. I initially tried to get all the observations in the last 24 hours and then preprocess them. I soon realized the infeasibility of this method because of the latency in downloading and preprocessing such a large quantity of data (around 100k rows) in real-time. It would take around 1 minute from when the user clicks the node to when the plot is generated. Way too much. I thought about a possible implementation in which data for each node are preloaded and processed when the application starts but that would take too much time and the user expects reactivity quickly. My final solution to solve this problem was that of subsampling the data (200 obs each hour/day) based on the timestamp. It also took me a long time to figure out how to create an HTTP request to the AoT APIs filtering based on timestamp. The official APIs documentation as of now lacks examples or proper explanation. Eventually I got it to work. Another cool surprised AoT gave us is that there are places in Chicago with -30 ppm of so2, which would be great if it was true but I'm afraid it's not really physically possible.
 
 
                     <h2>Abhishek</h2>
-                    implemented the graph, bar chart and table for daily AQI statistics. Need to integrate this with the app's interface.
 
                     <h2>Ashwani</h2>
-                    During this week, I worked on getting the daily data for pollutants and preprocessing it in R object format. I worked on merging the hourly and daily data for all the pollutants to make the dataset more compact and easy to use. I started working on the line charts to show the hourly data for pollutants for a particular county and a day.
+<!--
 
                     <h1 style="font-size: 32pt">Alpha version</h1>
                     <h2>Mirko</h2>

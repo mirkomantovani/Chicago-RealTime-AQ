@@ -574,6 +574,7 @@ server <- function(input, output, session) {
   
   #gets the observations relative to h hours ago
   get_d_days_observations <- function(d, vsn){
+    # print(d)
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
     
@@ -596,8 +597,8 @@ server <- function(input, output, session) {
   }
   
   get_and_preprocess_observations_7d <- function(vsn){
-    hours <- c(1:24)
-    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    days <- c(1:7)
+    dfs <- lapply(days, get_d_days_observations, vsn)
     df1 <- do.call(rbind, dfs)
     
     df <- data.frame(df1$node_vsn)
@@ -612,11 +613,11 @@ server <- function(input, output, session) {
     df$measure <- unlist(df$measure)
     
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-    df <- extract_date_fields_h(df)
+    df <- extract_date_fields_d(df)
     
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms), 
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms), 
                    FUN=mean)
-    names(df) <- c("vsn","measure","uom","h","year","month","day", "value","hms")
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
 
     return(df)
   }
@@ -717,6 +718,17 @@ server <- function(input, output, session) {
       df$day <- format(df$time, format = "%d")
       df$hms <- paste("d:",df$day, "h:", df$h)
       df$h <- as.numeric(unlist(df$h))
+      df$time <- NULL
+      return(df)
+    }
+    
+    extract_date_fields_d <- function(df){
+      df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$time <- as.Date(unlist(df$time))
+      df$year <- format(df$time, format = "%Y")
+      df$month <- format(df$time, format = "%m")
+      df$day <- format(df$time, format = "%d")
+      df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
       df$time <- NULL
       return(df)
     }
@@ -1347,8 +1359,12 @@ server <- function(input, output, session) {
   
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
+    print("comparison")
+    time_range <- input$time_range
     vsn <- input$map_marker_click
+    # print(vsn)
     vsn <- isolate(v$lastvsn)
+    # print(vsn)
     # || input$switch_compare
     if(is.null(vsn)){
 
@@ -1378,11 +1394,13 @@ server <- function(input, output, session) {
     else {
       if(!(vsn == "Inactive")){
         
-        # TODO check if AoT node or openAQ and get corresponding dataset
-        df <- get_and_preprocess_observations(vsn)
-        # if(time_range == TIME_RANGE_CURRENT){
-        #   df <-
-        # }
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations(vsn)
+        } else if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h(vsn)
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d(vsn)
+        }
 
         
         plot_title <- paste("Data for node:",df$vsn[1])
@@ -1443,38 +1461,38 @@ server <- function(input, output, session) {
           suffx_humidity = unique(subset(df, measure == "humidity")$uom)
           y = subset(df, measure == "humidity")$value
           if(length(y)>0){
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
               geom_point(aes(y, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
             labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity" = "#194649")
           }
         }
         if ("intensity" %in% c(input$measures1,input$measures2)){
-          suffx_intensity = unique(subset(df, measure == "intensity")$uom)
-            gl <- gl + geom_line(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms, color = "intensity"), size = line_size(), group = 2) +
-              geom_point(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms , color = "intensity"), size = line_size()*3)
-            labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
-            vals <-c(vals,"intensity" = "#a3d659")
+          suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
+            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+          labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
+          vals <-c(vals,"intensity" = "#a3d659")
         }
         if ("o3" %in% c(input$measures1,input$measures2)){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#0fa2af")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
         }
         if ("so2" %in% c(input$measures1,input$measures2)){
           suffx_so2 =  unique(subset(df, measure == "so2")$uom)
           labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
           vals <-c(vals,"so2" = "#B899E7")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
         if ("h2s" %in% c(input$measures1,input$measures2)){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
           vals <-c(vals,"h2s" = "#A877E0")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
         convert_to_imperial <- function(values){
@@ -1489,13 +1507,13 @@ server <- function(input, output, session) {
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
           }
           else{
             y = subset(df, measure == "pm2.5")$value
             if(length(y)>0){
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
                 geom_point(aes(y, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
               suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
               labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
@@ -1515,14 +1533,14 @@ server <- function(input, output, session) {
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           }
           else{
             y = subset(df, measure == "pm10")$value
             if(length(y)>0){
               suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
                 geom_point(aes(y, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
               labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
               vals <-c(vals,"pm10" = "#ba1010")
