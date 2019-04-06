@@ -7,6 +7,19 @@ body {
   height: 100%;  */
   overflow: hidden}
 
+  .leaflet-popup-content-wrapper {
+    opacity: .8;
+    color: whitesmoke;
+    background-color: black;
+
+  }
+  
+  /* .leaflet-popup-content-wrapper .leaflet-popup-content {
+  }
+  
+  .leaflet-popup-tip-container {
+  } */
+
 
 .irs-min, .irs-max {
     color: rgb(255, 255, 255);
