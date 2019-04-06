@@ -1,9 +1,10 @@
 # Mirko Mantovani - Ashwani Khemani - Abhishek Vasudevan - 02/20/2019
 
-# libraries
+#####################################################  Libraries    #####################################################
+
 library(shiny)
 library(devtools)
-# library(ggplot2)
+library(ggplot2)
 library(shinydashboard)
 library(scales) # needed for percent function
 library(shinythemes) # themes for bootstrapPage, fluidPage, navbarPage, or fixedPage
@@ -19,13 +20,11 @@ library(shinyWidgets)
 library(viridis) # Color palette
 library(cdlTools) # convert FIPS codes into names
 library(htmltools) # to use htmlEscape function
-library(plotly)
 library(RColorBrewer)
 library(reshape2)
 library(fst)
 library(future)
 library(data.table)
-# library(ggvis)
 library(dplyr)
 library(tidyr)
 
@@ -36,30 +35,9 @@ library(darksky)
 library(base)
 Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
-# importing datasets
-# setwd("./csv/")
-# temp = list.files(pattern="*.csv")
-# datasets = lapply(temp, read.csv)
-# dataset <- do.call(rbind, datasets)
-# setwd("../")
-
-# needed for counties coordinates
-# sites <- fread(file = "sites/aqs_sites.csv", sep=",",header = TRUE)
-# geojson file for counties shape
-
-# f_xy <- future({
-#   xy <- geojsonio::geojson_read("gz_2010_us_050_00_20m.json", what = "sp")
-#   # Since the xy has factored FIPS code for state instead of names, converting them in numeric and then
-#   # getting the names
-#   converted_states_names <- fips(as.numeric(levels(xy$STATE))[xy$STATE],to="name")
-#   xy$STATENAME<-converted_states_names
-#   xy
-# }) %plan% multiprocess
-
 
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
 
-# H_days<-unique(df$Day)
 # Constants
 TIME_RANGE_CURRENT = "Current"
 TIME_RANGE_24HOURS = "Last 24 hours"
@@ -79,7 +57,7 @@ pie_chart_backgrounds <- "white" #bcdae0  1a4756
 bar_chart_backgrounds <- "#bcdae0" #bcdae0
 pie_chart_backgrounds_first <- "#bcdae0" #bcdae0
 
-############################################### UI ################################################
+######################### theme definition #############################
 
 darker_c <- "rgb(30, 34, 68)"
 middle_c <- "rgb(52, 57, 104)"
@@ -237,6 +215,10 @@ mirko_theme <- shinyDashboardThemeDIY(
   ,tableBorderRowSize = 1
   
 )
+
+
+############################################### UI ################################################
+
 
 ui <- dashboardPage(
   dashboardHeader(
@@ -530,6 +512,9 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  #####################################################  AoT utils    #####################################################  
+  
+  
   get_and_preprocess_nodes <- function(){
     df <- ls.nodes()
     # filter out nodes not yet deployed
@@ -747,11 +732,18 @@ server <- function(input, output, session) {
       
       return(date)
     }
+    
+    
+  autoInvalidate45 <- reactiveTimer(45000, session)
+  autoInvalidate50 <- reactiveTimer(50000, session)
+  
   
   #get the measures required for the plots 
   filter_out_untracked_measures <- function(df){
     subset(df, measure %in% tracked_measures)
   }
+  ############################################### Extract sensors info ################################################
+  
   
   save_df_as_fst <- function(df,path){
     write.fst(df, path)
@@ -921,7 +913,8 @@ server <- function(input, output, session) {
     paste(input$dimension[1], input$dimension[2], input$dimension[1]/input$dimension[2])
   })
 
-
+  ############################################### Other utils ################################################
+  
   translate_to_column_name <- function(pollutant) {
     if(pollutant == "CO"){
       return("Days.CO")
@@ -1077,6 +1070,9 @@ server <- function(input, output, session) {
   
 #####################################################  GRAPHICAL DATA    #####################################################  
   output$graphical_data <- renderPlot({
+    autoInvalidate45()
+    
+    # print("graphical")
 
     vsn <- input$map_marker_click
     if(is.null(vsn)){
@@ -1356,10 +1352,12 @@ server <- function(input, output, session) {
     }
   })
   
+  #####################################################  GRAPHICAL DATA COMPARISON    #####################################################  
   
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
-    print("comparison")
+    autoInvalidate50()
+    # print("comparison")
     time_range <- input$time_range
     vsn <- input$map_marker_click
     # print(vsn)
