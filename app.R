@@ -316,7 +316,7 @@ ui <- dashboardPage(
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               checkboxGroupButtons(
-                                inputId = "measures2_ids", 
+                                inputId = "measures2_ds", 
                                 choices = darksky_tracked_measures[6:9],
                                 justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
@@ -332,15 +332,15 @@ ui <- dashboardPage(
                               )
                               ,
                               checkboxGroupButtons(
-                                inputId = "measures1_ds",
-                                choices = darksky_tracked_measures[1:5],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                inputId = "measures1_sites",
+                                choices = tracked_measures[1:5],
+                                justified = TRUE, status = "primary", selected = tracked_measures[1:5],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               checkboxGroupButtons(
-                                inputId = "measures2_ids", 
-                                choices = darksky_tracked_measures[6:9],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                inputId = "measures2_sites", 
+                                choices = tracked_measures[6:10],
+                                justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               )
                               
@@ -823,7 +823,8 @@ server <- function(input, output, session) {
                       annotate_text_size = 4,
                       marker_text_size = '12px',
                       select_input_width = '100%',
-                      lastvsn = NULL
+                      lastvsn = NULL,
+                      lastvsn_ds = NULL
   )
   
 
@@ -953,6 +954,20 @@ server <- function(input, output, session) {
 
   delayes_num_counties_debounced <- delayes_num_counties %>% debounce(300)
 
+  nodes_table <- read_fst("fst/nodes.fst")
+  nodes_table$status <- "Active"
+  nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
+                nodes_table[[tracked_measures[2]]] == FALSE &
+                nodes_table[[tracked_measures[3]]] == FALSE &
+                nodes_table[[tracked_measures[4]]] == FALSE &
+                nodes_table[[tracked_measures[5]]] == FALSE &
+                nodes_table[[tracked_measures[6]]] == FALSE &
+                nodes_table[[tracked_measures[7]]] == FALSE &
+                nodes_table[[tracked_measures[8]]] == FALSE &
+                nodes_table[[tracked_measures[9]]] == FALSE &
+                nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
+  
+  
   # MAP rendering
   output$map <- renderLeaflet({
     
@@ -1074,7 +1089,20 @@ server <- function(input, output, session) {
     
     # print("graphical")
 
-    vsn <- input$map_marker_click
+
+    #If no marker selected, check if any table row selected
+    if(!is.null(input$map_marker_click)){
+      vsn <- input$map_marker_click
+    }
+    else if(!is.null(input$nodes_table_rows_selected)) {
+      row_id <- input$nodes_table_rows_selected
+      selected_row <- nodes_table[row_id,]
+      vsn <- selected_row$vsn
+    }
+    else{
+      vsn <- NULL
+    }
+
     if(is.null(vsn)){
       plot_title <- "No node selected"
       
@@ -1100,15 +1128,30 @@ server <- function(input, output, session) {
       gl
     }
     else {
-    vsn_ <- vsn$id
+      #check if map marker is selected, get id and status from marker, else get the node status from sensor table .
+      if(!is.null(input$map_marker_click)){
+        vsn_ <- vsn$id
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      }
+      else if(!is.null(input$nodes_table_rows_selected)){
+        active <- selected_row$status
+      }
+      else
+        active <- ""
+    
+      
+
     time_range <- input$time_range
     
-    vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-    active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
-    if(!(active == "Inactive")){
+    if(active!="" & !(active == "Inactive")){
     # TODO check if AoT node or openAQ and get corresponding dataset
-
-    v$lastvsn <- vsn
+    if(!is.null(input$map_marker_click)){
+      v$lastvsn <- vsn
+    }
+    else if(!is.null(input$nodes_table_rows_selected)){
+      v$lastvsn_ds <-vsn
+    }
     # df <- get_and_preprocess_observations(vsn)
     if(time_range == TIME_RANGE_CURRENT){
       df <- get_and_preprocess_observations(vsn)
@@ -1336,6 +1379,7 @@ server <- function(input, output, session) {
   
   
   last_vsn <- reactive({
+    
     input_id <- input$map_marker_click
     if(!is.null(input_id)){
       vsn_ <- input_id$id
@@ -1347,7 +1391,13 @@ server <- function(input, output, session) {
         last <- vsn
         vsn
       }
-    } else {
+    }
+    #check if table row selected
+    else if(nrow(selected_row)>0){
+      last <- vsn
+      vsn
+    }
+    else {
       NULL
     }
   })
@@ -1358,15 +1408,21 @@ server <- function(input, output, session) {
   output$graphical_data_last <- renderPlot({
     autoInvalidate50()
     # print("comparison")
+
     time_range <- input$time_range
-    vsn <- input$map_marker_click
-    # print(vsn)
-    vsn <- isolate(v$lastvsn)
-    # print(vsn)
+    # vsn <- input$map_marker_click
+    if(!is.null(input$map_marker_click)){
+      vsn <- isolate(v$lastvsn)
+    }
+    else if(!is.null(input$nodes_table_rows_selected)){
+      vsn <- isolate(v$lastvsn_ds)
+    }
+    else
+      vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
 
-      plot_title <- "No node selected"
+      plot_title <- "No node selected for previous output"
       
       gl <- ggplot() +
         theme(
@@ -1637,26 +1693,23 @@ server <- function(input, output, session) {
     )
   output$nodes_table <- DT::renderDataTable(
   DT::datatable({
-    nodes_table <- read_fst("fst/nodes.fst")
     tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
     
     # nodes[nodes_with_no_data,nodes$status] <-"inactive"
-    nodes_table$status <- "Active"
-    nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
-            nodes_table[[tracked_measures[2]]] == FALSE &
-            nodes_table[[tracked_measures[3]]] == FALSE &
-            nodes_table[[tracked_measures[4]]] == FALSE &
-            nodes_table[[tracked_measures[5]]] == FALSE &
-            nodes_table[[tracked_measures[6]]] == FALSE &
-            nodes_table[[tracked_measures[7]]] == FALSE &
-            nodes_table[[tracked_measures[8]]] == FALSE &
-            nodes_table[[tracked_measures[9]]] == FALSE &
-            nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
-    nodes_table   
-    },
+
+    cols <- c("vsn","address","status")
+    nodes_main <-nodes_table %>% select(cols)
+    #show only the selected measures infomration
+    selected = c(input$measures1_sites,input$measures2_sites)
+    for(measure in selected){
+      nodes_main[[measure]] <- nodes_table[[measure]]
+    }
+    nodes_main
+  }
+    ,
       options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
       ), rownames = FALSE,
-      caption = 'Nodes infomration for the various sensors availability'
+      caption = 'Nodes infomration for the various sensors availability',selection = "single"
       )
   )
   
