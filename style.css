@@ -20,6 +20,31 @@ body {
   .leaflet-popup-tip-container {
   } */
 
+  .circle {
+    width: 50px;
+    height: 50px;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    border-radius: 25px;
+    /* background: red; */
+  }
+
+  #aotactive {
+    background: navy; 
+  }
+  #aotinactive {
+    background: red; 
+  }
+  #oaq {
+    background: green; 
+  }
+
+.info {
+  border-radius: 18px;
+  color: silver;
+  background: rgba(0, 0, 0, 0.8);
+}
+
 
 .irs-min, .irs-max {
     color: rgb(255, 255, 255);

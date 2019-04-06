@@ -987,6 +987,13 @@ server <- function(input, output, session) {
                                    nodes[[tracked_measures[9]]] == FALSE &
                                    nodes[[tracked_measures[10]]] == FALSE )
     
+    html_legend <- "
+      <b>Nodes</b><br>
+      <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
+      <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
+      <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
+    "
+    
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
@@ -1020,12 +1027,7 @@ server <- function(input, output, session) {
         overlayGroups = c(tracked_measures, "Inactive"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
-      # addPolygons(data = value(f_xy), color = ~mypal(temp$sel_feat), weight = 0.8, smoothFactor = 0.2,
-      #             opacity = spread(temp$Days.with.AQI/365+0.2), fillOpacity = spread(temp$Days.with.AQI/365+0.2),
-      #             label = ~htmlEscape(value(f_xy)$NAME),
-      #             popup = pop,
-      #             highlightOptions = highlightOptions(color = "white", weight = 3,
-      #                                                 bringToFront = TRUE)) %>%
+      addControl(html = html_legend, position = "bottomright") %>%
       addTiles(
         urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
         attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
