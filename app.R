@@ -1,9 +1,10 @@
 # Mirko Mantovani - Ashwani Khemani - Abhishek Vasudevan - 02/20/2019
 
-# libraries
+#####################################################  Libraries    #####################################################
+
 library(shiny)
 library(devtools)
-# library(ggplot2)
+library(ggplot2)
 library(shinydashboard)
 library(scales) # needed for percent function
 library(shinythemes) # themes for bootstrapPage, fluidPage, navbarPage, or fixedPage
@@ -19,13 +20,11 @@ library(shinyWidgets)
 library(viridis) # Color palette
 library(cdlTools) # convert FIPS codes into names
 library(htmltools) # to use htmlEscape function
-library(plotly)
 library(RColorBrewer)
 library(reshape2)
 library(fst)
 library(future)
 library(data.table)
-# library(ggvis)
 library(dplyr)
 library(tidyr)
 
@@ -36,30 +35,9 @@ library(darksky)
 library(base)
 Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
-# importing datasets
-# setwd("./csv/")
-# temp = list.files(pattern="*.csv")
-# datasets = lapply(temp, read.csv)
-# dataset <- do.call(rbind, datasets)
-# setwd("../")
-
-# needed for counties coordinates
-# sites <- fread(file = "sites/aqs_sites.csv", sep=",",header = TRUE)
-# geojson file for counties shape
-
-# f_xy <- future({
-#   xy <- geojsonio::geojson_read("gz_2010_us_050_00_20m.json", what = "sp")
-#   # Since the xy has factored FIPS code for state instead of names, converting them in numeric and then
-#   # getting the names
-#   converted_states_names <- fips(as.numeric(levels(xy$STATE))[xy$STATE],to="name")
-#   xy$STATENAME<-converted_states_names
-#   xy
-# }) %plan% multiprocess
-
 
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
 
-# H_days<-unique(df$Day)
 # Constants
 TIME_RANGE_CURRENT = "Current"
 TIME_RANGE_24HOURS = "Last 24 hours"
@@ -79,7 +57,7 @@ pie_chart_backgrounds <- "white" #bcdae0  1a4756
 bar_chart_backgrounds <- "#bcdae0" #bcdae0
 pie_chart_backgrounds_first <- "#bcdae0" #bcdae0
 
-############################################### UI ################################################
+######################### theme definition #############################
 
 darker_c <- "rgb(30, 34, 68)"
 middle_c <- "rgb(52, 57, 104)"
@@ -238,6 +216,10 @@ mirko_theme <- shinyDashboardThemeDIY(
   
 )
 
+
+############################################### UI ################################################
+
+
 ui <- dashboardPage(
   dashboardHeader(
     title = "Chicago Real-Time AQ",
@@ -334,7 +316,7 @@ ui <- dashboardPage(
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               checkboxGroupButtons(
-                                inputId = "measures2_ids", 
+                                inputId = "measures2_ds", 
                                 choices = darksky_tracked_measures[6:9],
                                 justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
@@ -350,15 +332,15 @@ ui <- dashboardPage(
                               )
                               ,
                               checkboxGroupButtons(
-                                inputId = "measures1_ds",
-                                choices = darksky_tracked_measures[1:5],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                inputId = "measures1_sites",
+                                choices = tracked_measures[1:5],
+                                justified = TRUE, status = "primary", selected = tracked_measures[1:5],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               ),
                               checkboxGroupButtons(
-                                inputId = "measures2_ids", 
-                                choices = darksky_tracked_measures[6:9],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                inputId = "measures2_sites", 
+                                choices = tracked_measures[6:10],
+                                justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               )
                               
@@ -530,22 +512,8 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  #gets the observations relative to h hours ago
-  get_h_hours_observations <- function(h, vsn){
-    # d <- get_last_available_date()
-    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
-    
-    t1 <- sub_hour_to_timestamp(timestamp,h-1)
-    t2 <- sub_hour_to_timestamp(timestamp,h)
-    df <- ls.observations(filters=list(
-      node=vsn,
-      timestamp=paste("ge:",t2,sep=""),
-      timestamp=paste("lt:",t1,sep=""),
-      size=200
-      # timestamp="ge:2018-08-01T00:00:00",
-      # timestamp="lt:2018-09-01T00:00:00"
-    ))
-  }
+  #####################################################  AoT utils    #####################################################  
+  
   
   get_and_preprocess_nodes <- function(){
     df <- ls.nodes()
@@ -562,12 +530,61 @@ server <- function(input, output, session) {
     df <- cbind(df[c("vsn", "address")], temp)
   }
   
-  get_and_preprocess_observations_24h <- function(vsn){
-    # Every 5210 observations it's 1 hour
-    hours <- c(0:23)
-    dfs <- lapply(hours, get_h_hours_observations, vsn)
+  #gets the observations relative to h hours ago
+  get_h_hours_observations <- function(h, vsn){
+    # print(h)
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
     
-    df1 <- ls.observations(filters=list(node=vsn))
+    t1 <- sub_hour_to_timestamp(timestamp,h-1)
+    t2 <- sub_hour_to_timestamp(timestamp,h)
+    # print(t1)
+    # print(t2)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    # print(df$timestamp[1])
+    # print("")
+    return(df)
+  }
+  
+  #gets the observations relative to h hours ago
+  get_d_days_observations <- function(d, vsn){
+    # print(d)
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
+    
+    t1 <- sub_day_to_timestamp(timestamp,d-1)
+    t2 <- sub_day_to_timestamp(timestamp,d)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
+  get_and_preprocess_observations_7d <- function(vsn){
+    days <- c(1:7)
+    dfs <- lapply(days, get_d_days_observations, vsn)
+    df1 <- do.call(rbind, dfs)
     
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -579,23 +596,43 @@ server <- function(input, output, session) {
     df <- filter_out_untracked_measures(df)
     
     df$measure <- unlist(df$measure)
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
-                   FUN=mean)
-    names(df) <- c("vsn","measure","time","uom","value")
     
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-    df <- extract_date_fields(df)
+    df <- extract_date_fields_d(df)
     
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
+
+    return(df)
+  }
+
+  get_and_preprocess_observations_24h <- function(vsn){
+    # Every 5210 observations it's 1 hour
+    hours <- c(1:24)
+    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    df1 <- do.call(rbind, dfs)
+
+    df <- data.frame(df1$node_vsn)
+    names(df) <- c("vsn")
+    df$measure <- df1$sensor_path
+    df$time <- df1$timestamp
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df$uom <- df1$uom
+    df <- filter_out_untracked_measures(df)
+    df$measure <- unlist(df$measure)
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields_h(df)
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","h","year","month","day", "hms", "value")
+
     return(df)
   }
   
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
-    
-    # If only the current time is requested then filter out all unnecessary timestamp and keep only obs from the most recent
-    # if(time_range == TIME_RANGE_CURRENT){
-    #   df1 <- subset(df1, timestamp == df1$timestamp[1])
-    # }
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -655,6 +692,32 @@ server <- function(input, output, session) {
     return(df)
     }
     
+    extract_date_fields_h <- function(df){
+      df$hsm <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2])
+      df$h <- lapply(df$hsm, function(t) strsplit(as.character(t),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$hsm <- NULL
+      df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$time <- as.Date(unlist(df$time))
+      df$year <- format(df$time, format = "%Y")
+      df$month <- format(df$time, format = "%B")
+      df$day <- format(df$time, format = "%d")
+      df$hms <- paste("d:",df$day, "h:", df$h)
+      df$h <- as.numeric(unlist(df$h))
+      df$time <- NULL
+      return(df)
+    }
+    
+    extract_date_fields_d <- function(df){
+      df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
+      df$time <- as.Date(unlist(df$time))
+      df$year <- format(df$time, format = "%Y")
+      df$month <- format(df$time, format = "%m")
+      df$day <- format(df$time, format = "%d")
+      df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
+      df$time <- NULL
+      return(df)
+    }
+    
     get_last_available_date <- function(){
       timestamp <- ls.observations(filters=list(size=1))$timestamp
       
@@ -669,11 +732,18 @@ server <- function(input, output, session) {
       
       return(date)
     }
+    
+    
+  autoInvalidate45 <- reactiveTimer(45000, session)
+  autoInvalidate50 <- reactiveTimer(50000, session)
+  
   
   #get the measures required for the plots 
   filter_out_untracked_measures <- function(df){
     subset(df, measure %in% tracked_measures)
   }
+  ############################################### Extract sensors info ################################################
+  
   
   save_df_as_fst <- function(df,path){
     write.fst(df, path)
@@ -753,7 +823,8 @@ server <- function(input, output, session) {
                       annotate_text_size = 4,
                       marker_text_size = '12px',
                       select_input_width = '100%',
-                      lastvsn = NULL
+                      lastvsn = NULL,
+                      lastvsn_ds = NULL
   )
   
 
@@ -843,7 +914,8 @@ server <- function(input, output, session) {
     paste(input$dimension[1], input$dimension[2], input$dimension[1]/input$dimension[2])
   })
 
-
+  ############################################### Other utils ################################################
+  
   translate_to_column_name <- function(pollutant) {
     if(pollutant == "CO"){
       return("Days.CO")
@@ -882,7 +954,20 @@ server <- function(input, output, session) {
 
   delayes_num_counties_debounced <- delayes_num_counties %>% debounce(300)
 
-  # MAP rendering
+  nodes_table <- read_fst("fst/nodes.fst")
+  nodes_table$status <- "Active"
+  nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
+                nodes_table[[tracked_measures[2]]] == FALSE &
+                nodes_table[[tracked_measures[3]]] == FALSE &
+                nodes_table[[tracked_measures[4]]] == FALSE &
+                nodes_table[[tracked_measures[5]]] == FALSE &
+                nodes_table[[tracked_measures[6]]] == FALSE &
+                nodes_table[[tracked_measures[7]]] == FALSE &
+                nodes_table[[tracked_measures[8]]] == FALSE &
+                nodes_table[[tracked_measures[9]]] == FALSE &
+                nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
+  
+  ################################# MAP #################################
   output$map <- renderLeaflet({
     
     initial_lat <- 41.900613
@@ -903,6 +988,15 @@ server <- function(input, output, session) {
     #          value(f_xy)$STATENAME,
     #          paste(signif(temp$sel_feat,3),suffx)
     #   )
+    
+    pop <- ~paste(sep = "<br/>",
+                  paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
+                  value(f_xy)$NAME,
+                  value(f_xy)$STATENAME,
+                  paste("Confidence level:",signif(temp$Days.with.AQI/365*100,3), "%"),
+                  paste("Days with data:",temp$Days.with.AQI),
+                  paste(pref,signif(temp$sel_feat,3),suffx)
+                )
 
     nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
     
@@ -923,17 +1017,17 @@ server <- function(input, output, session) {
     normalColor <- "navy"
     
     leaflet(nodes) %>% 
-      addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = nodes_by_sensor[[1]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
-      addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = nodes_by_sensor[[2]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], layerId=paste(nodes_by_sensor[[3]]$vsn,tracked_measures[3]), popup = nodes_by_sensor[[3]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], layerId=paste(nodes_by_sensor[[4]]$vsn,tracked_measures[4]), popup = nodes_by_sensor[[4]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], layerId=paste(nodes_by_sensor[[5]]$vsn,tracked_measures[5]), popup = nodes_by_sensor[[5]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], layerId=paste(nodes_by_sensor[[6]]$vsn,tracked_measures[6]), popup = nodes_by_sensor[[6]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], layerId=paste(nodes_by_sensor[[7]]$vsn,tracked_measures[7]), popup = nodes_by_sensor[[7]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], layerId=paste(nodes_by_sensor[[8]]$vsn,tracked_measures[8]), popup = nodes_by_sensor[[8]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[9]]$longitude, nodes_by_sensor[[9]]$latitude, group = tracked_measures[9], layerId=paste(nodes_by_sensor[[9]]$vsn,tracked_measures[9]), popup = nodes_by_sensor[[9]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_by_sensor[[10]]$longitude, nodes_by_sensor[[10]]$latitude, group = tracked_measures[10], layerId=paste(nodes_by_sensor[[10]]$vsn,tracked_measures[10]), popup = nodes_by_sensor[[10]]$address, stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
-      addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", layerId=~paste(vsn,"Inactive"), popup = nodes_with_no_data$address, stroke = FALSE, fillOpacity = inactiveOpacity, radius = point_size(), color = inactiveColor) %>%
+      addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
+      addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], layerId=paste(nodes_by_sensor[[3]]$vsn,tracked_measures[3]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[3]]$vsn,"</b>"),nodes_by_sensor[[3]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[4]]$longitude, nodes_by_sensor[[4]]$latitude, group = tracked_measures[4], layerId=paste(nodes_by_sensor[[4]]$vsn,tracked_measures[4]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[4]]$vsn,"</b>"),nodes_by_sensor[[4]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[5]]$longitude, nodes_by_sensor[[5]]$latitude, group = tracked_measures[5], layerId=paste(nodes_by_sensor[[5]]$vsn,tracked_measures[5]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[5]]$vsn,"</b>"),nodes_by_sensor[[5]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[6]]$longitude, nodes_by_sensor[[6]]$latitude, group = tracked_measures[6], layerId=paste(nodes_by_sensor[[6]]$vsn,tracked_measures[6]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[6]]$vsn,"</b>"),nodes_by_sensor[[6]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[7]]$longitude, nodes_by_sensor[[7]]$latitude, group = tracked_measures[7], layerId=paste(nodes_by_sensor[[7]]$vsn,tracked_measures[7]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[7]]$vsn,"</b>"),nodes_by_sensor[[7]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[8]]$longitude, nodes_by_sensor[[8]]$latitude, group = tracked_measures[8], layerId=paste(nodes_by_sensor[[8]]$vsn,tracked_measures[8]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[8]]$vsn,"</b>"),nodes_by_sensor[[8]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[9]]$longitude, nodes_by_sensor[[9]]$latitude, group = tracked_measures[9], layerId=paste(nodes_by_sensor[[9]]$vsn,tracked_measures[9]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[9]]$vsn,"</b>"),nodes_by_sensor[[9]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_by_sensor[[10]]$longitude, nodes_by_sensor[[10]]$latitude, group = tracked_measures[10], layerId=paste(nodes_by_sensor[[10]]$vsn,tracked_measures[10]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[10]]$vsn,"</b>"),nodes_by_sensor[[10]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
+      addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", layerId=~paste(vsn,"Inactive"), popup = paste(sep = "<br/>",paste("<b>",nodes_with_no_data$vsn,", No AoT observations</b>"),nodes_with_no_data$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, fillOpacity = inactiveOpacity, radius = point_size(), color = inactiveColor) %>%
       # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
       addLayersControl(
         # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
@@ -994,9 +1088,29 @@ server <- function(input, output, session) {
   # })
   
   
+  
+  
+  
+#####################################################  GRAPHICAL DATA    #####################################################  
   output$graphical_data <- renderPlot({
+    autoInvalidate45()
+    
+    # print("graphical")
 
-    vsn <- input$map_marker_click
+
+    #If no marker selected, check if any table row selected
+    if(!is.null(input$map_marker_click)){
+      vsn <- input$map_marker_click
+    }
+    else if(!is.null(input$nodes_table_rows_selected)) {
+      row_id <- input$nodes_table_rows_selected
+      selected_row <- nodes_table[row_id,]
+      vsn <- selected_row$vsn
+    }
+    else{
+      vsn <- NULL
+    }
+
     if(is.null(vsn)){
       plot_title <- "No node selected"
       
@@ -1022,22 +1136,37 @@ server <- function(input, output, session) {
       gl
     }
     else {
-    vsn_ <- vsn$id
+      #check if map marker is selected, get id and status from marker, else get the node status from sensor table .
+      if(!is.null(input$map_marker_click)){
+        vsn_ <- vsn$id
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      }
+      else if(!is.null(input$nodes_table_rows_selected)){
+        active <- selected_row$status
+      }
+      else
+        active <- ""
+    
+      
+
     time_range <- input$time_range
     
-    vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-    active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
-    if(!(active == "Inactive")){
+    if(active!="" & !(active == "Inactive")){
     # TODO check if AoT node or openAQ and get corresponding dataset
-
-    v$lastvsn <- vsn
+    if(!is.null(input$map_marker_click)){
+      v$lastvsn <- vsn
+    }
+    else if(!is.null(input$nodes_table_rows_selected)){
+      v$lastvsn_ds <-vsn
+    }
     # df <- get_and_preprocess_observations(vsn)
     if(time_range == TIME_RANGE_CURRENT){
       df <- get_and_preprocess_observations(vsn)
     } else if(time_range == TIME_RANGE_24HOURS){
       df <- get_and_preprocess_observations_24h(vsn)
     } else if(time_range == TIME_RANGE_7DAYS){
-      df <- get_and_preprocess_observations(vsn)
+      df <- get_and_preprocess_observations_7d(vsn)
     }
     
     plot_title <- paste("Data for node:",df$vsn[1])
@@ -1080,7 +1209,7 @@ server <- function(input, output, session) {
       #   g <- g+1
       # }
       # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-      if ("co" %in% c(input$measures1,input$measures2)){
+      if ("co" %in% c(input$measures1,input$measures2)){ # TODO compute subset only once and reuse to improve speed
         suffx_co = unique(subset(df, measure == "co")$uom)
         labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
         vals <-c(vals,"co" = "#c6c60f")
@@ -1098,16 +1227,16 @@ server <- function(input, output, session) {
         suffx_humidity = unique(subset(df, measure == "humidity")$uom)
         y = subset(df, measure == "humidity")$value
         if(length(y)>0){
-          gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
             geom_point(aes(y, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#194649")
         }
       }
       if ("intensity" %in% c(input$measures1,input$measures2)){
-        suffx_intensity = unique(subset(df, measure == "intensity")$uom)
-          gl <- gl + geom_line(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms, color = "intensity"), size = line_size(), group = 2) +
-            geom_point(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms , color = "intensity"), size = line_size()*3)
+        suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 2) +
+            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
           labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
           vals <-c(vals,"intensity" = "#a3d659")
       }
@@ -1115,21 +1244,21 @@ server <- function(input, output, session) {
         suffx_o3 = unique(subset(df, measure == "o3")$uom)
         labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
         vals <-c(vals,"o3" = "#0fa2af")
-        gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 2) +
+        gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
           geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
       }
       if ("so2" %in% c(input$measures1,input$measures2)){
         suffx_so2 = unique(subset(df, measure == "so2")$uom)
         labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
         vals <-c(vals,"so2" = "#B899E7")
-        gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 2) +
+        gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
           geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
       }
       if ("h2s" %in% c(input$measures1,input$measures2)){
         suffx_h2s = unique(subset(df, measure == "h2s")$uom)
         labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
         vals <-c(vals,"h2s" = "#A877E0")
-        gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 2) +
+        gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
           geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
       }
       
@@ -1145,21 +1274,21 @@ server <- function(input, output, session) {
           # df$data_conv <- convert_to_imperial(df$data_conv)
           # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
           suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-          gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
             geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
         }
         else{
           y = subset(df, measure == "pm2.5")$value
           if(length(y)>0){
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
             geom_point(aes(y, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             vals <-c(vals,"pm2.5" = "#cc8112")
           }
-          else{
-            print(paste0("No records for pm2.5: ", length(y)))
-          }
+          # else{
+          #   print(paste0("No records for pm2.5: ", length(y)))
+          # }
         }
       }
       # currently the same values is shown for both imperial and metric 
@@ -1171,22 +1300,22 @@ server <- function(input, output, session) {
           # df$data_conv <- convert_to_imperial(df$data_conv)
           # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
           suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-          gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
             geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
         }
         else{
           y = subset(df, measure == "pm10")$value
           if(length(y)>0){
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
             geom_point(aes(y, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
           vals <-c(vals,"pm10" = "#ba1010")
           }
-          else{
-            print(paste0("No records for pm10: ", length(y)))
-            
-          }
+          # else{
+          #   print(paste0("No records for pm10: ", length(y)))
+          #   
+          # }
         }
       }
       convert_temp_to_metric <- function(values){
@@ -1214,9 +1343,9 @@ server <- function(input, output, session) {
           labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
           vals <-c(vals,"temperature" = "#6B1F13")
           }
-          else{
-            print(paste0("No records for temperature: ", length(y)))
-          }
+          # else{
+          #   print(paste0("No records for temperature: ", length(y)))
+          # }
         }
       }
       
@@ -1258,6 +1387,7 @@ server <- function(input, output, session) {
   
   
   last_vsn <- reactive({
+    
     input_id <- input$map_marker_click
     if(!is.null(input_id)){
       vsn_ <- input_id$id
@@ -1269,20 +1399,38 @@ server <- function(input, output, session) {
         last <- vsn
         vsn
       }
-    } else {
+    }
+    #check if table row selected
+    else if(nrow(selected_row)>0){
+      last <- vsn
+      vsn
+    }
+    else {
       NULL
     }
   })
   
+  #####################################################  GRAPHICAL DATA COMPARISON    #####################################################  
   
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
-    vsn <- input$map_marker_click
-    vsn <- isolate(v$lastvsn)
+    autoInvalidate50()
+    # print("comparison")
+
+    time_range <- input$time_range
+    # vsn <- input$map_marker_click
+    if(!is.null(input$map_marker_click)){
+      vsn <- isolate(v$lastvsn)
+    }
+    else if(!is.null(input$nodes_table_rows_selected)){
+      vsn <- isolate(v$lastvsn_ds)
+    }
+    else
+      vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
 
-      plot_title <- "No node selected"
+      plot_title <- "No node selected for previous output"
       
       gl <- ggplot() +
         theme(
@@ -1308,11 +1456,13 @@ server <- function(input, output, session) {
     else {
       if(!(vsn == "Inactive")){
         
-        # TODO check if AoT node or openAQ and get corresponding dataset
-        df <- get_and_preprocess_observations(vsn)
-        # if(time_range == TIME_RANGE_CURRENT){
-        #   df <-
-        # }
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations(vsn)
+        } else if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h(vsn)
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d(vsn)
+        }
 
         
         plot_title <- paste("Data for node:",df$vsn[1])
@@ -1373,38 +1523,38 @@ server <- function(input, output, session) {
           suffx_humidity = unique(subset(df, measure == "humidity")$uom)
           y = subset(df, measure == "humidity")$value
           if(length(y)>0){
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
               geom_point(aes(y, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
             labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity" = "#194649")
           }
         }
         if ("intensity" %in% c(input$measures1,input$measures2)){
-          suffx_intensity = unique(subset(df, measure == "intensity")$uom)
-            gl <- gl + geom_line(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms, color = "intensity"), size = line_size(), group = 2) +
-              geom_point(aes(subset(df, measure == "intensity")$value, x = subset(df, measure == "intensity")$hms , color = "intensity"), size = line_size()*3)
-            labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
-            vals <-c(vals,"intensity" = "#a3d659")
+          suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
+            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+          labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
+          vals <-c(vals,"intensity" = "#a3d659")
         }
         if ("o3" %in% c(input$measures1,input$measures2)){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#0fa2af")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
         }
         if ("so2" %in% c(input$measures1,input$measures2)){
           suffx_so2 =  unique(subset(df, measure == "so2")$uom)
           labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
           vals <-c(vals,"so2" = "#B899E7")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
         if ("h2s" %in% c(input$measures1,input$measures2)){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
           vals <-c(vals,"h2s" = "#A877E0")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 2) +
+          gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
         convert_to_imperial <- function(values){
@@ -1419,21 +1569,21 @@ server <- function(input, output, session) {
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
           }
           else{
             y = subset(df, measure == "pm2.5")$value
             if(length(y)>0){
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 2) +
+              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
                 geom_point(aes(y, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
               suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
               labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
               vals <-c(vals,"pm2.5" = "#cc8112")
             }
-            else{
-              print(paste0("No records for pm2.5: ", length(y)))
-            }
+            # else{
+            #   print(paste0("No records for pm2.5: ", length(y)))
+            # }
           }
         }
         # currently the same values is shown for both imperial and metric 
@@ -1445,22 +1595,21 @@ server <- function(input, output, session) {
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           }
           else{
             y = subset(df, measure == "pm10")$value
             if(length(y)>0){
               suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 2) +
+              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
                 geom_point(aes(y, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
               labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
               vals <-c(vals,"pm10" = "#ba1010")
             }
-            else{
-              print(paste0("No records for pm10: ", length(y)))
-              
-            }
+            # else{
+            #   print(paste0("No records for pm10: ", length(y)))
+            # }
           }
         }
         convert_temp_to_metric <- function(values){
@@ -1480,8 +1629,7 @@ server <- function(input, output, session) {
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
             y = subset(df, measure == "temperature")$value
-            print(paste0(" records for temperature: ", length(y)))
-            
+
             if(length(y)>0){
               temp_suffx = "(Degrees Celsius)"
               gl <- gl + geom_line(aes(y, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
@@ -1489,9 +1637,9 @@ server <- function(input, output, session) {
               labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
               vals <-c(vals,"temperature" = "#6B1F13")
             }
-            else{
-              print(paste0("No records for temperature: ", length(y)))
-            }
+            # else{
+            #   print(paste0("No records for temperature: ", length(y)))
+            # }
           }
         }
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
@@ -1553,26 +1701,23 @@ server <- function(input, output, session) {
     )
   output$nodes_table <- DT::renderDataTable(
   DT::datatable({
-    nodes_table <- read_fst("fst/nodes.fst")
     tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
     
     # nodes[nodes_with_no_data,nodes$status] <-"inactive"
-    nodes_table$status <- "Active"
-    nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
-            nodes_table[[tracked_measures[2]]] == FALSE &
-            nodes_table[[tracked_measures[3]]] == FALSE &
-            nodes_table[[tracked_measures[4]]] == FALSE &
-            nodes_table[[tracked_measures[5]]] == FALSE &
-            nodes_table[[tracked_measures[6]]] == FALSE &
-            nodes_table[[tracked_measures[7]]] == FALSE &
-            nodes_table[[tracked_measures[8]]] == FALSE &
-            nodes_table[[tracked_measures[9]]] == FALSE &
-            nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
-    nodes_table   
-    },
+
+    cols <- c("vsn","address","status")
+    nodes_main <-nodes_table %>% select(cols)
+    #show only the selected measures infomration
+    selected = c(input$measures1_sites,input$measures2_sites)
+    for(measure in selected){
+      nodes_main[[measure]] <- nodes_table[[measure]]
+    }
+    nodes_main
+  }
+    ,
       options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
       ), rownames = FALSE,
-      caption = 'Nodes infomration for the various sensors availability'
+      caption = 'Nodes infomration for the various sensors availability',selection = "single"
       )
   )
   
