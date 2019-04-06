@@ -1,7 +1,6 @@
 library(tidyverse)
 library(ropenaq)
-print(getwd())
-setwd(getwd())
+
 (tableResults <- aq_measurements(city = "Chicago-Naperville-Joliet",date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date())))
 a <- as.data.frame(tableResults)
 drops <- c("unit","country","city","dateUTC","cityURL")
@@ -49,6 +48,7 @@ for(location_t in locations)
   df_total <- rbind(df_total,df_row)   
 }
 df_total$location = stringr::str_to_title(df_total$location)
+names(df_total) = c("location","latitude","longitude","bc","no2","so2","co","pm10","pm2.5","o3")
 library(fst)
 fileName = "./fst/openaq.fst"
 write.fst(df_total, fileName)
