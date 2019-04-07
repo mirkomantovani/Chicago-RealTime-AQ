@@ -47,6 +47,7 @@ UPDATE_NODES_STATUS <- FALSE
 
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
+openaq_tracked_measures <- c("co","bc","no2","o3","so2","pm2.5","pm10")
 darksky_tracked_measures <- c("temperature", "humidity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
 
 last <- NULL
@@ -787,21 +788,19 @@ server <- function(input, output, session) {
     save_df_as_fst(nodes,"fst/nodes.fst")
   }
   
+  ########### reading data ###########
+  
   if(UPDATE_NODES_STATUS){
     update_nodes_status()
   }
   
   nodes <- read_fst("fst/nodes.fst")
-  # nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
-  #                                nodes[[tracked_measures[2]]] == FALSE &
-  #                                nodes[[tracked_measures[3]]] == FALSE &
-  #                                nodes[[tracked_measures[4]]] == FALSE &
-  #                                nodes[[tracked_measures[5]]] == FALSE &
-  #                                nodes[[tracked_measures[6]]] == FALSE &
-  #                                nodes[[tracked_measures[7]]] == FALSE &
-  #                                nodes[[tracked_measures[8]]] == FALSE &
-  #                                nodes[[tracked_measures[9]]] == FALSE &
-  #                                nodes[[tracked_measures[10]]] == FALSE )
+  nodes_oaq <- read_fst("fst/openaq.fst")
+  
+  # preprocessing nodes_oaq
+  nodes_oaq$vsn <- nodes_oaq$location
+  nodes_oaq$location <- NULL
+  
   
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -973,32 +972,9 @@ server <- function(input, output, session) {
     initial_lat <- 41.900613
     initial_lng <- -87.678211
 
-    # pop <- if(!input$switch_daily) ~paste(sep = "<br/>",
-    #                                       paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
-    #                                       value(f_xy)$NAME,
-    #                                       value(f_xy)$STATENAME,
-    #                                       paste("Confidence level:",signif(temp$Days.with.AQI/365*100,3), "%"),
-    #                                       paste("Days with data:",temp$Days.with.AQI),
-    #                                       paste(pref,signif(temp$sel_feat,3),suffx)
-    # )
-    # else
-    #   ~paste(sep = "<br/>",
-    #          paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
-    #          value(f_xy)$NAME,
-    #          value(f_xy)$STATENAME,
-    #          paste(signif(temp$sel_feat,3),suffx)
-    #   )
-    
-    pop <- ~paste(sep = "<br/>",
-                  paste("<b><a href='https://en.wikipedia.org/wiki/",value(f_xy)$NAME,"_County,_",value(f_xy)$STATENAME,"' target='_blank'>",value(f_xy)$NAME," on Wikipedia</a></b>"),
-                  value(f_xy)$NAME,
-                  value(f_xy)$STATENAME,
-                  paste("Confidence level:",signif(temp$Days.with.AQI/365*100,3), "%"),
-                  paste("Days with data:",temp$Days.with.AQI),
-                  paste(pref,signif(temp$sel_feat,3),suffx)
-                )
-
     nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
+    nodes_by_sensor_oaq <- lapply(openaq_tracked_measures, function(measure) subset(nodes_oaq, nodes_oaq[[measure]] == TRUE))
+    
     
     nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
                                    nodes[[tracked_measures[2]]] == FALSE &
@@ -1011,12 +987,22 @@ server <- function(input, output, session) {
                                    nodes[[tracked_measures[9]]] == FALSE &
                                    nodes[[tracked_measures[10]]] == FALSE )
     
+    html_legend <- "
+      <b>Nodes</b><br>
+      <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
+      <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
+      <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
+    "
+    
     opacity <- 0.1
+    oaqOpacity <- 0.3
     inactiveColor <- "red"
     inactiveOpacity <- 0.5
     normalColor <- "navy"
+    openAQColor <- "green"
     
     leaflet(nodes) %>% 
+      # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], layerId=paste(nodes_by_sensor[[3]]$vsn,tracked_measures[3]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[3]]$vsn,"</b>"),nodes_by_sensor[[3]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1028,22 +1014,29 @@ server <- function(input, output, session) {
       addCircleMarkers(nodes_by_sensor[[9]]$longitude, nodes_by_sensor[[9]]$latitude, group = tracked_measures[9], layerId=paste(nodes_by_sensor[[9]]$vsn,tracked_measures[9]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[9]]$vsn,"</b>"),nodes_by_sensor[[9]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_by_sensor[[10]]$longitude, nodes_by_sensor[[10]]$latitude, group = tracked_measures[10], layerId=paste(nodes_by_sensor[[10]]$vsn,tracked_measures[10]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[10]]$vsn,"</b>"),nodes_by_sensor[[10]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_with_no_data$longitude, nodes_with_no_data$latitude, group = "Inactive", layerId=~paste(vsn,"Inactive"), popup = paste(sep = "<br/>",paste("<b>",nodes_with_no_data$vsn,", No AoT observations</b>"),nodes_with_no_data$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, fillOpacity = inactiveOpacity, radius = point_size(), color = inactiveColor) %>%
-      # addMarkers(initial_lng, initial_lat, group = "group2", popup = "myhouse") %>%
+      # OpenAQ nodes
+      addCircleMarkers(nodes_by_sensor_oaq[[1]]$longitude, nodes_by_sensor_oaq[[1]]$latitude, group = openaq_tracked_measures[1], layerId=paste(nodes_by_sensor_oaq[[1]]$vsn,openaq_tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[1]]$vsn,"</b>"),nodes_by_sensor_oaq[[1]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[2]]$longitude, nodes_by_sensor_oaq[[2]]$latitude, group = openaq_tracked_measures[2], layerId=paste(nodes_by_sensor_oaq[[2]]$vsn,openaq_tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[2]]$vsn,"</b>"),nodes_by_sensor_oaq[[2]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[3]]$longitude, nodes_by_sensor_oaq[[3]]$latitude, group = openaq_tracked_measures[3], layerId=paste(nodes_by_sensor_oaq[[3]]$vsn,openaq_tracked_measures[3]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[3]]$vsn,"</b>"),nodes_by_sensor_oaq[[3]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[4]]$longitude, nodes_by_sensor_oaq[[4]]$latitude, group = openaq_tracked_measures[4], layerId=paste(nodes_by_sensor_oaq[[4]]$vsn,openaq_tracked_measures[4]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[4]]$vsn,"</b>"),nodes_by_sensor_oaq[[4]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[5]]$longitude, nodes_by_sensor_oaq[[5]]$latitude, group = openaq_tracked_measures[5], layerId=paste(nodes_by_sensor_oaq[[5]]$vsn,openaq_tracked_measures[5]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[5]]$vsn,"</b>"),nodes_by_sensor_oaq[[5]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[6]]$longitude, nodes_by_sensor_oaq[[6]]$latitude, group = openaq_tracked_measures[6], layerId=paste(nodes_by_sensor_oaq[[6]]$vsn,openaq_tracked_measures[6]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[6]]$vsn,"</b>"),nodes_by_sensor_oaq[[6]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addCircleMarkers(nodes_by_sensor_oaq[[7]]$longitude, nodes_by_sensor_oaq[[7]]$latitude, group = openaq_tracked_measures[7], layerId=paste(nodes_by_sensor_oaq[[7]]$vsn,openaq_tracked_measures[7]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[7]]$vsn,"</b>"),nodes_by_sensor_oaq[[7]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addTiles(group = "Default") %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "Dark Matter") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+      addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
+      
       addLayersControl(
-        # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+        baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
         overlayGroups = c(tracked_measures, "Inactive"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
-      # addPolygons(data = value(f_xy), color = ~mypal(temp$sel_feat), weight = 0.8, smoothFactor = 0.2,
-      #             opacity = spread(temp$Days.with.AQI/365+0.2), fillOpacity = spread(temp$Days.with.AQI/365+0.2),
-      #             label = ~htmlEscape(value(f_xy)$NAME),
-      #             popup = pop,
-      #             highlightOptions = highlightOptions(color = "white", weight = 3,
-      #                                                 bringToFront = TRUE)) %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>% 
+      addControl(html = html_legend, position = "bottomright") %>%
+      # addTiles(
+      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      # ) %>% 
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
     # %>%
     #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
@@ -1154,6 +1147,8 @@ server <- function(input, output, session) {
     
     if(active!="" & !(active == "Inactive")){
     # TODO check if AoT node or openAQ and get corresponding dataset
+      # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
+      
     if(!is.null(input$map_marker_click)){
       v$lastvsn <- vsn
     }
