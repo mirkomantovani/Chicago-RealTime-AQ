@@ -1022,16 +1022,21 @@ server <- function(input, output, session) {
       addCircleMarkers(nodes_by_sensor_oaq[[5]]$longitude, nodes_by_sensor_oaq[[5]]$latitude, group = openaq_tracked_measures[5], layerId=paste(nodes_by_sensor_oaq[[5]]$vsn,openaq_tracked_measures[5]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[5]]$vsn,"</b>"),nodes_by_sensor_oaq[[5]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
       addCircleMarkers(nodes_by_sensor_oaq[[6]]$longitude, nodes_by_sensor_oaq[[6]]$latitude, group = openaq_tracked_measures[6], layerId=paste(nodes_by_sensor_oaq[[6]]$vsn,openaq_tracked_measures[6]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[6]]$vsn,"</b>"),nodes_by_sensor_oaq[[6]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
       addCircleMarkers(nodes_by_sensor_oaq[[7]]$longitude, nodes_by_sensor_oaq[[7]]$latitude, group = openaq_tracked_measures[7], layerId=paste(nodes_by_sensor_oaq[[7]]$vsn,openaq_tracked_measures[7]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor_oaq[[7]]$vsn,"</b>"),nodes_by_sensor_oaq[[7]]$vsn, "<a href='https://openaq.org/' target='_blank'>Open Air Quality</a>"), stroke = FALSE, radius = point_size(), fillOpacity = oaqOpacity, color= openAQColor) %>%
+      addTiles(group = "Default") %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "Dark Matter") %>%
+      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+      addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
+      
       addLayersControl(
-        # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+        baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
         overlayGroups = c(tracked_measures, "Inactive"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>% 
+      # addTiles(
+      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      # ) %>% 
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
     # %>%
     #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
