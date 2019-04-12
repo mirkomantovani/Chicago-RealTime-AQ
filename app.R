@@ -634,6 +634,7 @@ server <- function(input, output, session) {
   
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
+    print(nrow(df1))
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -823,7 +824,8 @@ server <- function(input, output, session) {
                       marker_text_size = '12px',
                       select_input_width = '100%',
                       lastvsn = NULL,
-                      lastvsn_ds = NULL
+                      lastvsn_ds = NULL,
+                      vsn=NULL
   )
   
 
@@ -966,6 +968,7 @@ server <- function(input, output, session) {
                 nodes_table[[tracked_measures[9]]] == FALSE &
                 nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
   
+  
   ################################# MAP #################################
   output$map <- renderLeaflet({
     
@@ -1080,29 +1083,45 @@ server <- function(input, output, session) {
   #     )
   # })
   
+
+    #observe map input and add type identifier
   
-  
-  
+    observeEvent(input$map_marker_click,
+                 v$vsn <- paste0("map ",input$map_marker_click)
+                 )
+    #observe table input and add type indentifier
+    
+    observeEvent(input$nodes_table_rows_selected,
+                 v$vsn <- paste0("table ",input$nodes_table_rows_selected)
+    )
+    
+    
   
 #####################################################  GRAPHICAL DATA    #####################################################  
   output$graphical_data <- renderPlot({
     autoInvalidate45()
-    
-    # print("graphical")
+    vsn_ <- v$vsn
 
-
-    #If no marker selected, check if any table row selected
-    if(!is.null(input$map_marker_click)){
-      vsn <- input$map_marker_click
+    if(!is.null(vsn_)){
+      #get input type either map or table
+      
+      type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      
+      # if map input, get the vsn and the active status
+      if(type=="map"){
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+      }
+      # if table input, get the vsn and the active status
+      else{
+        row_id <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        selected_row <- nodes_table[row_id,]
+        active <- selected_row$status
+        vsn <- selected_row$vsn
+      }
     }
-    else if(!is.null(input$nodes_table_rows_selected)) {
-      row_id <- input$nodes_table_rows_selected
-      selected_row <- nodes_table[row_id,]
-      vsn <- selected_row$vsn
-    }
-    else{
-      vsn <- NULL
-    }
+    else
+      vsn <-NULL
 
     if(is.null(vsn)){
       plot_title <- "No node selected"
@@ -1129,23 +1148,10 @@ server <- function(input, output, session) {
       gl
     }
     else {
-      #check if map marker is selected, get id and status from marker, else get the node status from sensor table .
-      if(!is.null(input$map_marker_click)){
-        vsn_ <- vsn$id
-        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
-      }
-      else if(!is.null(input$nodes_table_rows_selected)){
-        active <- selected_row$status
-      }
-      else
-        active <- ""
-    
-      
 
     time_range <- input$time_range
     
-    if(active!="" & !(active == "Inactive")){
+    if(!(active == "Inactive")){
     # TODO check if AoT node or openAQ and get corresponding dataset
       # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
       
