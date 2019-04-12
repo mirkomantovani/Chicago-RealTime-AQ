@@ -299,7 +299,7 @@ ui <- dashboardPage(
                               draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
                               width = 800, height = "auto",
                               br(),
-                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
+                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
                               tabsetPanel(
                                 tabPanel("Graphical",
                                          plotOutput("graphical_data_ds",height = "22vmin"),
@@ -825,6 +825,8 @@ server <- function(input, output, session) {
                       select_input_width = '100%',
                       lastvsn = NULL,
                       lastvsn_ds = NULL,
+                      lastvsn_dark = NULL,
+                      
                       vsn=NULL
   )
   
@@ -1700,6 +1702,448 @@ server <- function(input, output, session) {
       )
     }
     )
+
+  #preprocess darksky data for last 24 hours  
+  get_and_preprocess_observations_24h_ds <- function(lng,lat){
+    print(lng)
+    print(lat)
+    now <-Sys.time()
+    yes <-ymd_hms(now) - lubridate::hours(24)
+    yes<-force_tz(yes, "America/Chicago")
+    seq(yes, now,by="hour")[1:25]%>%
+    map(~get_forecast_for(lng, lat,.x))%>%
+    map_df("hourly")%>%
+    distinct()%>%
+    filter((day(time)<=day(now) | (day(time)=day(now) & day(time)<day(now) & day(time)<day(now))))%>%
+    {. ->> res }
+    res <- extract_date_fields_h(res)
+    return (res)
+  }
+  
+  #preprocess darksky data for last 7 days
+  get_and_preprocess_observations_7d_ds <- function(lng,lat){
+    print(lng)
+    print(lat)
+    seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
+    map(~get_forecast_for(lng, lat, .x)) %>%
+    map_df("daily") %>%
+    {. ->> last_7 }
+    last_7 <- extract_date_fields_d(last_7)
+    return (last_7)
+  }
+  
+  #Darksky graphical data
+  #This takes the input from AoT table and maps markets
+  
+  output$graphical_data_ds <- renderPlot({
+    autoInvalidate45()
+    vsn_ <- v$vsn
+    print(vsn_)
+    if(!is.null(vsn_)){
+      #get input type either map or table
+      
+      type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      
+      # if map input, get the vsn and the active status
+      if(type=="map"){
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+        lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
+        lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+      }
+      # if table input, get the vsn and the active status
+      else{
+        row_id <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        selected_row <- nodes_table[row_id,]
+        active <- selected_row$status
+        vsn <- selected_row$vsn
+        lng <-selected_row$longitude
+        lat <- selected_row$latitude
+        }
+    }
+    else
+      vsn <-NULL
+    
+    if(is.null(vsn)){
+      plot_title <- "No node selected"
+      
+      gl <- ggplot() +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+          panel.border = element_blank(),
+          plot.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.key = element_rect(color = NA, fill = "#0d2025"),
+          panel.background = element_rect(fill = "#0d2025", color  =  NA),
+          panel.grid.major = element_line(color = "#FFFFFF"),
+          panel.grid.minor = element_line(color = "#FFFFFF"),
+          legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+          legend.key.size = unit(legend_key_size(), 'line'),
+          axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+          legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+        )+labs(title=plot_title,x = "Time", y = "Measurement")
+      
+      gl
+    }
+    else {
+      
+      time_range <- input$time_range_ds
+      
+      if(!(active == "Inactive")){
+        # TODO check if AoT node or openAQ and get corresponding dataset
+        # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
+        
+        if(!is.null(input$map_marker_click)){
+          v$lastvsn_dark <- vsn
+        }
+        else if(!is.null(input$nodes_table_rows_selected)){
+          v$lastvsn_dark <-vsn
+        }
+        
+        if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h_ds(lng,lat)
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d_ds(lng,lat)
+        }
+        
+
+        plot_title <- paste("Data for node:",vsn)
+        # df <- as.data.frame(lapply(df, unlist))
+        
+        
+        gl <- ggplot() +
+          theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+            panel.border = element_blank(),
+            plot.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.key = element_rect(color = NA, fill = "#0d2025"),
+            panel.background = element_rect(fill = "#0d2025", color  =  NA),
+            panel.grid.major = element_line(color = "#FFFFFF"),
+            panel.grid.minor = element_line(color = "#FFFFFF"),
+            legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+            legend.key.size = unit(legend_key_size(), 'line'),
+            axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+            legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+          )+labs(title=plot_title,x = "Time", y = "Measurement")
+        
+        labs <-c()
+        vals <-c()
+        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_humidity = ""
+            gl <- gl + geom_line(aes(y = df$humidity , x= df$hms, color = "humidity"), size = line_size(), group = 1) +
+              geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
+            labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+            vals <-c(vals,"humidity" = "#194649")
+          
+        }
+        if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_windSpeed = ""
+            gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
+              geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
+            labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            vals <-c(vals,"windSpeed" = "#194649")
+          
+        }
+        if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_windBearing = ""
+            gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
+              geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
+            labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            vals <-c(vals,"windBearing" = "#194649")
+          
+        }
+        if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_cloudCover = ""
+            gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
+              geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
+            labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
+            vals <-c(vals,"cloudCover" = "#194649")
+          
+        }
+        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_visibility =""
+            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            vals <-c(vals,"visibility" = "#194649")
+          
+        }
+        if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_pressure = ""
+            gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
+              geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
+            labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            vals <-c(vals,"pressure" = "#194649")
+          
+        }
+        if ("ozone" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_ozone  = ""
+            gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
+              geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
+            labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
+            vals <-c(vals,"ozone" = "#194649")
+          
+        }
+        # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
+        #   suffx_summary  = ""
+        #     gl <- gl + geom_line(aes(y= df$summary, x= df$hms, color = "summary"), size = line_size(), group = 8) +
+        #       geom_point(aes(y= df$summary, x= df$hms , color = "summary"), size = line_size()*3)
+        #     labs <-c(labs,"summary" = paste("summary",suffx_summary, sep=" "))
+        #     vals <-c(vals,"summary" = "#194649")
+        #   
+        # }
+        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds)){
+          if(input$switch_units){
+            temp_suffx= df$""
+            gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
+              geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
+          }
+        }
+          else{
+            # s_county$data_conv <-s_county$"Temperature"
+            # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
+            # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
+            
+              temp_suffx  = ""
+              gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
+                geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
+              labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
+              vals <-c(vals,"temperature" = "#6B1F13")
+        }
+      
+        gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
+                                      values = vals)
+        gl
+      }  
+       else {
+        plot_title <- "This node has no observations"
+        
+        gl <- ggplot() +
+          theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+            panel.border = element_blank(),
+            plot.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.key = element_rect(color = NA, fill = "#0d2025"),
+            panel.background = element_rect(fill = "#0d2025", color  =  NA),
+            panel.grid.major = element_line(color = "#FFFFFF"),
+            panel.grid.minor = element_line(color = "#FFFFFF"),
+            legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+            legend.key.size = unit(legend_key_size(), 'line'),
+            axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+            legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+          )+labs(title=plot_title,x = "Time", y = "Measurement")
+        
+        gl
+      }
+    } 
+  })
+  
+
+  
+  #####################################################  GRAPHICAL DATA COMPARISON    #####################################################  
+  
+  # Darksky Second plot for comparison
+  output$graphical_data_last_ds <- renderPlot({
+    autoInvalidate50()
+    # print("comparison")
+    
+    time_range <- input$time_range
+    # vsn <- input$map_marker_click
+    if(!is.null(input$map_marker_click)){
+      vsn <- isolate(v$lastvsn_dark)
+    }
+    else if(!is.null(input$nodes_table_rows_selected)){
+      vsn <- isolate(v$lastvsn_dark)
+    }
+    else
+      vsn <- NULL
+    # || input$switch_compare
+    if(is.null(vsn)){
+      
+      plot_title <- "No node selected for previous output"
+      
+      gl <- ggplot() +
+        theme(
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+          plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+          panel.border = element_blank(),
+          plot.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.background = element_rect(color = NA, fill = "#0d2025"),
+          legend.key = element_rect(color = NA, fill = "#0d2025"),
+          panel.background = element_rect(fill = "#0d2025", color  =  NA),
+          panel.grid.major = element_line(color = "#FFFFFF"),
+          panel.grid.minor = element_line(color = "#FFFFFF"),
+          legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+          legend.key.size = unit(legend_key_size(), 'line'),
+          axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+          legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+        )+labs(title=plot_title,x = "Time", y = "Measurement")
+      
+      gl
+    }
+    else {
+      if(!(vsn == "Inactive")){
+        
+        if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h_ds(vsn)
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d_ds(vsn)
+        }
+        
+        
+        plot_title <- paste("Data for node:",vsn)
+        # df <- as.data.frame(lapply(df, unlist))
+        
+        # gl <- ggplot(data = df, aes(x = df$hms)) +
+        gl <- ggplot() +
+          theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+            panel.border = element_blank(),
+            plot.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.key = element_rect(color = NA, fill = "#0d2025"),
+            panel.background = element_rect(fill = "#0d2025", color  =  NA),
+            panel.grid.major = element_line(color = "#FFFFFF"),
+            panel.grid.minor = element_line(color = "#FFFFFF"),
+            legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+            legend.key.size = unit(legend_key_size(), 'line'),
+            axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+            legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+          )+labs(title=plot_title,x = "Time", y = "Measurement")
+        
+        labs <-c()
+        vals <-c()
+        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_humidity = ""
+            gl <- gl + geom_line(aes(y = df$humidity , x= df$hms, color = "humidity"), size = line_size(), group = 1) +
+              geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
+            labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+            vals <-c(vals,"humidity" = "#194649")
+          
+        }
+        if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_windSpeed = ""
+            gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
+              geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
+            labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            vals <-c(vals,"windSpeed" = "#194649")
+          
+        }
+        if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_windBearing = ""
+            gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
+              geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
+            labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            vals <-c(vals,"windBearing" = "#194649")
+          
+        }
+        if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_cloudCover = ""
+            gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
+              geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
+            labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
+            vals <-c(vals,"cloudCover" = "#194649")
+          
+        }
+        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_visibility =""
+            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            vals <-c(vals,"visibility" = "#194649")
+          
+        }
+        if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_pressure = ""
+            gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
+              geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
+            labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            vals <-c(vals,"pressure" = "#194649")
+          
+        }
+        if ("ozone" %in% c(input$measures1_ds,input$measures2_ds)){
+          suffx_ozone  = ""
+            gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
+              geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
+            labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
+            vals <-c(vals,"ozone" = "#194649")
+          
+        }
+        # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
+        #   suffx_summary  = ""
+        #     gl <- gl + geom_line(aes(y= df$summary, x= df$hms, color = "summary"), size = line_size(), group = 8) +
+        #       geom_point(aes(y= df$summary, x= df$hms , color = "summary"), size = line_size()*3)
+        #     labs <-c(labs,"summary" = paste("summary",suffx_summary, sep=" "))
+        #     vals <-c(vals,"summary" = "#194649")
+        #   
+        # }
+        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds)){
+          if(input$switch_units){
+            temp_suffx= df$""
+            gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
+              geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
+          }
+        }
+          else{
+            # s_county$data_conv <-s_county$"Temperature"
+            # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
+            # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
+            
+              temp_suffx  = ""
+              gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
+                geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
+              labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
+              vals <-c(vals,"temperature" = "#6B1F13")
+        }
+        
+        gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
+                                      values = vals)
+        gl
+      } else {
+        plot_title <- "This node has no observations"
+        
+        gl <- ggplot() +
+          theme(
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+            plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+            panel.border = element_blank(),
+            plot.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.background = element_rect(color = NA, fill = "#0d2025"),
+            legend.key = element_rect(color = NA, fill = "#0d2025"),
+            panel.background = element_rect(fill = "#0d2025", color  =  NA),
+            panel.grid.major = element_line(color = "#FFFFFF"),
+            panel.grid.minor = element_line(color = "#FFFFFF"),
+            legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+            legend.key.size = unit(legend_key_size(), 'line'),
+            axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+            legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+          )+labs(title=plot_title,x = "Time", y = "Measurement")
+        
+        gl
+      }
+    } 
+  })
+  
+    
+  # AoT sensor nodes table
   output$nodes_table <- DT::renderDataTable(
   DT::datatable({
     tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
