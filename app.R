@@ -27,6 +27,8 @@ library(future)
 library(data.table)
 library(dplyr)
 library(tidyr)
+library(lubridate)
+
 
 # R data APIs libraries
 library(ropenaq)
@@ -634,7 +636,7 @@ server <- function(input, output, session) {
   
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
-    print(nrow(df1))
+    # print(nrow(df1))
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -824,9 +826,9 @@ server <- function(input, output, session) {
                       marker_text_size = '12px',
                       select_input_width = '100%',
                       lastvsn = NULL,
-                      lastvsn_ds = NULL,
                       lastvsn_dark = NULL,
-                      
+                      map_inputs = list(),
+                      table_inputs = list(),
                       vsn=NULL
   )
   
@@ -1089,12 +1091,18 @@ server <- function(input, output, session) {
     #observe map input and add type identifier
   
     observeEvent(input$map_marker_click,
+                { 
                  v$vsn <- paste0("map ",input$map_marker_click)
-                 )
+                 v$map_inputs <- append(v$map_inputs,list(v$vsn))
+                }
+    )
     #observe table input and add type indentifier
     
     observeEvent(input$nodes_table_rows_selected,
+                 {
                  v$vsn <- paste0("table ",input$nodes_table_rows_selected)
+                 v$table_inputs <- append(v$table_inputs,list(v$vsn))
+                 }
     )
     
     
@@ -1104,6 +1112,7 @@ server <- function(input, output, session) {
     autoInvalidate45()
     vsn_ <- v$vsn
 
+    # print(v$map_inputs)
     if(!is.null(vsn_)){
       #get input type either map or table
       
@@ -1113,6 +1122,13 @@ server <- function(input, output, session) {
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
         active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+        
+        #get the last two clicks
+        last_two <- tail(v$map_inputs,2)
+        
+        prev <- last_two[[1]]
+        prev_input <- prev[1]
+        
       }
       # if table input, get the vsn and the active status
       else{
@@ -1120,6 +1136,13 @@ server <- function(input, output, session) {
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
+        
+        #get the last two clicks
+        last_two <- tail(v$table_inputs,2)
+        
+        prev <- last_two[[1]]
+        prev_input <- prev[1]
+        
       }
     }
     else
@@ -1157,12 +1180,37 @@ server <- function(input, output, session) {
     # TODO check if AoT node or openAQ and get corresponding dataset
       # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
       
-    if(!is.null(input$map_marker_click)){
-      v$lastvsn <- vsn
+    
+    #set the previous click
+    if(!is.null(prev_input)){
+      #get input type either map or table
+      
+      type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      
+      # if map input, get the vsn and the active status
+      if(type=="map"){
+        v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        }
+      # if table input, get the vsn and the active status
+      else{
+        prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        prev_row <- nodes_table[prev_row_id,]
+
+        #if the previous table node was inactive, set vsn as inactive
+        if(prev_row$status=="Active")
+          v$lastvsn <- prev_row$vsn
+        else
+          v$lastvsn <- "Inactive"
+        
+      }
     }
-    else if(!is.null(input$nodes_table_rows_selected)){
-      v$lastvsn_ds <-vsn
+    else{
+      v$lastvsn <-NULL
     }
+    
+    
+    # print(v$lastvsn)
+
     # df <- get_and_preprocess_observations(vsn)
     if(time_range == TIME_RANGE_CURRENT){
       df <- get_and_preprocess_observations(vsn)
@@ -1422,14 +1470,9 @@ server <- function(input, output, session) {
 
     time_range <- input$time_range
     # vsn <- input$map_marker_click
-    if(!is.null(input$map_marker_click)){
-      vsn <- isolate(v$lastvsn)
-    }
-    else if(!is.null(input$nodes_table_rows_selected)){
-      vsn <- isolate(v$lastvsn_ds)
-    }
-    else
-      vsn <- NULL
+    
+    vsn <- isolate(v$lastvsn)
+    
     # || input$switch_compare
     if(is.null(vsn)){
 
