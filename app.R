@@ -28,6 +28,8 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(tidyverse)
+
 
 
 # R data APIs libraries
@@ -966,6 +968,16 @@ server <- function(input, output, session) {
                 nodes_table[[tracked_measures[9]]] == FALSE &
                 nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
   
+  nodes_table[nodes_table[[tracked_measures[1]]] == FALSE, ][, tracked_measures[1]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[2]]] == FALSE, ][, tracked_measures[2]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[3]]] == FALSE, ][, tracked_measures[3]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[4]]] == FALSE, ][, tracked_measures[4]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[5]]] == FALSE, ][, tracked_measures[5]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[6]]] == FALSE, ][, tracked_measures[6]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[7]]] == FALSE, ][, tracked_measures[7]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[8]]] == FALSE, ][, tracked_measures[8]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[9]]] == FALSE, ][, tracked_measures[9]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[10]]] == FALSE, ][, tracked_measures[10]] <- "-"
   
   ################################# MAP #################################
   output$map <- renderLeaflet({
@@ -1439,7 +1451,7 @@ server <- function(input, output, session) {
     autoInvalidate50()
 
     time_range <- input$time_range
-    # vsn <- input$map_marker_click
+    irrelevant_variable <- input$map_marker_click
     
     vsn <- isolate(v$lastvsn)
     
@@ -1703,6 +1715,7 @@ server <- function(input, output, session) {
 
   #preprocess darksky data for last 24 hours  
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
+
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
     yes<-force_tz(yes, "America/Chicago")
@@ -1732,7 +1745,6 @@ server <- function(input, output, session) {
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-
     if(!is.null(vsn_)){
       #get input type either map or table
       
