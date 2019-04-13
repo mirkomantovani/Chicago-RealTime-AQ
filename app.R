@@ -306,8 +306,8 @@ ui <- dashboardPage(
                               selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
                               tabsetPanel(
                                 tabPanel("Graphical",
-                                         plotOutput("graphical_data_ds",height = "22vmin"),
-                                         plotOutput("graphical_data_last_ds",height = "22vmin")
+                                         plotOutput("graphical_data_ds",height = "22vmin")
+                                         #plotOutput("graphical_data_last_ds",height = "22vmin")
                                 ),
                                 tabPanel("Tabular",
 
@@ -1731,12 +1731,16 @@ server <- function(input, output, session) {
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
     yes<-force_tz(yes, "America/Chicago")
-    seq(yes, now,by="hour")[1:25]%>%
-    map(~get_forecast_for(lng, lat,.x))%>%
-    map_df("hourly")%>%
-    distinct()%>%
-    filter((day(time)<=day(now) | (day(time)=day(now) & day(time)<day(now) & day(time)<day(now))))%>%
-    {. ->> res }
+    ds <-seq(yes, now,by="hour")[1:25]
+    ds <-ymd_hms(ds)
+    force_tz(ds, "America/Chicago")%>%
+      map(~get_forecast_for(lng, lat,.x))%>%
+      map_df("hourly")%>%
+      distinct()%>%
+      {. ->> response}
+    response$time<-ymd_hms(response$time)
+    response$time<-force_tz(response$time, "America/Chicago")
+    res <-tail(filter(response,(day(response$time)<day(now) | (day(response$time)==day(now) & hour(response$time)<=hour(now)))),24)
     res <- extract_date_fields_h(res)
     return (res)
   }
@@ -1826,7 +1830,6 @@ server <- function(input, output, session) {
         } else if(time_range == TIME_RANGE_7DAYS){
           df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
-        
 
         if(time_range == TIME_RANGE_CURRENT){
           plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
@@ -1835,6 +1838,7 @@ server <- function(input, output, session) {
         } else {
           plot_title <- paste("Last 7 days data for node:",df$vsn[1])
         }
+
         
         
         gl <- ggplot() +
@@ -1863,7 +1867,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = df$humidity , x= df$hms, color = "humidity"), size = line_size(), group = 1) +
               geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
             labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
-            vals <-c(vals,"humidity" = "#194649")
+            vals <-c(vals,"humidity" = "#a6cee3")
           
         }
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1871,7 +1875,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
               geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
             labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-            vals <-c(vals,"windSpeed" = "#194649")
+            vals <-c(vals,"windSpeed" = "#1f78b4")
           
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1879,7 +1883,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
               geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
             labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-            vals <-c(vals,"windBearing" = "#194649")
+            vals <-c(vals,"windBearing" = "#b2df8a")
           
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1887,7 +1891,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
               geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
             labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
-            vals <-c(vals,"cloudCover" = "#194649")
+            vals <-c(vals,"cloudCover" = "#33a02c")
           
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1895,7 +1899,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
               geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
             labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-            vals <-c(vals,"visibility" = "#194649")
+            vals <-c(vals,"visibility" = "#fb9a99")
           
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1903,7 +1907,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
               geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
             labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-            vals <-c(vals,"pressure" = "#194649")
+            vals <-c(vals,"pressure" = "#e31a1c")
           
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1911,7 +1915,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
               geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
             labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
-            vals <-c(vals,"ozone" = "#194649")
+            vals <-c(vals,"ozone" = "#fdbf6f")
           
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1919,7 +1923,7 @@ server <- function(input, output, session) {
         #     gl <- gl + geom_line(aes(y= df$summary, x= df$hms, color = "summary"), size = line_size(), group = 8) +
         #       geom_point(aes(y= df$summary, x= df$hms , color = "summary"), size = line_size()*3)
         #     labs <-c(labs,"summary" = paste("summary",suffx_summary, sep=" "))
-        #     vals <-c(vals,"summary" = "#194649")
+        #     vals <-c(vals,"summary" = "#cab2d6")
         #   
         # }
         if ("temperature" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -1938,7 +1942,7 @@ server <- function(input, output, session) {
               gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
                 geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
               labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-              vals <-c(vals,"temperature" = "#6B1F13")
+              vals <-c(vals,"temperature" = "#ff7f00")
         }
       
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
