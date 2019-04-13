@@ -28,6 +28,8 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(tidyverse)
+
 
 
 # R data APIs libraries
@@ -972,6 +974,16 @@ server <- function(input, output, session) {
                 nodes_table[[tracked_measures[9]]] == FALSE &
                 nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
   
+  nodes_table[nodes_table[[tracked_measures[1]]] == FALSE, ][, tracked_measures[1]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[2]]] == FALSE, ][, tracked_measures[2]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[3]]] == FALSE, ][, tracked_measures[3]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[4]]] == FALSE, ][, tracked_measures[4]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[5]]] == FALSE, ][, tracked_measures[5]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[6]]] == FALSE, ][, tracked_measures[6]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[7]]] == FALSE, ][, tracked_measures[7]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[8]]] == FALSE, ][, tracked_measures[8]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[9]]] == FALSE, ][, tracked_measures[9]] <- "-"
+  nodes_table[nodes_table[[tracked_measures[10]]] == FALSE, ][, tracked_measures[10]] <- "-"
   
   ################################# MAP #################################
   output$map <- renderLeaflet({
@@ -1748,8 +1760,8 @@ server <- function(input, output, session) {
 
   #preprocess darksky data for last 24 hours  
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
-    print(lng)
-    print(lat)
+    # print(lng)
+    # print(lat)
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
     yes<-force_tz(yes, "America/Chicago")
@@ -1765,8 +1777,8 @@ server <- function(input, output, session) {
   
   #preprocess darksky data for last 7 days
   get_and_preprocess_observations_7d_ds <- function(lng,lat){
-    print(lng)
-    print(lat)
+    # print(lng)
+    # print(lat)
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
     map(~get_forecast_for(lng, lat, .x)) %>%
     map_df("daily") %>%
@@ -1781,7 +1793,7 @@ server <- function(input, output, session) {
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-    print(vsn_)
+    # print(vsn_)
     if(!is.null(vsn_)){
       #get input type either map or table
       
