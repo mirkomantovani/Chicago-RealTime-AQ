@@ -1220,8 +1220,14 @@ server <- function(input, output, session) {
       df <- get_and_preprocess_observations_7d(vsn)
     }
     
-    plot_title <- paste("Data for node:",df$vsn[1])
-    # df <- subset(df, measure == "co")
+      if(time_range == TIME_RANGE_CURRENT){
+        plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+      } else if(time_range == TIME_RANGE_24HOURS){
+        plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+      } else {
+        plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+      }
+      
     df <- as.data.frame(lapply(df, unlist))
     
     
@@ -1492,8 +1498,14 @@ server <- function(input, output, session) {
           df <- get_and_preprocess_observations_7d(vsn)
         }
 
-        
-        plot_title <- paste("Data for node:",df$vsn[1])
+        if(time_range == TIME_RANGE_CURRENT){
+          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+        } else if(time_range == TIME_RANGE_24HOURS){
+          plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+        } else {
+          plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+        }
+
         # df <- subset(df, measure == "co")
         df <- as.data.frame(lapply(df, unlist))
 
@@ -1816,8 +1828,13 @@ server <- function(input, output, session) {
         }
         
 
-        plot_title <- paste("Data for node:",vsn)
-        # df <- as.data.frame(lapply(df, unlist))
+        if(time_range == TIME_RANGE_CURRENT){
+          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+        } else if(time_range == TIME_RANGE_24HOURS){
+          plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+        } else {
+          plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+        }
         
         
         gl <- ggplot() +
