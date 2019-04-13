@@ -37,7 +37,11 @@ library(ropenaq)
 library(darksky)
 
 library(base)
-Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+
+# Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+
+#use this key if the above one does not work
+Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
 
 
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
