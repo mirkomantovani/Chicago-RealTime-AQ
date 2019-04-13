@@ -535,14 +535,11 @@ server <- function(input, output, session) {
   
   #gets the observations relative to h hours ago
   get_h_hours_observations <- function(h, vsn){
-    # print(h)
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
     
     t1 <- sub_hour_to_timestamp(timestamp,h-1)
     t2 <- sub_hour_to_timestamp(timestamp,h)
-    # print(t1)
-    # print(t2)
     df <- ls.observations(filters=list(
       node=vsn,
       timestamp=paste("ge:",t2,sep=""),
@@ -555,14 +552,12 @@ server <- function(input, output, session) {
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    # print(df$timestamp[1])
-    # print("")
+
     return(df)
   }
   
   #gets the observations relative to h hours ago
   get_d_days_observations <- function(d, vsn){
-    # print(d)
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
     
@@ -636,7 +631,6 @@ server <- function(input, output, session) {
   
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
-    # print(nrow(df1))
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -1056,7 +1050,6 @@ server <- function(input, output, session) {
   
   # observe({
   #   a <- input$map_marker_click
-  #   print(a)
   #   
   # })
   
@@ -1067,7 +1060,6 @@ server <- function(input, output, session) {
   #   inactiveOpacity <- 0.5
   #   normalColor <- "navy"
   #   hello <- input$switch_units
-  #   print("refresh")
   #   leafletProxy("map", data = nodes) %>%
   #     # clearShapes() %>%
   #     addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], popup = ~address, stroke = FALSE, fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
@@ -1112,7 +1104,6 @@ server <- function(input, output, session) {
     autoInvalidate45()
     vsn_ <- v$vsn
 
-    # print(v$map_inputs)
     if(!is.null(vsn_)){
       #get input type either map or table
       
@@ -1208,9 +1199,6 @@ server <- function(input, output, session) {
       v$lastvsn <-NULL
     }
     
-    
-    # print(v$lastvsn)
-
     # df <- get_and_preprocess_observations(vsn)
     if(time_range == TIME_RANGE_CURRENT){
       df <- get_and_preprocess_observations(vsn)
@@ -1260,66 +1248,68 @@ server <- function(input, output, session) {
       #   g <- g+1
       # }
       # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-      if ("co" %in% c(input$measures1,input$measures2)){ # TODO compute subset only once and reuse to improve speed
+      # test <- subset(df, measure == "co")
+
+      retrieved_measures <- unique(df$measure)
+      
+      
+      if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
         suffx_co = unique(subset(df, measure == "co")$uom)
         labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
         vals <-c(vals,"co" = "#c6c60f")
         gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
           geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
-        }
-      if ("no2" %in% c(input$measures1,input$measures2)){
+      }
+      if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
         suffx_no2 = unique(subset(df, measure == "no2")$uom)
         labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
         vals <-c(vals,"no2" = "#13c649")
         gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
           geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
       }
-      if ("humidity" %in% c(input$measures1,input$measures2)){
+      if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
         suffx_humidity = unique(subset(df, measure == "humidity")$uom)
-        y = subset(df, measure == "humidity")$value
-        if(length(y)>0){
-          gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
-            geom_point(aes(y, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
+        # y = subset(df, measure == "humidity")$value
+          gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
+            geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#194649")
-        }
       }
-      if ("intensity" %in% c(input$measures1,input$measures2)){
+      if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
         suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
-          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 2) +
-            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
-          labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
-          vals <-c(vals,"intensity" = "#a3d659")
+        gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
+          geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+        labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
+        vals <-c(vals,"intensity" = "#a3d659")
       }
-      if ("o3" %in% c(input$measures1,input$measures2)){
+      if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
         suffx_o3 = unique(subset(df, measure == "o3")$uom)
         labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
         vals <-c(vals,"o3" = "#0fa2af")
         gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
           geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
       }
-      if ("so2" %in% c(input$measures1,input$measures2)){
-        suffx_so2 = unique(subset(df, measure == "so2")$uom)
+      if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
+        suffx_so2 =  unique(subset(df, measure == "so2")$uom)
         labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
         vals <-c(vals,"so2" = "#B899E7")
         gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
           geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
       }
-      if ("h2s" %in% c(input$measures1,input$measures2)){
+      if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
         suffx_h2s = unique(subset(df, measure == "h2s")$uom)
         labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
         vals <-c(vals,"h2s" = "#A877E0")
         gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
           geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
       }
-      
       convert_to_imperial <- function(values){
         return(values*1000000000000* 0.000000035274/35315)
       }
       
       # currently the same values is shown for both imperial and metric 
       # to be changed accordingly based on the units in the dataset
-      if ("pm2.5" %in% c(input$measures1,input$measures2)){
+      if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
         if(input$switch_units){
           # df$data_conv <-df$"pm2.5"
           # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -1329,23 +1319,20 @@ server <- function(input, output, session) {
             geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
         }
         else{
-          y = subset(df, measure == "pm2.5")$value
-          if(length(y)>0){
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
-            geom_point(aes(y, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
+
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
+              geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             vals <-c(vals,"pm2.5" = "#cc8112")
-          }
-          # else{
-          #   print(paste0("No records for pm2.5: ", length(y)))
-          # }
+
         }
       }
       # currently the same values is shown for both imperial and metric 
       # to be changed accordingly based on the units in the dataset
       
-      if ("pm10" %in% c(input$measures1,input$measures2)){
+      if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
+
         if(input$switch_units){
           # df$data_conv <-df$"pm10"
           # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -1355,18 +1342,13 @@ server <- function(input, output, session) {
             geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
         }
         else{
-          y = subset(df, measure == "pm10")$value
-          if(length(y)>0){
+
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
-            geom_point(aes(y, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
-          labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
-          vals <-c(vals,"pm10" = "#ba1010")
-          }
-          # else{
-          #   print(paste0("No records for pm10: ", length(y)))
-          #   
-          # }
+            gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
+              geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            vals <-c(vals,"pm10" = "#ba1010")
+
         }
       }
       convert_temp_to_metric <- function(values){
@@ -1375,31 +1357,20 @@ server <- function(input, output, session) {
       # currently the same values is shown for both imperial and metric 
       # to be changed accordingly based on the units in the dataset
       
-      if ("temperature" %in% c(input$measures1,input$measures2)){
+      if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
         if(input$switch_units){
-          temp_suffx = unique(subset(df, measure == "temperature")$uom)
+          temp_suffx = "(Degrees Fahrenheit)"
           gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
         }
         else{
-          # s_county$data_conv <-s_county$"Temperature"
-          # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
-          # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-          
-          y = subset(df, measure == "temperature")$value
-          if(length(y)>0){
-            temp_suffx = unique(subset(df, measure == "temperature")$uom)
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-            geom_point(aes(y, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
-          labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-          vals <-c(vals,"temperature" = "#6B1F13")
-          }
-          # else{
-          #   print(paste0("No records for temperature: ", length(y)))
-          # }
+            temp_suffx = "(Degrees Celsius)"
+            gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+              geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+            labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
+            vals <-c(vals,"temperature" = "#6B1F13")
         }
       }
-      
       gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                     values = vals)
       gl
@@ -1466,7 +1437,6 @@ server <- function(input, output, session) {
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
     autoInvalidate50()
-    # print("comparison")
 
     time_range <- input$time_range
     # vsn <- input$map_marker_click
@@ -1551,52 +1521,55 @@ server <- function(input, output, session) {
         # }
         # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
         
-        if ("co" %in% c(input$measures1,input$measures2)){
+        # Getting all the measures that this dataset contains
+        retrieved_measures <- unique(df$measure)
+        
+        
+        if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
           vals <-c(vals,"co" = "#c6c60f")
           gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
             geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
         }
-        if ("no2" %in% c(input$measures1,input$measures2)){
+        if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
           suffx_no2 = unique(subset(df, measure == "no2")$uom)
           labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
           vals <-c(vals,"no2" = "#13c649")
           gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
         }
-        if ("humidity" %in% c(input$measures1,input$measures2)){
+        if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
           suffx_humidity = unique(subset(df, measure == "humidity")$uom)
-          y = subset(df, measure == "humidity")$value
-          if(length(y)>0){
-            gl <- gl + geom_line(aes(y, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
-              geom_point(aes(y, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
+
+            gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
+              geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
             labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity" = "#194649")
-          }
+
         }
-        if ("intensity" %in% c(input$measures1,input$measures2)){
+        if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
           suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
           gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
-            geom_point(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+            geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
           labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
           vals <-c(vals,"intensity" = "#a3d659")
         }
-        if ("o3" %in% c(input$measures1,input$measures2)){
+        if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#0fa2af")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
         }
-        if ("so2" %in% c(input$measures1,input$measures2)){
+        if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
           suffx_so2 =  unique(subset(df, measure == "so2")$uom)
           labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
           vals <-c(vals,"so2" = "#B899E7")
           gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
-        if ("h2s" %in% c(input$measures1,input$measures2)){
+        if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
           vals <-c(vals,"h2s" = "#A877E0")
@@ -1609,7 +1582,7 @@ server <- function(input, output, session) {
         
         # currently the same values is shown for both imperial and metric 
         # to be changed accordingly based on the units in the dataset
-        if ("pm2.5" %in% c(input$measures1,input$measures2)){
+        if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
           if(input$switch_units){
             # df$data_conv <-df$"pm2.5"
             # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -1619,23 +1592,19 @@ server <- function(input, output, session) {
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
           }
           else{
-            y = subset(df, measure == "pm2.5")$value
-            if(length(y)>0){
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
-                geom_point(aes(y, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
+
+              gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
+                geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
               suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
               labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
               vals <-c(vals,"pm2.5" = "#cc8112")
-            }
-            # else{
-            #   print(paste0("No records for pm2.5: ", length(y)))
-            # }
+
           }
         }
         # currently the same values is shown for both imperial and metric 
         # to be changed accordingly based on the units in the dataset
         
-        if ("pm10" %in% c(input$measures1,input$measures2)){
+        if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
           if(input$switch_units){
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -1645,17 +1614,13 @@ server <- function(input, output, session) {
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           }
           else{
-            y = subset(df, measure == "pm10")$value
-            if(length(y)>0){
+
               suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
-                geom_point(aes(y, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
+              gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
+                geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
               labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
               vals <-c(vals,"pm10" = "#ba1010")
-            }
-            # else{
-            #   print(paste0("No records for pm10: ", length(y)))
-            # }
+
           }
         }
         convert_temp_to_metric <- function(values){
@@ -1664,28 +1629,18 @@ server <- function(input, output, session) {
         # currently the same values is shown for both imperial and metric 
         # to be changed accordingly based on the units in the dataset
         
-        if ("temperature" %in% c(input$measures1,input$measures2)){
+        if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
           if(input$switch_units){
             temp_suffx = "(Degrees Fahrenheit)"
             gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
               geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
           }
           else{
-            # s_county$data_conv <-s_county$"Temperature"
-            # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
-            # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-            y = subset(df, measure == "temperature")$value
-
-            if(length(y)>0){
               temp_suffx = "(Degrees Celsius)"
-              gl <- gl + geom_line(aes(y, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-                geom_point(aes(y, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+              gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+                geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
               labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
               vals <-c(vals,"temperature" = "#6B1F13")
-            }
-            # else{
-            #   print(paste0("No records for temperature: ", length(y)))
-            # }
           }
         }
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
@@ -1748,8 +1703,6 @@ server <- function(input, output, session) {
 
   #preprocess darksky data for last 24 hours  
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
-    print(lng)
-    print(lat)
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
     yes<-force_tz(yes, "America/Chicago")
@@ -1765,8 +1718,6 @@ server <- function(input, output, session) {
   
   #preprocess darksky data for last 7 days
   get_and_preprocess_observations_7d_ds <- function(lng,lat){
-    print(lng)
-    print(lat)
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
     map(~get_forecast_for(lng, lat, .x)) %>%
     map_df("daily") %>%
@@ -1781,7 +1732,7 @@ server <- function(input, output, session) {
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-    print(vsn_)
+
     if(!is.null(vsn_)){
       #get input type either map or table
       
@@ -1999,7 +1950,7 @@ server <- function(input, output, session) {
   # Darksky Second plot for comparison
   output$graphical_data_last_ds <- renderPlot({
     autoInvalidate50()
-    # print("comparison")
+
     
     time_range <- input$time_range
     # vsn <- input$map_marker_click
