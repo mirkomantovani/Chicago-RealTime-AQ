@@ -31,10 +31,10 @@ library(lubridate)
 library(tidyverse)
 
 
-
 # R data APIs libraries
 library(ropenaq)
 library(darksky)
+library(RSocrata)
 
 library(base)
 
@@ -804,6 +804,13 @@ server <- function(input, output, session) {
   nodes_oaq$vsn <- nodes_oaq$location
   nodes_oaq$location <- NULL
   
+  congestion_df <- read.socrata(
+    "https://data.cityofchicago.org/resource/n4j6-wkkf.json",
+    app_token = "wrXJQ8XKYqlE8TxQoHCSSYvwV",
+    email     = "mirkomantovani23@gmail.com",
+    password  = "iBdN3u5BPbhmiMW"
+  )
+  
   
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -1011,6 +1018,25 @@ server <- function(input, output, session) {
       <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
     "
     
+    # Function to compute traffic color based on speed
+    trafficColor <- function(speed){
+      if(speed == -1){
+        return("#cccccc")
+      } else if(speed > -1 && speed < 10){
+        return("#e03e3e");
+      } else if(speed > 9 && speed < 20){
+        return("#e0843e");
+      } else if(speed > 19 && speed < 30){
+        return("#e0d53e");
+      } else {
+        return("#3e50e0");
+      }
+    }
+    
+    # highlightOptions = highlightOptions(weight = 9, bringToFront = F, opacity = 1)
+    
+  
+    
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
@@ -1018,7 +1044,7 @@ server <- function(input, output, session) {
     normalColor <- "navy"
     openAQColor <- "green"
     
-    leaflet(nodes) %>% 
+    map = leaflet(nodes) %>% 
       # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1046,22 +1072,29 @@ server <- function(input, output, session) {
       
       addLayersControl(
         baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
-        overlayGroups = c(tracked_measures, "Inactive"),
+        overlayGroups = c(tracked_measures, "Inactive", "Traffic"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
-      # addTiles(
-      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      # ) %>% 
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
-    # %>%
-    #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
-    #             title = "Legend",
-    #             labFormat = labelFormat(suffix = suffx,
-    #                                     digits = 3
-    #             ),
-    #             opacity = 1)
+    
+      for(i in 1:nrow(congestion_df)){
+        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
+                           lng = as.numeric(congestion_df[i, c(12, 7)]),
+                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+                           opacity = 0.8,
+                           fillOpacity = 0.5,
+                           group = "Traffic",
+                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+                           highlightOptions = highlightOptions(
+                             # color = "white",
+                             weight = 9, bringToFront = F, opacity = 1)
+                            
+                           )
+                           
+        }
+    
+    map
   })
   
   # observe({
