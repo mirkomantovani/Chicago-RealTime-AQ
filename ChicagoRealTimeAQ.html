@@ -794,19 +794,20 @@
                     During this week, I fixed the map and table inputs issue for graphical plots to handle them independently. I preprocessed the darksky data and created the 24 hours and last 7 days charts for Darksky. I worked on the issue of comparison of plots where same nodes were being shown on comparsion. The comparison fix currently has been done for Array of Things map and table inputs and needs to be added for Darksky once the reorganization of charts is done.
 
 
-<!--
+
                     <h1 style="font-size: 32pt">Week 3</h1>
                     <h2>Mirko</h2>
-                    Changed UI sidebar. Added convert to metric input and handled conversion to metric units for pollutants map.
+                    After the professor's approval on the new data source to be used as a graduate additional requirement, I integrated real-time traffic and congestion data taken from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a> in the application. In particular, the dataset comes with 5 important features, which are: start and end of longitude and latitude and current traffic speed. I decided to show thid data graphically on the map by creating colored lines with the following color convention.
+                    colors: grey, no traffic (no cars), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.
+                    By clicking on a street, a popup appears showing data such as: the name of the main street and the crossings it joins, numeric speed in mph, link to APIs.
+                    The street layers can be toggled on or off from the respective layers menu.
 
 
                     <h2>Abhishek</h2>
-                    Worked on preprocessing daily and hourly data for italy (Graduate student's requirements). Started working on the UI for displaying these data on the shiny app.
 
                     <h2>Ashwani</h2>
-                    During this week, I experimented and benchkmarked various R data objects formats to make our reading of data more efficient both in time and memory. I made use of futures to delay the load of data to the time when required. I also stated working on adding the feature of imperial units for hourly data. Hourly data plots were modified to display default plots and wind direction plot was removed.
 
-
+<!--
                     <h1 style="font-size: 32pt">Week 4</h1>
                     <h2>Mirko</h2>
                     No scrolling is possible in the application. Modified panels for map. Added confidence input in map and modified color opacity based on days with data in map. Minor fixes to colors and sizes for Yearly plots.
