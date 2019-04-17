@@ -31,10 +31,10 @@ library(lubridate)
 library(tidyverse)
 
 
-
 # R data APIs libraries
 library(ropenaq)
 library(darksky)
+library(RSocrata)
 
 library(base)
 
@@ -804,6 +804,13 @@ server <- function(input, output, session) {
   nodes_oaq$vsn <- nodes_oaq$location
   nodes_oaq$location <- NULL
   
+  congestion_df <- read.socrata(
+    "https://data.cityofchicago.org/resource/n4j6-wkkf.json",
+    app_token = "wrXJQ8XKYqlE8TxQoHCSSYvwV",
+    email     = "mirkomantovani23@gmail.com",
+    password  = "iBdN3u5BPbhmiMW"
+  )
+  
   
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -1011,6 +1018,21 @@ server <- function(input, output, session) {
       <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
     "
     
+    # Function to compute traffic color based on speed
+    trafficColor <- function(speed){
+      if(speed == -1){
+        return("#919191")
+      } else if(speed > -1 && speed < 10){
+        return("#c13636");
+      } else if(speed > 9 && speed < 20){
+        return("#c17436");
+      } else if(speed > 19 && speed < 30){
+        return("#c1a736");
+      } else {
+        return("#365bc1");
+      }
+    }
+    
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
@@ -1018,7 +1040,7 @@ server <- function(input, output, session) {
     normalColor <- "navy"
     openAQColor <- "green"
     
-    leaflet(nodes) %>% 
+    map = leaflet(nodes) %>% 
       # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1050,18 +1072,10 @@ server <- function(input, output, session) {
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
-      # addTiles(
-      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      # ) %>% 
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
-    # %>%
-    #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
-    #             title = "Legend",
-    #             labFormat = labelFormat(suffix = suffx,
-    #                                     digits = 3
-    #             ),
-    #             opacity = 1)
+    
+    
+    map
   })
   
   # observe({
