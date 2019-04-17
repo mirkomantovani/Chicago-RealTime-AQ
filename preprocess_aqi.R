@@ -47,8 +47,8 @@ for(location_t in locations)
   names(df_row) = c("location","latitude","longitude","bc","no2","so2","co","pm10","pm25","o3")
   df_total <- rbind(df_total,df_row)   
 }
-df_total$location = stringr::str_to_title(df_total$location)
+# df_total$location = stringr::str_to_title(df_total$location)
 names(df_total) = c("location","latitude","longitude","bc","no2","so2","co","pm10","pm2.5","o3")
 library(fst)
-fileName = "./fst/openaq.fst"
+fileName = "/fst/openaq.fst"
 write.fst(df_total, fileName)
