@@ -1021,17 +1021,21 @@ server <- function(input, output, session) {
     # Function to compute traffic color based on speed
     trafficColor <- function(speed){
       if(speed == -1){
-        return("#919191")
+        return("#cccccc")
       } else if(speed > -1 && speed < 10){
-        return("#c13636");
+        return("#e03e3e");
       } else if(speed > 9 && speed < 20){
-        return("#c17436");
+        return("#e0843e");
       } else if(speed > 19 && speed < 30){
-        return("#c1a736");
+        return("#e0d53e");
       } else {
-        return("#365bc1");
+        return("#3e50e0");
       }
     }
+    
+    # highlightOptions = highlightOptions(weight = 9, bringToFront = F, opacity = 1)
+    
+  
     
     opacity <- 0.1
     oaqOpacity <- 0.3
@@ -1068,7 +1072,7 @@ server <- function(input, output, session) {
       
       addLayersControl(
         baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
-        overlayGroups = c(tracked_measures, "Inactive"),
+        overlayGroups = c(tracked_measures, "Inactive", "Traffic"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
@@ -1078,11 +1082,16 @@ server <- function(input, output, session) {
         map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
                            lng = as.numeric(congestion_df[i, c(12, 7)]),
                            color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
-                           stroke = FALSE,
                            opacity = 0.8,
                            fillOpacity = 0.5,
-                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>")
+                           group = "Traffic",
+                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+                           highlightOptions = highlightOptions(
+                             # color = "white",
+                             weight = 9, bringToFront = F, opacity = 1)
+                            
                            )
+                           
         }
     
     map
