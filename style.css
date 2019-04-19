@@ -11,7 +11,7 @@ body {
     opacity: .8;
     color: whitesmoke;
     background-color: black;
-
+    zoom: 200%;
   }
   
   /* .leaflet-popup-content-wrapper .leaflet-popup-content {
@@ -56,13 +56,6 @@ body {
     background: rgba(0,0,0,0.1);
     border-radius: 3px;
     -moz-border-radius: 3px;
-}
-/* layers in map */
-.leaflet-control-layers-expanded {
-  background: rgb(52, 57, 104);
-}
-.leaflet-control-layers {
-  background: rgb(52, 57, 104);
 }
 
 #ggvis-tooltip {
@@ -158,6 +151,7 @@ div.outer {
     zoom: 300%;
 }
 
+
 #controls, #darksky,#nodes,#counties_panel {
     background-color:rgba(13, 32, 37, 1);
     color: #ffffff;
@@ -209,3 +203,16 @@ div.outer {
   .leaflet-container {
     background-color: white !important;
   }
+
+  /* layers in map */
+.leaflet-control-layers-expanded {
+  background: rgb(52, 57, 104);
+}
+.leaflet-control-layers {
+  background: rgb(52, 57, 104);
+  zoom: 200% !important;
+}
+
+.leaflet-control-attribution {
+  visibility: hidden;
+}

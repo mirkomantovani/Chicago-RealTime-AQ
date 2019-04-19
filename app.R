@@ -246,7 +246,6 @@ ui <- dashboardPage(
 
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
-               materialSwitch(inputId = "nodes_location", label = "Visualize sensor nodes", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
                startExpanded = TRUE),
       menuItem("About", tabName = "about")
@@ -271,8 +270,8 @@ ui <- dashboardPage(
                 
                 # Shiny versions prior to 0.11 should use class = "modal" instead.
                 absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                              draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
-                              width = 800, height = "auto",
+                              draggable = TRUE, top = 90, left = "auto", right = 20, bottom = "auto",
+                              width = 1300, height = "auto",
                               br(),
                               # h2("Node Data"),
                               selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
@@ -303,37 +302,10 @@ ui <- dashboardPage(
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
                               # )
                 ),
-                absolutePanel(id = "darksky", class = "panel panel-default", fixed = TRUE,
-                              draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
-                              width = 800, height = "auto",
-                              br(),
-                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
-                              tabsetPanel(
-                                tabPanel("Graphical",
-                                         plotOutput("graphical_data_ds",height = "22vmin")
-                                         #plotOutput("graphical_data_last_ds",height = "22vmin")
-                                ),
-                                tabPanel("Tabular",
 
-                                         DT::dataTableOutput("table_ds", height = "22vmin")
-                                )
-                              ),
-                              checkboxGroupButtons(
-                                inputId = "measures1_ds",
-                                choices = darksky_tracked_measures[1:5],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              ),
-                              checkboxGroupButtons(
-                                inputId = "measures2_ds", 
-                                choices = darksky_tracked_measures[6:9],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              )
-                ),
                 absolutePanel(id = "nodes", class = "panel panel-default", fixed = TRUE,
                               draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
-                              width = 1200, height = "auto",
+                              width = 1000, height = "auto",
                               br(),
                               box(width=NULL,height=NULL,
 

@@ -122,8 +122,8 @@ $(document).on("shiny:connected", function (e) {
         controls = document.getElementById("controls");
         controls.style.zoom = "140%";
 
-        darksky = document.getElementById("darksky");
-        darksky.style.zoom = "140%";
+        // darksky = document.getElementById("darksky");
+        // darksky.style.zoom = "140%";
 
         nodes = document.getElementById("nodes");
         nodes.style.zoom = "140%";
