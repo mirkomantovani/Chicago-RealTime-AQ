@@ -252,6 +252,10 @@
                 <h4>Layers</h4>
                 
                 <h4>Map background</h4>
+                The map background can be changed by clicking on the select boxes in the layers menu. There are 4 different map backgrounds. The default is a drawn map with train stations, streets and highways, parks and icons for most important locations.<br>
+                The Dark Matter allows to make good use of the different colors (traffic and nodes) that pop out on the black background.<br>
+                The satellite is a usual satellite image of Chicago.
+                The terrain is a mix of all the previous features: allows to better visualize colors given that the predominant color is white/grey, it has terrain features (see the green areas and water), it has streets and highways highlighted.
                 
                 <h4>Traffic Data</h4>
 
@@ -265,8 +269,11 @@
                     <img src="/images/p2viz/map1.png" alt="Screen" class="responsive">
                 </div>
                 
-                <h2>Panels</h2>
+                <h2>Panels and menus</h2>
                 <h4>Plots panel</h4>
+                
+                This is the most important panel of the application. It shows the data queried by the various nodes in the form of line charts or tabular form.
+                The inputs present in this panel are: the time range, which can be selected from current (or most recent data), last 24 hours and last 7 days data.
                 
 
                 <div class="testimonials__slide">
@@ -278,6 +285,11 @@
                 <h4>Table Panel</h4>
                 
                 The table panel is a different kind of representation for the nodes. Instead of clicking on the nodes on the map, the rows of the table can be clicked. blah blah
+                
+                <h4>Layers menu</h4>
+                The layers menu can be opened by hovering over or clicking on the corresponding menu on the top right corner.
+                From there you can select one of the 4 different map backgrounds, as well as toggle on or off the sensors belonging to the nodes on the map based on the type of measure they give, or if they are active or inactive.
+                The last toggle is the traffic data, that shows or hides the roads real-time traffic visualization layer.
 
                 <h2>Units of measure</h2>
                 To allow users from both the United States and the rest of the world to give a meaning to all of this data we provided a practical switch on the sidebar under the inputs tabs so that the User can choose to convert data from Metric to Imperial and viceversa.
@@ -410,12 +422,13 @@
 
 
 
-                    <h1 style="font-size: 32pt">Week 3</h1>
+                    <h1 style="font-size: 32pt">Week 4</h1>
                     <h2>Mirko</h2>
                     After the professor's approval on the new data source to be used as a graduate additional requirement, I integrated real-time traffic and congestion data taken from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a> in the application. In particular, the dataset comes with 5 important features, which are: start and end of longitude and latitude and current traffic speed. I decided to show thid data graphically on the map by creating colored lines with the following color convention.
                     colors: grey, no traffic (no cars), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.
                     By clicking on a street, a popup appears showing data such as: the name of the main street and the crossings it joins, numeric speed in mph, link to APIs.
                     The street layers can be toggled on or off from the respective layers menu.
+                
 
 
                     <h2>Abhishek</h2>
