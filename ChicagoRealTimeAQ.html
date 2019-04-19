@@ -206,8 +206,7 @@
 
     <section id="articles" class="s-clients">
 
-<!--        CONTENT-->
-<!--
+
 
         <div class="row about-desc" data-aos="fade-up">
             <div class="col-full">
@@ -222,16 +221,8 @@
 
                 Clone the project repository. Open app.R with RStudio, download <a href="https://www.rstudio.com/" style="text-decoration: underline">RStudio</a> and <a href="https://www.r-project.org/" style="text-decoration: underline">R</a> if you don't have them installed on your machine. Download all the R libraries used in the project executing the command install.packages("library") in the RStudio console. The application needs the data from the EPA website to be converted in to R data objects for better performance. The data required for the application can be downloaded from the data link provided at the start of the page. Please follow the below steps to do the required preprocessing before running the application to generate the data again.
                 <ul>
-                  <li>There are 4 preprocessing required to generate the necessary data files for the application:<h4> dataRead.R, preProcess.R,
-                  preprocess_hourly_italy.R, preprocess_daily_italy.R </h4></li>
-                  <li>The first two files dataRead.R and preProcess.R are used to download the data from the US EPA website and convert the data files into fst.
-                  The dataRead.R needs to be run to download the files first. This will download all the files and unzip them into a "data" folder.
-                  Run this script from the root directory of the project.
-                  </li>
-                  <li>Now, run the preProcess.R script from the root directory to convert the data files into fst format. These files would be generated
-                  in a new folder "fst" in the project folder. This script might take some time to complete</li>
-                  <li> The CSV files containing pollutant data for italy are already available in the GitHub repository in the project folder. We need to convert this to the fst format for the app to run. To achieve this, run the preprocess_daily_italy.R and preprocess_hourly_italy.R scripts from the root directory
-                  and this will generate the fst files inside the italy folder. Note the fst files for italy are also already provided in the project italy folder.
+                  <li>There are n preprocessing required to generate the necessary data files for the application:<h4> blah blah</h4></li>
+                  <li> instructions
                   </li>
                 </ul>
                   Once we have all the neceessary data/fst files , we can now proceed with running of the application.
@@ -247,85 +238,13 @@
                 <h2>Yearly visualizations: Yearly trends</h2>
                 This first tab shows AQI and pollutants time series.
 
-
-                The left box contains various inputs that allow interactivity with the plots. You can choose the color of the plot background, choose the county from an alphabetically ordered list of (County - State) pairs, select a range of years in which you want to concentrate.
-
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p2viz/1.png" alt="Screen" class="responsive">
                 </div>
 
-                By clicking on the settings button you can also change the grid and text colors in the plots to black, if the background color is too bright. In addition, you can change the colors for the pollutants for the second plot.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/2.png" alt="Screen" class="responsive">
-                </div>
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/3.png" alt="Screen" class="responsive">
-                </div>
-
-                <br>
-                The first plot in the first tab shows AQI statistics over time. The second tabs contains a time series plot of the percentages of days as main pollutant and a table with those percentages.
-
-                The third tab is a map showing the location of the selected county on the map, and showing all the counties in the US that highlights in white when you hover over them.
-
-                <h2>Yearly visualizations: Year details for County</h2>
-
-                The main panel is divided into two boxes, the one of the left shows AQI (Air Quality Index) levels. It consists in: a pie chart showing the percentages (sometimes estimated if there are missing data) of days with a certain level of AQI in a specific year for the selected County. Under this pie chart there is a bar chart and a table, both showing the number of days in the year with that level.
-                <br>
-                The right box, instead, shows detected pollutants data. The first tab in this box shows a pie chart for each pollutant with the percentage of days in which that pollutant was the main cause of problems. The second tab shows a bar chart with the number of days in which they were the main pollutant in that year. Again, the table at the bottom shows the same thing as the bar chart but in a different way.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/4.png" alt="Screen" class="responsive">
-                </div>
-
-                <h2>Daily AQI</h2>
-                This panel allows the user to visualize daily AQI trends for the selected year for all six pollutants : Ozone, SO2, CO, NO2, PM2.5, PM10. The left box allows the user to select a particular county from a list of alphabetically sorted counties in the US. The user can also choose the year for which the AQI data is to be displayed using the slider in the left panel. There are three visualizations available for daily AQI: One is the line graph which shows the AQI values over all days for selected year. The color of the points shows which pollutant had the highest value for that day. The user can click on any point on the line graph which would display a tooltip showing the date for that point, AQI value and major pollutant for that date.
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/daily_line.png" alt="Screen" class="responsive">
-                </div>
-                 The second visualization is the stacked bar chart which shows the number of days of each AQI category for all 12 months in the selected year. Different shades of grayscale indicate the AQI category as shown in the legend.
-                 <div class="testimonials__slide">
-                     <div class="testimonials__info">
-                     </div>
-                     <img src="/images/p2viz/daily_bar.png" alt="Screen" class="responsive">
-                 </div>
-                The third visualization is the table which similar to the bar chart shows the number of days of each AQI category for all 12 months in the selected year. The user can also see the daily trends for the top 12 counties in the US by making use of the switch button provided in the left box.
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/daily_table.png" alt="Screen" class="responsive">
-                </div>
-                The conversion to imperial units can be made by using the inputs tab in the main panel.
-
-                <h2>Hourly pollutants</h2>
-                This panel allows the user to visualize the hourly data for the six pollutants Ozone, SO2, CO, NO2, PM2.5, PM10 along with
-                wind speed and temperature. The left box allows the user to select a particular county from a list of alphabetically sorted counties in the US.
-                The user can then select any particular day in a year 2018 and see hourly trends for the pollutants , wind speed and temperature.
-                <h4>Data Selection Panel</h4>The user can now pick any subset or all of hourly Ozone, SO2, CO, NO2, PM2.5, PM10, wind,
-                and temperature and see them as different lines on the same line chart by using the select checkboxes below. A tick mark shows a
-                selection for the checkbox.The user can also see the hourly trends for the top 12 counties in the US by making use of the switch
-                button provided in the left box.To change the units for the hourly data, the user can make of the switch to imperial units option in
-                the Inputs section of the main sidebar.
-                <h4>Legend and units</h4>The legend shows the mapping of data to color along with the units. Notice that you can change from imperial to
-                metric units from the sidebar switch in the Inputs tab.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/hourly_trends_us.png" alt="Screen" class="responsive">
-                </div>
-
+                
                 <h2>Pollutants heatmap</h2>
                 The interactive map allows the user to visualize a heatmap of all the counties of the US and a pollutant (or AQI). It is possible to see data for an entire year or change to daily data through the switch that can be found in one of the 2 input panels ("Time and Pollutant").
 
@@ -366,66 +285,6 @@
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p2viz/map2.png" alt="Screen" class="responsive">
-                </div>
-
-                <h2>Italy: daily trends</h2>
-                This panel allows the user to visualize the daily pollutant value line graph for italy for the six pollutants: Ozone, SO2, CO, NO2, PM2.5, PM10. The left panel allows the user to choose any italian city for which data is available. The line graph shows a different colored line for each pollutant. The x-axis denotes the date and the y-axis is the pollutant value. The user can visualize select pollutants by turning off the other pollutants in the checkboxes given below the graph. The user can also click on points which would display a tooltip showing the exact date for that point.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/daily_line_italy.png" alt="Screen" class="responsive">
-                </div>
-                The conversion to imperial units can be made by using the inputs tab in the main panel. By default, the dataset contains all pollutants in the ug/m3 unit. By switching to imperial, the units are converted to the (e-12 oz/ft3) unit.
-                <h2>Italy: hourly trends</h2>
-                This panel allows the user to visualize the hourly data of Italy over the period of 90 days (9 December - 8 March 2019) for the six pollutants
-                Ozone, SO2, CO, NO2, PM2.5, PM10.The left box allows the user to select a particular city from a list of alphabetically sorted counties
-                in Italy.The user can then select any particular day for the given period and see hourly trends for the pollutants.
-                <h4>Data Selection Panel</h4>
-                The user can now pick any subset or all of hourly Ozone, SO2, CO, NO2, PM2.5, PM10, and see them as different lines on the same
-                line chart by using the select checkboxes below.
-                A tick mark shows a selection for the checkbox. To change the units for the hourly data, the user can make of the switch to imperial
-                units option in the Inputs section of the main side bar.
-                <h4>Legend and units</h4>
-                The legend shows the mapping of data to color along with the units. Notice that you can change from imperial to metric units
-                from the sidebar switch in the Inputs tab.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/hourly_trends_italy.png" alt="Screen" class="responsive">
-                </div>
-
-                <h2>Italy: Totals over 90 days</h2>
-                This panel allows the user to visualize the average value of pollutants of any selected city in Italy in the date range between December 8,2018 to March 9, 2019. The left panel allows the user to choose any city in Italy. The bar chart shows the average values of each of the 6 pollutants. A checkbox given at the bottom can be used to deselect pollutants from being displayed on the bar chart. The way the average was calculated is as follows: For a given pollutant, its values for all days was added and divided by the total number of days. If the pollutant has values only for 30 days, its summed value over 30 days is divided by 30. In this way, the user is able to understand which pollutant is more rampant in a particular city.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/italy_totals.png" alt="Screen" class="responsive">
-                </div>
-
-
-                <h1 class="display-2">Data, libraries and implementation</h1>
-
-                <h2>Data</h2>
-                The data for the application was downloaded from the following sources:<br>
-                <a href='https://aqs.epa.gov/aqsweb/airdata/download_files.html'>United States Environmental Protection Agency</a><br>
-                <a href='https://openaq.org/'>OpenAQ</a><br>
-                <a href='http://eric.clst.org/tech/usgeojson/e'>United States Counties shape in GeoJSON</a>
-                <br>
-                <br>
-
-                More information about how to download data and preprocessing is present in <h4>"How to run the application" tab and "Preprocessing" tab under
-                "Problems during the development"</h4>
-
-                <h2>Missing data</h2>
-                The missing dataset presents some missing data for some specific years and counties, this was handled by warning the user with an alert message whenever he selects this type of data.
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/alert.png" alt="Screen" class="responsive">
                 </div>
 
                 <h2>Units of measure</h2>
@@ -472,65 +331,13 @@
                 </ul>
 
                 <h2>Problems during the development</h2>
-                Data size and slow loading problem<br><br>
-                One of the challenges we faced while deveoping this application was that the size of the dataset was big (around 7-8 GB) as we were
-                dealing with yearly,daily and hourly data.
-                <h4>Preprocessing</h4>
-                To make the size of the dataset managable and make our application efficient in terms of memory and response time, we performed preprocessing
-                on the dataset downloaded from the EPA website.This was done in an automated manner by running a single script before running the application.
-                Please note that as we are dealing with very large file sizes here, the preprocessing could take some considerable time to complete.
-                There are two scripts used for preprocessing. One is used to download the data files for the US(dataRead.R)and the other to perform
-                preprocessing operation on the downloaded data(preProcess.R). The preprocessing scripts in the application performs the following operations:
-                <ul>
-                    <li>Download the relevant data required for the application from the EPA website. This is done by data read script
-                    provided in the application</li>
-                    <li>Create three output files one each for Daily AQI data, Daily all pollutants data and Hourly data for pollutants,wind and temperature</li>
-                    <li>To read the various data files provided by the EPA, we make of data read function which can read the data in a fast manner.
-                    We make use of fread() function provided by R to read the very large files and make the reading process more efficient.
-                    </li>
-                    <li>To reduce the size of the dataset we make use of one of R data object (fst). You can read more about it
-                    <a href="https://www.fstpackage.org/"><i aria-hidden="true"></i>here</a>
-                    .The decision to make use of this package was made after performing experiments with various R data objects like rds,rda,feather,etc
-                    and performing benchmarking on those and checking the performane of the application based on memory usage and response time.</li>
-                    <li>Selection of relevant columns is done from the various data files so that only those columns which are relevant for visualizations
-                    are provided and read in the application.
-                    </li>
-                    <li>The columns selected for daily AQI data are: "State Name","County Name","AQI","Category","Defining Parameter","Year","Month","Day". </li>
-                    <li>The columns selected for hourly data are: "State Name","County Name","SO2","CO","NO2","Ozone","PM2.5","PM10","Wind Direction",
-                    "Wind Speed","Temperature","Year","Month","Day".</li>
-                    <li>The columns selected for daily pollutants data are "State Name","County Name","SO2","CO","NO2","Ozone","PM2.5","PM10","Year",
-                    "Month","Day".</li>
-                    <li>Aggregation is performed for data which siginify the same values by taking average for such values. For e.g
-                    Values for pollutants are averaged across multiple sites in a county, multiple monitors at the same site,etc.
-                    </li>
-                    <li>To reduce the number of files and have all data for a particular type namely daily AQI, hourly data, daily pollutant data,
-                    merging of datasets was done for various pollutants, wind, temperature whenever possible. Special attention is paid to not lose data if
-                    one of the parameter is not available and others are during the merge process.
-                    </li>
-                    <li>The date provided in the dataset is further split in individual components of day, month , year to avoid computations during the
-                    running of the application.
-                    </li>
-                </ul>
-                <h4>Preprocessing for Italy pollutant files</h4>
-                The preprocessing for Italy is straightforward compared to the USA.
-                <ul>
-                    <li>Download the CSV data (already available in github repository) for past 90 days for each of Italy's cities using the API provided by EPA.</li>
-                    <li>Two preprocessing scripts are used to generate fst files for italy: one is the daily data script and other is the hourly data script.</li>
-                    <li>The CSV files contain hourly data. The hourly preprocessing script gets rid of unwanted columns in the data and converts the data frames into fst format.</li>
-                    <li>The daily preprocessing script creates a new dataframe containing data of each pollutant for each day. Since the CSV files contain only hourly data, the pollutant value for a particular day is found by averaging the pollutant values over 24 hours for that day.</li>
-                    <li>There are 45 Italian cities in total. Each city has several locations from which data is obtained for the same day. The pollutant value for a particular city is found by averaging the pollutant values for all locations of that city.</li>
-                </ul>
-                <h4>High application start up time</h4>
-                To make the application load time faster, we make use of futures to delay the load of data file like json files for maps. This was
-                done by making us the futures functionality provided by R and loading the data only when the data is required by the application.
-                This along with making of special R object files(fst) made the application more responsive even for the big dataset used.
-                <br><br>
+ 
+
 
                 <h1 class="display-2">Interesting Insights</h1>
 
-                <h2>Overall AQI comparison 20 years ago and now</h2>
-                From the heatmap it seems that the overall AQI in the US has sligthly improved over the past 20 years. I would say the average AQI over all the states in 2018 was around 40 while 20 years ago it was maybe closer to 50. Moreover, it looks like the AQI is more uniform nowadays than it was in the past.
 
+<!--
                 <div class="row clients-testimonials" data-aos="fade-up">
                     <div class="col-full">
                         <div class="testimonials">
@@ -558,196 +365,12 @@
 
                     </div>
                 </div>
-
-
-                <h2>PM2.5 comparison 20 years ago and now</h2>
-                PM2.5 is one of the new emerging and problematic pollutants, as we can see, in 20 years, a lot of counties passed from never having the PM2.5 as main pollutant during the year, to having it as most pollutant for every day of the year. We can also notice how, except the big cities in the coasts, the difference between neighboring counties is sharp and not graded, suggesting that the problem is local and that the pollutant is unlikely to spread far from where it is originated.
-                <div class="row clients-testimonials" data-aos="fade-up">
-                    <div class="col-full">
-                        <div class="testimonials">
-
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">PM2.5 % of days as main pollutant in 1998</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/interesting3.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">PM2.5 % of days as main pollutant in 2018</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/interesting4.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
-                <h2>Urban CO pollution in Italy </h2>
-                Carbon Monoxide levels in urban areas are significantly high in comparison with other pollutants. In contrast, the CO levels in rural areas like Alfonsine are non-existent. Carbon Monoxide in urban areas is high due to more vehicular emissions.
-                <div class="row clients-testimonials" data-aos="fade-up">
-                    <div class="col-full">
-                        <div class="testimonials">
-
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Average pollutants value in Rome (Urban)</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/rome_co_trend.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Average pollutants value in Alfonsine (Rural)</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/alfonsine_co_trend.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
-                <h2>Volanic activity in Hawaii</h2>
-                Due to high levels of volanic activity in Hawaii, there is a high level of SO2 in the island throughout the year.
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/hawaii_so2_trend.png" alt="Screen" class="responsive">
-                </div>
-
-                <h2>Cleanest air in the USA</h2>
-                Chittenden county in Vermont is supposed to have one of the cleanest air in the US devoid of air pollution. This is confirmed from the daily AQI bar chart as shown in image below where the AQI category is good for most of the days.
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/chittenden.png" alt="Screen" class="responsive">
-                </div>
-
-                <h2>Hourly Data - US </h2>
-                The particulate matter values(PM10/PM2.5) and Ozone are usually high during the day time or late night
-                as compared to evening.Carbon monoxide (CO)
-                and Nitrogen Ozide (NO2) have compartively high values in the evening as compared to afternoon. The temperature are low during
-                the night and early morning hours and peak around during the afternoon and gradually decreasing in the evening.
-                The temperatures follow seasonal trends, are high in summer months as compared to fall and winter.
-                The wind speed is generally more during the day time as compared to night and early morning hours.
-                <div class="row clients-testimonials" data-aos="fade-up">
-                    <div class="col-full">
-                        <div class="testimonials">
-
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">PM values</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/hourly_insight_1.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Wind - Temperature</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/hourly_insight_2.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">CO/NO2/Ozone</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/hourly_insight_3.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                        </div>
-                      </div>
-                    </div>
-                <h2>Hourly Data - Italy </h2>
-                Carbon monoxide (CO) and Nitrogen Ozide (NO2) have generally high values in the evening and early morning hours as compared to afternoon.
-                The Ozone value are generally high during night time with some exceptions as compared to day time.
-                <div class="row clients-testimonials" data-aos="fade-up">
-                    <div class="col-full">
-                        <div class="testimonials">
-
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Ozone</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/hourly_insight_4.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">CO and NO2</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/hourly_insight_5.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <h2>Some screenshots of the app on the big wall</h2>
-                <div class="row clients-testimonials" data-aos="fade-up">
-                    <div class="col-full">
-                        <div class="testimonials">
-
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Map</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/wall1.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Map zoomed</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/wall2.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-                            <div class="testimonials__slide">
-                                <div class="testimonials__info">
-                                    <span class="testimonials__name">Line Chart</span>
-                                </div>
-                                <br><br>
-                                <img src="/images/p2viz/wall3.png" alt="Screen" class="responsive">
-                                <br><br>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+-->
 
 
             </div>
         </div>
--->
 
-
-
-        <section id="articles" class="s-clients">
 
             <div class="row about-desc" data-aos="fade-up">
                 <div class="col-full">
