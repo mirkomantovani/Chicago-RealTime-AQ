@@ -235,17 +235,28 @@
 
                 The application starts in full screen. You can open the menu items for different categories in the sidebar to see more options. The inputs item helps the user to switch between metric or imperial units for the whole application.
 
-                <h2>Yearly visualizations: Yearly trends</h2>
-                This first tab shows AQI and pollutants time series.
+                <h2>Map</h2>
+                
+                This application has only one main page, a full screen map centered in the Chicago area. On the map there are sensor nodes that can be clicked by the user to get real-time, as well as historical data from it. There is also real-time traffic data that can also be clicked on to get more information.
+                
+                As the rest of the application, this map is responsive and particularly, it was created for the big wall of display that we have in the classroom (11520 by 3240 pixels). In order to allow a practical user experience in terms of the touch screen wall present in the classroom, the UI has been designed to work best in this configuration that is the one applied to this version of the application:
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p2viz/1.png" alt="Screen" class="responsive">
                 </div>
+                
+                <h4>Nodes</h4>
+                
+                <h4>Layers</h4>
+                
+                <h4>Map background</h4>
+                
+                <h4>Traffic Data</h4>
 
                 
-                <h2>Pollutants heatmap</h2>
+                <h2>Heatmap</h2>
                 The interactive map allows the user to visualize a heatmap of all the counties of the US and a pollutant (or AQI). It is possible to see data for an entire year or change to daily data through the switch that can be found in one of the 2 input panels ("Time and Pollutant").
 
                 <div class="testimonials__slide">
@@ -253,39 +264,20 @@
                     </div>
                     <img src="/images/p2viz/map1.png" alt="Screen" class="responsive">
                 </div>
-
-                <br>
-                As the rest of the application, this map is responsive and particularly, it was created for the big wall of display that we have in the classroom (11520 by 3240 pixels). In order to allow a practical user experience in terms of the touch screen wall present in the classroom, the UI has been designed to work best in this configuration that is the one applied to this version of the application:
-                <h4>Shown counties panel</h4>
-                The shown counties panel is static and positioned in the bottom right corner together with the legend. This type of circular input slider was implemented thinking about a functional touch screen use. This is why the whole panel is static and the shiny input variable behind the scene is only updated after approximately half a second since the user started interacting with it. The user can also type in a number by clicking in the displayed number using a HW keyboard. An additional input is present in this panel: a confidence level slider which allows the user to control if showing the counties with less data, thus less confidence in the computed percentages, with less opacity (towards 0) or to show all with the same opacity (towards 1).
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/countiespanel.png" alt="Screen" class="responsive">
-                </div>
-
-                <h4>Time and Pollutant panel</h4>
-                The second panel that controls the Time and Pollutant inputs is dynamic, users can drag and drop it wherever they want in the map. This is useful when the screen is very large and the users would have to move by a few steps just to reach this panel and change the input. The inputs present in this panel are: Pollutant and AQI (if yearly data), switch to yearly/daily data, choose year for yearly data, choose month and day for daily data (only the year 2018 is available).
+                
+                <h2>Panels</h2>
+                <h4>Plots panel</h4>
+                
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p2viz/timepanel.png" alt="Screen" class="responsive">
                 </div>
-
-                <h4>Legend, units and colors</h4>The legend shows the mapping of data range to color. Notice that you can change from imperial to metric units from the sidebar switch in the Inputs tab. The color scale is continuous, the palette used is Viridis, which uses a range of colors distinguishable by all types of color blind people.
-                <h4>Map interactions</h4>
-
-                The user can visualize the name of the County by hovering over any County.
-                The user can visualize the name of the State and County, as well as the precise pollutant value, the percentage of available days (confidence level), the total days available and a link to the wikipedia page of that County by clicking on any County.
-                <br>
-
-                <div class="testimonials__slide">
-                    <div class="testimonials__info">
-                    </div>
-                    <img src="/images/p2viz/map2.png" alt="Screen" class="responsive">
-                </div>
+                
+                <h4>Table Panel</h4>
+                
+                The table panel is a different kind of representation for the nodes. Instead of clicking on the nodes on the map, the rows of the table can be clicked. blah blah
 
                 <h2>Units of measure</h2>
                 To allow users from both the United States and the rest of the world to give a meaning to all of this data we provided a practical switch on the sidebar under the inputs tabs so that the User can choose to convert data from Metric to Imperial and viceversa.
