@@ -372,6 +372,15 @@ server <- function(input, output, session) {
   
   ########################## AoT R APIs modified ######################
   
+  #' Timestamped message -- primarily used to push error output to user
+  #'
+  #' @param msg - The message to be logged
+  #' @return None (invisible NULL) as per cat
+  #' @noRd
+  log_msg <- function (msg) {
+    cat(format(Sys.time(), "%Y-%m-%d %H:%M:%OS3 "), ": ", msg, "\n", sep="")
+  }
+  
   #' Sends a request to the API, ensures 200 response and returns the response
   #'
   #' Given a URL and optional filters/query params, this sends an HTTP GET request
