@@ -34,6 +34,7 @@ library(tidyverse)
 # R data APIs libraries
 library(ropenaq)
 library(darksky)
+library(RSocrata)
 
 library(base)
 
@@ -245,7 +246,6 @@ ui <- dashboardPage(
 
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
-               materialSwitch(inputId = "nodes_location", label = "Visualize sensor nodes", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
                startExpanded = TRUE),
       menuItem("About", tabName = "about")
@@ -270,8 +270,8 @@ ui <- dashboardPage(
                 
                 # Shiny versions prior to 0.11 should use class = "modal" instead.
                 absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                              draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
-                              width = 800, height = "auto",
+                              draggable = TRUE, top = 90, left = "auto", right = 20, bottom = "auto",
+                              width = 1300, height = "auto",
                               br(),
                               # h2("Node Data"),
                               selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
@@ -302,37 +302,10 @@ ui <- dashboardPage(
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
                               # )
                 ),
-                absolutePanel(id = "darksky", class = "panel panel-default", fixed = TRUE,
-                              draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
-                              width = 800, height = "auto",
-                              br(),
-                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
-                              tabsetPanel(
-                                tabPanel("Graphical",
-                                         plotOutput("graphical_data_ds",height = "22vmin")
-                                         #plotOutput("graphical_data_last_ds",height = "22vmin")
-                                ),
-                                tabPanel("Tabular",
 
-                                         DT::dataTableOutput("table_ds", height = "22vmin")
-                                )
-                              ),
-                              checkboxGroupButtons(
-                                inputId = "measures1_ds",
-                                choices = darksky_tracked_measures[1:5],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              ),
-                              checkboxGroupButtons(
-                                inputId = "measures2_ds", 
-                                choices = darksky_tracked_measures[6:9],
-                                justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              )
-                ),
                 absolutePanel(id = "nodes", class = "panel panel-default", fixed = TRUE,
                               draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
-                              width = 1200, height = "auto",
+                              width = 1000, height = "auto",
                               br(),
                               box(width=NULL,height=NULL,
 
@@ -855,6 +828,13 @@ server <- function(input, output, session) {
   nodes_oaq$vsn <- nodes_oaq$location
   nodes_oaq$location <- NULL
   
+  congestion_df <- read.socrata(
+    "https://data.cityofchicago.org/resource/n4j6-wkkf.json",
+    app_token = "wrXJQ8XKYqlE8TxQoHCSSYvwV",
+    email     = "mirkomantovani23@gmail.com",
+    password  = "iBdN3u5BPbhmiMW"
+  )
+  
   
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
@@ -1062,6 +1042,25 @@ server <- function(input, output, session) {
       <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
     "
     
+    # Function to compute traffic color based on speed
+    trafficColor <- function(speed){
+      if(speed == -1){
+        return("#cccccc")
+      } else if(speed > -1 && speed < 10){
+        return("#e03e3e");
+      } else if(speed > 9 && speed < 20){
+        return("#e0843e");
+      } else if(speed > 19 && speed < 30){
+        return("#e0d53e");
+      } else {
+        return("#3e50e0");
+      }
+    }
+    
+    # highlightOptions = highlightOptions(weight = 9, bringToFront = F, opacity = 1)
+    
+  
+    
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
@@ -1069,7 +1068,7 @@ server <- function(input, output, session) {
     normalColor <- "navy"
     openAQColor <- "green"
     
-    leaflet(nodes) %>% 
+    map = leaflet(nodes) %>% 
       # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1097,22 +1096,29 @@ server <- function(input, output, session) {
       
       addLayersControl(
         baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
-        overlayGroups = c(tracked_measures, "Inactive"),
+        overlayGroups = c(tracked_measures, "Inactive", "Traffic"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
-      # addTiles(
-      #   urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-      #   attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      # ) %>% 
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
-    # %>%
-    #   addLegend(position = "bottomright", pal = mypal, values = temp$sel_feat,
-    #             title = "Legend",
-    #             labFormat = labelFormat(suffix = suffx,
-    #                                     digits = 3
-    #             ),
-    #             opacity = 1)
+    
+      for(i in 1:nrow(congestion_df)){
+        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
+                           lng = as.numeric(congestion_df[i, c(12, 7)]),
+                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+                           opacity = 0.8,
+                           fillOpacity = 0.5,
+                           group = "Traffic",
+                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+                           highlightOptions = highlightOptions(
+                             # color = "white",
+                             weight = 9, bringToFront = F, opacity = 1)
+                            
+                           )
+                           
+        }
+    
+    map
   })
   
   # observe({

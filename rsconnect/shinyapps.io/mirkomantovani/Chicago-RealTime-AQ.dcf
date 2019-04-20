@@ -1,0 +1,12 @@
+name: Chicago-RealTime-AQ
+title: Chicago-RealTime-AQ
+username:
+account: mirkomantovani
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 872664
+bundleId: 2019168
+url: https://mirkomantovani.shinyapps.io/Chicago-RealTime-AQ/
+when: 1555525040.67693
+asMultiple: FALSE
+asStatic: FALSE
