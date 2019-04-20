@@ -557,6 +557,29 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  #gets the observations relative to h hours ago
+  get_last_24h_data <- function(vsn){
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
+    
+    t1 <- sub_day_to_timestamp(timestamp,1)
+    t2 <- sub_day_to_timestamp(timestamp,0)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t1,sep=""),
+      timestamp=paste("lt:",t2,sep=""),
+      size=50000
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
   get_and_preprocess_observations_7d <- function(vsn){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations, vsn)
@@ -585,11 +608,18 @@ server <- function(input, output, session) {
 
   get_and_preprocess_observations_24h <- function(vsn){
     # Every 5210 observations it's 1 hour
-    hours <- c(1:24)
-    dfs <- lapply(hours, get_h_hours_observations, vsn)
-    df1 <- do.call(rbind, dfs)
-
+    
+    # OLD METHOD, 24 requests
+    # hours <- c(1:24)
+    # dfs <- lapply(hours, get_h_hours_observations, vsn)
+    # df1 <- do.call(rbind, dfs)
+    # 
+    # df <- data.frame(df1$node_vsn)
+    
+    df1 <- get_last_24h_data(vsn)
+    
     df <- data.frame(df1$node_vsn)
+    
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
     df$time <- df1$timestamp
