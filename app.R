@@ -30,7 +30,6 @@ library(tidyr)
 library(lubridate)
 library(tidyverse)
 
-
 # R data APIs libraries
 library(ropenaq)
 library(darksky)
@@ -247,6 +246,8 @@ ui <- dashboardPage(
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
+               materialSwitch(inputId = "nodes_table_switch", label = "Show map sites only", status = "primary",value=FALSE),
+               
                startExpanded = TRUE),
       menuItem("About", tabName = "about")
 
@@ -1205,7 +1206,7 @@ server <- function(input, output, session) {
                  v$table_inputs <- append(v$table_inputs,list(v$vsn))
                  }
     )
-    
+
     
   
 #####################################################  GRAPHICAL DATA    #####################################################  
