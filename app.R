@@ -534,6 +534,30 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  get_7_days_observations <- function(d){
+    
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(size=1))$timestamp
+    # print(timestamp)
+    t1 <- ymd_hms(timestamp)-lubridate::days(d-1)
+    t1 <- force_tz(t1, "America/Chicago")
+    t2 <- ymd_hms(timestamp)-lubridate::days(d)
+    t2 <- force_tz(t2, "America/Chicago")
+    # print(t1)
+    # print(t2)
+    df <- ls.observations(filters=list(
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
   #gets the observations relative to h hours ago
   get_d_days_observations <- function(d, vsn){
     # d <- get_last_available_date()
@@ -580,7 +604,34 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  get_and_preprocess_observations_7d <- function(vsn){
+  get_and_preprocess_observations_7d_allnodes <- function(){
+    days <- c(1:7)
+    dfs <- lapply(days, get_7_days_observations)
+    df1 <- do.call(rbind, dfs)
+    print(head(df1))
+    df <- data.frame(df1$node_vsn)
+    names(df) <- c("vsn")
+    df$measure <- df1$sensor_path
+    df$time <- df1$timestamp
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df$uom <- df1$uom
+
+    df$measure <- unlist(df$measure)
+    
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields_d(df)
+    
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
+    
+    
+
+    return(df)
+  }
+  
+    get_and_preprocess_observations_7d <- function(vsn){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations, vsn)
     df1 <- do.call(rbind, dfs)
@@ -1166,11 +1217,15 @@ server <- function(input, output, session) {
         active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
         
         #get the last two clicks
-        last_two <- tail(v$map_inputs,2)
         
-        prev <- last_two[[1]]
-        prev_input <- prev[1]
-        
+        #check the size of the map_inputs if it is less than 2.
+        if(length(v$map_inputs)<2)
+          prev_input <-NULL
+        else{
+          last_two <- tail(v$map_inputs,2)
+          prev <- last_two[[1]]
+          prev_input <- prev[1]
+        }        
       }
       # if table input, get the vsn and the active status
       else{
@@ -1180,11 +1235,16 @@ server <- function(input, output, session) {
         vsn <- selected_row$vsn
         
         #get the last two clicks
-        last_two <- tail(v$table_inputs,2)
         
-        prev <- last_two[[1]]
-        prev_input <- prev[1]
-        
+        #check the size of the map_inputs if it is less than 2.
+        if(length(v$table_inputs)<2)
+          prev_input <-NULL
+        else{
+          last_two <- tail(v$table_inputs,2)
+          
+          prev <- last_two[[1]]
+          prev_input <- prev[1]
+        }
       }
     }
     else
@@ -1258,7 +1318,8 @@ server <- function(input, output, session) {
     } else if(time_range == TIME_RANGE_7DAYS){
       df <- get_and_preprocess_observations_7d(vsn)
     }
-    
+
+            
       if(time_range == TIME_RANGE_CURRENT){
         plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
       } else if(time_range == TIME_RANGE_24HOURS){
