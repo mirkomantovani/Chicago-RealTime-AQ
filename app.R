@@ -372,6 +372,15 @@ server <- function(input, output, session) {
   
   ########################## AoT R APIs modified ######################
   
+  #' Timestamped message -- primarily used to push error output to user
+  #'
+  #' @param msg - The message to be logged
+  #' @return None (invisible NULL) as per cat
+  #' @noRd
+  log_msg <- function (msg) {
+    cat(format(Sys.time(), "%Y-%m-%d %H:%M:%OS3 "), ": ", msg, "\n", sep="")
+  }
+  
   #' Sends a request to the API, ensures 200 response and returns the response
   #'
   #' Given a URL and optional filters/query params, this sends an HTTP GET request
@@ -581,6 +590,29 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  #gets all the observation in the past 24 h, limited to 50k (max api limit should be 100k)
+  get_last_24h_data <- function(vsn){
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
+    
+    t1 <- sub_day_to_timestamp(timestamp,1)
+    t2 <- sub_day_to_timestamp(timestamp,0)
+    df <- ls.observations(filters=list(
+      node=vsn,
+      timestamp=paste("ge:",t1,sep=""),
+      timestamp=paste("lt:",t2,sep=""),
+      size=50000
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
   get_and_preprocess_observations_7d_allnodes <- function(){
     days <- c(1:7)
     dfs <- lapply(days, get_7_days_observations)
@@ -607,8 +639,7 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  
-  get_and_preprocess_observations_7d <- function(vsn){
+    get_and_preprocess_observations_7d <- function(vsn){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations, vsn)
     df1 <- do.call(rbind, dfs)
@@ -636,11 +667,17 @@ server <- function(input, output, session) {
 
   get_and_preprocess_observations_24h <- function(vsn){
     # Every 5210 observations it's 1 hour
+    
+    # OLD METHOD, 24 requests
     hours <- c(1:24)
     dfs <- lapply(hours, get_h_hours_observations, vsn)
     df1 <- do.call(rbind, dfs)
-
     df <- data.frame(df1$node_vsn)
+    
+    # All the observations in 1 request strategy
+    # df1 <- get_last_24h_data(vsn)
+    # df <- data.frame(df1$node_vsn)
+    
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
     df$time <- df1$timestamp
