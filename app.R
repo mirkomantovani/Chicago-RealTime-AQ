@@ -590,7 +590,7 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  #gets the observations relative to h hours ago
+  #gets all the observation in the past 24 h, limited to 50k (max api limit should be 100k)
   get_last_24h_data <- function(vsn){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
@@ -670,15 +670,14 @@ server <- function(input, output, session) {
     # Every 5210 observations it's 1 hour
     
     # OLD METHOD, 24 requests
-    # hours <- c(1:24)
-    # dfs <- lapply(hours, get_h_hours_observations, vsn)
-    # df1 <- do.call(rbind, dfs)
-    # 
-    # df <- data.frame(df1$node_vsn)
-    
-    df1 <- get_last_24h_data(vsn)
-    
+    hours <- c(1:24)
+    dfs <- lapply(hours, get_h_hours_observations, vsn)
+    df1 <- do.call(rbind, dfs)
     df <- data.frame(df1$node_vsn)
+    
+    # All the observations in 1 request strategy
+    # df1 <- get_last_24h_data(vsn)
+    # df <- data.frame(df1$node_vsn)
     
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
