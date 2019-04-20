@@ -30,7 +30,6 @@ library(tidyr)
 library(lubridate)
 library(tidyverse)
 
-
 # R data APIs libraries
 library(ropenaq)
 library(darksky)
@@ -247,6 +246,8 @@ ui <- dashboardPage(
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
+               materialSwitch(inputId = "nodes_table_switch", label = "Show map sites only", status = "primary",value=FALSE),
+               
                startExpanded = TRUE),
       menuItem("About", tabName = "about")
 
@@ -617,7 +618,6 @@ server <- function(input, output, session) {
     days <- c(1:7)
     dfs <- lapply(days, get_7_days_observations)
     df1 <- do.call(rbind, dfs)
-    print(head(df1))
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
@@ -1206,7 +1206,7 @@ server <- function(input, output, session) {
                  v$table_inputs <- append(v$table_inputs,list(v$vsn))
                  }
     )
-    
+
     
   
 #####################################################  GRAPHICAL DATA    #####################################################  
@@ -1227,8 +1227,9 @@ server <- function(input, output, session) {
         #get the last two clicks
         
         #check the size of the map_inputs if it is less than 2.
-        if(length(v$map_inputs)<2)
+        if(length(v$map_inputs)<2){
           prev_input <-NULL
+        }
         else{
           last_two <- tail(v$map_inputs,2)
           prev <- last_two[[1]]
@@ -2292,6 +2293,7 @@ server <- function(input, output, session) {
     for(measure in selected){
       nodes_main[[measure]] <- nodes_table[[measure]]
     }
+    nodes_main <- nodes_main[which(apply(nodes_main, 1, function(r) any(r %in% c("TRUE")))),]
     nodes_main
   }
     ,

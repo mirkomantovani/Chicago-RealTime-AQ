@@ -48,6 +48,12 @@ $(document).on("shiny:connected", function (e) {
     //     }
     // };
 
+     nodes_table_switch.onclick = function() {
+         if(nodes_table_switch.checked)
+             document.getElementById("nodes").hidden = true;
+         else
+            document.getElementById("nodes").hidden = false;
+     };
 
     //delete leaflet "ad" and move legend
     // leaflet = document.getElementsByClassName("leaflet-control");
