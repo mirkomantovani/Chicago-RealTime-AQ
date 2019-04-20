@@ -244,13 +244,15 @@
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p2viz/1.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
                 
                 <h4>Nodes</h4>
+                Nodes are groups of various hardware sensors located in the Chicago area. Each node has multiple sensors in it.
+                The nodes come from 2 different sources: <a href="https://arrayofthings.github.io/">Array of Things</a> and <a href="https://openaq.org/">Open Air Quality</a>. The AoT nodes are blue, the OpenAQ green. The red nodes are the inactive nodes from AoT. Inactive nodes are all the nodes which are deployed but when queried respond with no observation for each sensor they have.<br>
+                By clicking on any node, a popup will appear showing more information about the node. The node is also queried and by waiting a few seconds it is possible to visualize the data it provides in the plot panel. We also query at the same time the <a href="https://darksky.net/">Dark Sky</a> APIs that retrieve weather data and other measures for any node and they are displayed in the plots panel as well. Keep in mind that it could take a while to load they are real time data. Especially for the last 7 days and 24 hours the data gathering and preprocessing is really slow, because multiple requests are performed and in particular the AoT APIs have a very slow response time.
                 
-                <h4>Layers</h4>
-                
+                            
                 <h4>Map background</h4>
                 The map background can be changed by clicking on the select boxes in the layers menu. There are 4 different map backgrounds. The default is a drawn map with train stations, streets and highways, parks and icons for most important locations.<br>
                 The Dark Matter allows to make good use of the different colors (traffic and nodes) that pop out on the black background.<br>
@@ -258,28 +260,35 @@
                 The terrain is a mix of all the previous features: allows to better visualize colors given that the predominant color is white/grey, it has terrain features (see the green areas and water), it has streets and highways highlighted.
                 
                 <h4>Traffic Data</h4>
+                Traffic data come from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a>.
+                This data is real-time (at most 20 minutes ago) data that describe the congestion status in the streets of Chicago.
+                In particular, the dataset contains the current estimated speed for about 1250 segments covering 300 miles of arterial roads.<br>
+                We decided to integrate traffic data because it could help explain and give a cause to the real-time variations of pollutants such as CO, PM2.5, PM10, NO2 that are also produced by vehicles.
+                The roads are colored followed usual traffic color used in common GPS navigation applications (e.g. Google Maps). The colors conventions are: grey, no traffic (no cars or no data provided), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.<br>
+                Each road is clickable and more information are provided in a popup.
 
                 
                 <h2>Heatmap</h2>
-                The interactive map allows the user to visualize a heatmap of all the counties of the US and a pollutant (or AQI). It is possible to see data for an entire year or change to daily data through the switch that can be found in one of the 2 input panels ("Time and Pollutant").
+                TODO
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p2viz/map1.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
                 
                 <h2>Panels and menus</h2>
                 <h4>Plots panel</h4>
                 
                 This is the most important panel of the application. It shows the data queried by the various nodes in the form of line charts or tabular form.
-                The inputs present in this panel are two: the first one is the time range, which can be selected from current (or most recent data), last 24 hours and last 7 days data. The second one is a set of checkboxes that allow the users to select only the pollutants features that they want to visualize
+                The inputs present in this panel are two: the first one is the time range, which can be selected from current (or most recent data), last 24 hours and last 7 days data. The second one is a set of checkboxes that allow the users to select only the pollutants features that they want to visualize.<br>
+                The first plot shows the last clicked node data. The bottom one, instead, shows the previously selected node. This allows a comparison between nodes data.
                 
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p2viz/timepanel.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
                 
                 <h4>Table Panel</h4>
@@ -297,7 +306,7 @@
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p2viz/convert.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
 
                 <h2>Used R libraries</h2>
