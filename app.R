@@ -585,7 +585,6 @@ server <- function(input, output, session) {
     days <- c(1:7)
     dfs <- lapply(days, get_7_days_observations)
     df1 <- do.call(rbind, dfs)
-    print(head(df1))
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
@@ -1190,8 +1189,9 @@ server <- function(input, output, session) {
         #get the last two clicks
         
         #check the size of the map_inputs if it is less than 2.
-        if(length(v$map_inputs)<2)
+        if(length(v$map_inputs)<2){
           prev_input <-NULL
+        }
         else{
           last_two <- tail(v$map_inputs,2)
           prev <- last_two[[1]]
@@ -2255,6 +2255,7 @@ server <- function(input, output, session) {
     for(measure in selected){
       nodes_main[[measure]] <- nodes_table[[measure]]
     }
+    nodes_main <- nodes_main[which(apply(nodes_main, 1, function(r) any(r %in% c("TRUE")))),]
     nodes_main
   }
     ,
