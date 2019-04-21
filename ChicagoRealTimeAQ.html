@@ -236,9 +236,9 @@
                 The application starts in full screen. You can open the menu items for different categories in the sidebar to see more options. The inputs item helps the user to switch between metric or imperial units for the whole application.
 
                 <h2>Map</h2>
-                
+
                 This application has only one main page, a full screen map centered in the Chicago area. On the map there are sensor nodes that can be clicked by the user to get real-time, as well as historical data from it. There is also real-time traffic data that can also be clicked on to get more information.
-                
+
                 As the rest of the application, this map is responsive and particularly, it was created for the big wall of display that we have in the classroom (11520 by 3240 pixels). In order to allow a practical user experience in terms of the touch screen wall present in the classroom, the UI has been designed to work best in this configuration that is the one applied to this version of the application:
 
                 <div class="testimonials__slide">
@@ -246,19 +246,19 @@
                     </div>
                     <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
-                
+
                 <h4>Nodes</h4>
                 Nodes are groups of various hardware sensors located in the Chicago area. Each node has multiple sensors in it.
                 The nodes come from 2 different sources: <a href="https://arrayofthings.github.io/">Array of Things</a> and <a href="https://openaq.org/">Open Air Quality</a>. The AoT nodes are blue, the OpenAQ green. The red nodes are the inactive nodes from AoT. Inactive nodes are all the nodes which are deployed but when queried respond with no observation for each sensor they have.<br>
                 By clicking on any node, a popup will appear showing more information about the node. The node is also queried and by waiting a few seconds it is possible to visualize the data it provides in the plot panel. We also query at the same time the <a href="https://darksky.net/">Dark Sky</a> APIs that retrieve weather data and other measures for any node and they are displayed in the plots panel as well. Keep in mind that it could take a while to load they are real time data. Especially for the last 7 days and 24 hours the data gathering and preprocessing is really slow, because multiple requests are performed and in particular the AoT APIs have a very slow response time.
-                
-                            
+
+
                 <h4>Map background</h4>
                 The map background can be changed by clicking on the select boxes in the layers menu. There are 4 different map backgrounds. The default is a drawn map with train stations, streets and highways, parks and icons for most important locations.<br>
                 The Dark Matter allows to make good use of the different colors (traffic and nodes) that pop out on the black background.<br>
                 The satellite is a usual satellite image of Chicago.
                 The terrain is a mix of all the previous features: allows to better visualize colors given that the predominant color is white/grey, it has terrain features (see the green areas and water), it has streets and highways highlighted.
-                
+
                 <h4>Traffic Data</h4>
                 Traffic data come from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a>.
                 This data is real-time (at most 20 minutes ago) data that describe the congestion status in the streets of Chicago.
@@ -267,7 +267,7 @@
                 The roads are colored followed usual traffic color used in common GPS navigation applications (e.g. Google Maps). The colors conventions are: grey, no traffic (no cars or no data provided), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.<br>
                 Each road is clickable and more information are provided in a popup.
 
-                
+
                 <h2>Heatmap</h2>
                 TODO
 
@@ -276,25 +276,25 @@
                     </div>
                     <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
-                
+
                 <h2>Panels and menus</h2>
                 <h4>Plots panel</h4>
-                
+
                 This is the most important panel of the application. It shows the data queried by the various nodes in the form of line charts or tabular form.
                 The inputs present in this panel are two: the first one is the time range, which can be selected from current (or most recent data), last 24 hours and last 7 days data. The second one is a set of checkboxes that allow the users to select only the pollutants features that they want to visualize.<br>
                 The first plot shows the last clicked node data. The bottom one, instead, shows the previously selected node. This allows a comparison between nodes data.
-                
+
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p3viz/.png" alt="Screen" class="responsive">
                 </div>
-                
+
                 <h4>Table Panel</h4>
-                
+
                 The table panel is a different kind of representation for the nodes. Instead of clicking on the nodes on the map, the rows of the table can be clicked. blah blah
-                
+
                 <h4>Layers menu</h4>
                 The layers menu can be opened by hovering over or clicking on the corresponding menu on the top right corner.
                 From there you can select one of the 4 different map backgrounds, as well as toggle on or off the sensors belonging to the nodes on the map based on the type of measure they give, or if they are active or inactive.
@@ -344,7 +344,7 @@
                 </ul>
 
                 <h2>Problems during the development</h2>
- 
+
 
 
                 <h1 class="display-2">Interesting Insights</h1>
@@ -413,18 +413,18 @@
 
 
                     <h2>Abhishek</h2>
-                    Done with the preprocessing script for openAQ data. Need to start working on creating 4 new tabs for displaying graph and tables for two subsets of data identified during our discussion. 
+                    Done with the preprocessing script for openAQ data. Need to start working on creating 4 new tabs for displaying graph and tables for two subsets of data identified during our discussion.
                     <h2>Ashwani</h2>
                     During this week, I created the table for node and sensor information for Array of Things dataset. I then worked on the tabular visualzation for Darksky for the current time in a separte panel. The functionality to filter sites based on measures was added for the table representation of the sites. The graphical charts for Array of Things now can take input from the table and show corresponding visualizations. The selection of multiple inputs from table is a bit tricky and needs to be looked into in detail for the comparsion task.
 
-         
+
 
                     <h1 style="font-size: 32pt">Alpha version</h1>
                     <h2>Mirko</h2>
                     During the third week and for the Alpha version I integrated OpenAQ nodes on map, created nodes legend in map, added 4 different map backgrounds and refreshing the charts every minute which completed all the C requirements.
 
                     <h2>Abhishek</h2>
-                    
+                    Merged panels for openAQ and AoT pollutants which will be tab 1. Tab 2 will contain other variables like intensity, humidity, etc. Merge needs to be done for this also which will act as tab 2.
 
                     <h2>Ashwani</h2>
                     During this week, I fixed the map and table inputs issue for graphical plots to handle them independently. I preprocessed the darksky data and created the 24 hours and last 7 days charts for Darksky. I worked on the issue of comparison of plots where same nodes were being shown on comparsion. The comparison fix currently has been done for Array of Things map and table inputs and needs to be added for Darksky once the reorganization of charts is done.
@@ -437,13 +437,13 @@
                     colors: grey, no traffic (no cars), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.
                     By clicking on a street, a popup appears showing data such as: the name of the main street and the crossings it joins, numeric speed in mph, link to APIs.
                     The street layers can be toggled on or off from the respective layers menu.
-                
+
 
 
                     <h2>Abhishek</h2>
 
                     <h2>Ashwani</h2>
-During this week, I changed the sensor table presentation to make it visually better. I fixed the filtering of sites from sensor table to show sites based on measure availability. I added a button to hide the table based on user preference. I fixed various issues related to graphical plots for Darksky. I started working on the heatmaps and preprocessed the Array of Things API data required for its heatmap. 
+During this week, I changed the sensor table presentation to make it visually better. I fixed the filtering of sites from sensor table to show sites based on measure availability. I added a button to hide the table based on user preference. I fixed various issues related to graphical plots for Darksky. I started working on the heatmaps and preprocessed the Array of Things API data required for its heatmap.
 
 <!--
                     <h1 style="font-size: 32pt">Week 4</h1>
