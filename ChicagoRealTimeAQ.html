@@ -193,7 +193,7 @@
 
 
                     <a href="http://shiny.evl.uic.edu:3838/p3g4/Chicago-RealTime-AQ" style="text-decoration: underline">Access the Shiny application on a
-                    local Shiny server</a>
+                        local Shiny server</a>
             </div>
         </div> <!-- end about-desc -->
 
@@ -221,11 +221,12 @@
 
                 Clone the project repository. Open app.R with RStudio, download <a href="https://www.rstudio.com/" style="text-decoration: underline">RStudio</a> and <a href="https://www.r-project.org/" style="text-decoration: underline">R</a> if you don't have them installed on your machine. Download all the R libraries used in the project executing the command install.packages("library") in the RStudio console. The application needs the data from the EPA website to be converted in to R data objects for better performance. The data required for the application can be downloaded from the data link provided at the start of the page. Please follow the below steps to do the required preprocessing before running the application to generate the data again.
                 <ul>
-                  <li>There are n preprocessing required to generate the necessary data files for the application:<h4> blah blah</h4></li>
-                  <li> instructions
-                  </li>
+                    <li>There are n preprocessing required to generate the necessary data files for the application:<h4> blah blah</h4>
+                    </li>
+                    <li> instructions
+                    </li>
                 </ul>
-                  Once we have all the neceessary data/fst files , we can now proceed with running of the application.
+                Once we have all the neceessary data/fst files , we can now proceed with running of the application.
                 Run the application via RStudio by clicking Run App at the top right on the main RStudio panel. Access it using a browser and with the local machine address and port on which the application is started. (<a href="http://127.0.0.1:port_num/" style="text-decoration: underline">http://127.0.0.1:6676/</a>)
                 <br><br>
 
@@ -244,7 +245,7 @@
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/1.png" alt="Screen" class="responsive">
                 </div>
 
                 <h4>Nodes</h4>
@@ -252,12 +253,67 @@
                 The nodes come from 2 different sources: <a href="https://arrayofthings.github.io/">Array of Things</a> and <a href="https://openaq.org/">Open Air Quality</a>. The AoT nodes are blue, the OpenAQ green. The red nodes are the inactive nodes from AoT. Inactive nodes are all the nodes which are deployed but when queried respond with no observation for each sensor they have.<br>
                 By clicking on any node, a popup will appear showing more information about the node. The node is also queried and by waiting a few seconds it is possible to visualize the data it provides in the plot panel. We also query at the same time the <a href="https://darksky.net/">Dark Sky</a> APIs that retrieve weather data and other measures for any node and they are displayed in the plots panel as well. Keep in mind that it could take a while to load they are real time data. Especially for the last 7 days and 24 hours the data gathering and preprocessing is really slow, because multiple requests are performed and in particular the AoT APIs have a very slow response time.
 
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/2.png" alt="Screen" class="responsive">
+                </div>
+
 
                 <h4>Map background</h4>
                 The map background can be changed by clicking on the select boxes in the layers menu. There are 4 different map backgrounds. The default is a drawn map with train stations, streets and highways, parks and icons for most important locations.<br>
                 The Dark Matter allows to make good use of the different colors (traffic and nodes) that pop out on the black background.<br>
                 The satellite is a usual satellite image of Chicago.
                 The terrain is a mix of all the previous features: allows to better visualize colors given that the predominant color is white/grey, it has terrain features (see the green areas and water), it has streets and highways highlighted.
+
+                <div class="row clients-testimonials" data-aos="fade-up">
+                    <div class="col-full">
+                        <h1>Map backgrounds</h1>
+                        <div class="testimonials">
+
+
+                            <div class="testimonials__slide">
+                                <h1 class="display-2">Default</h1>
+                                <div class="testimonials__info">
+                                    <!--                            <span class="testimonials__name">Room I view</span>-->
+                                </div>
+                                <br><br>
+                                <img src="/images/p3viz/3.png" alt="Screen" class="responsive">
+                                <br><br>
+                            </div>
+
+                            <div class="testimonials__slide">
+                                <h1 class="display-2">Dark matter</h1>
+                                <div class="testimonials__info">
+                                    <!--                            <span class="testimonials__name">Room I view</span>-->
+                                </div>
+                                <br><br>
+                                <img src="/images/p3viz/4.png" alt="Screen" class="responsive">
+                                <br><br>
+                            </div>
+                            <div class="testimonials__slide">
+                                <h1 class="display-2">Satellite</h1>
+                                <div class="testimonials__info">
+                                    <!--                            <span class="testimonials__name">Room I view</span>-->
+                                </div>
+                                <br><br>
+                                <img src="/images/p3viz/5.png" alt="Screen" class="responsive">
+                                <br><br>
+                            </div>
+                            <div class="testimonials__slide">
+                                <h1 class="display-2">Terrain</h1>
+                                <div class="testimonials__info">
+                                    <!--                            <span class="testimonials__name">Room I view</span>-->
+                                </div>
+                                <br><br>
+                                <img src="/images/p3viz/6.png" alt="Screen" class="responsive">
+                                <br><br>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
 
                 <h4>Traffic Data</h4>
                 Traffic data come from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a>.
@@ -267,6 +323,12 @@
                 The roads are colored followed usual traffic color used in common GPS navigation applications (e.g. Google Maps). The colors conventions are: grey, no traffic (no cars or no data provided), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.<br>
                 Each road is clickable and more information are provided in a popup.
 
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/7.png" alt="Screen" class="responsive">
+                </div>
+
 
                 <h2>Heatmap</h2>
                 TODO
@@ -274,7 +336,7 @@
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/8.png" alt="Screen" class="responsive">
                 </div>
 
                 <h2>Panels and menus</h2>
@@ -288,17 +350,30 @@
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/9.png" alt="Screen" class="responsive">
                 </div>
 
                 <h4>Table Panel</h4>
 
                 The table panel is a different kind of representation for the nodes. Instead of clicking on the nodes on the map, the rows of the table can be clicked. blah blah
 
+
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/10.png" alt="Screen" class="responsive">
+                </div>
+
                 <h4>Layers menu</h4>
                 The layers menu can be opened by hovering over or clicking on the corresponding menu on the top right corner.
                 From there you can select one of the 4 different map backgrounds, as well as toggle on or off the sensors belonging to the nodes on the map based on the type of measure they give, or if they are active or inactive.
                 The last toggle is the traffic data, that shows or hides the roads real-time traffic visualization layer.
+
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/11.png" alt="Screen" class="responsive">
+                </div>
 
                 <h2>Units of measure</h2>
                 To allow users from both the United States and the rest of the world to give a meaning to all of this data we provided a practical switch on the sidebar under the inputs tabs so that the User can choose to convert data from Metric to Imperial and viceversa.
@@ -348,9 +423,27 @@
 
 
                 <h1 class="display-2">Interesting Insights</h1>
+                <h4>Using traffic data</h4>
+                As explain in the documentation, using traffic data could help explain and give a cause to the real-time variations of pollutants such as CO, PM2.5, PM10, NO2 that are also produced by vehicles. A strategy to do this kind of visual analytics with the application would be to select in the layers the nodes that give information about thos pollutants, then select nodes with different type of traffic and compare the current pollutants value. Unfortunately, the data provided by the nodes is not really good, the CO measurement is most of the times negative (and the APIs don't explain what could be the meaning of negative values, it could be that it means that it is 0), the NO2 is 0 everywhere in Chicago, and the pm2.5 and pm10 are almost not provided by any sensor. For the sake of explaining the application's functionalities, I provide a screenshot of what the application looks like when interactions of this type are performed.
 
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/ii1.png" alt="Screen" class="responsive">
+                </div>
 
-<!--
+                <h4>Last 7 days, downtown vs uptown</h4>
+                I tried to compare 2 different locations in terms of traffic, buildings, amount of people, closeness to the lake.
+                The upper plot shows the data for the last 7 days for a node located in uptown, close to the lake. The bottom plot shows data for the last 7 days for a node located in downtown, a little more west (further from the lake).
+                The things that I noticed are that: downtown the humidity level is more constant and overall less than uptown. H2S is only present downtown (it is 0 in the 08F node), the temperature is higher in uptown.
+
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/ii2.png" alt="Screen" class="responsive">
+                </div>
+
+                <!--
                 <div class="row clients-testimonials" data-aos="fade-up">
                     <div class="col-full">
                         <div class="testimonials">
@@ -385,67 +478,67 @@
         </div>
 
 
-            <div class="row about-desc" data-aos="fade-up">
-                <div class="col-full">
+        <div class="row about-desc" data-aos="fade-up">
+            <div class="col-full">
 
-                    <!-- Templates:
+                <!-- Templates:
                      Picture:
                         <img src="/images/p2viz/pic_name.png" alt="Screen" class="responsive">
                 -->
 
-                    <h1 class="display-2">Weekly Updates on progress</h1>
-                    <h1 style="font-size: 32pt">Week 1</h1>
-                    <h2>Mirko</h2>
-                    For the first week I started my work by designing the initial high-level Graphical User Interface with sidebar, tabs, colors. I then concentrated on the Array of Things APIs. I integrated useful functions that we would need in our project inspired by the official R wrapper APIs that are currently not working. I noticed that there were a few problems in the AoT APIs, and with the queries that they provide it is tricky to get the initial information that we need for the map (dataset with all the nodes and the sensor that each node provides). Since right now there is no trivial way (apparently) to get the sensors list from a node, I got the same information parsing the observations of each individual node, this process is slow due to the need of querying each node and slow response from the AoT servers, it takes approximately 30 seconds. Once I created the needed dataset I noticed some interesting problems: only 38 nodes currently responde with data observations (the toal number of nodes already deployed is 119). Also, I cannot explain why 2 nodes with different vsn (070 and 072) have same exact location and address. I then plotted on the map the locations of the sensors and created the selection layers for the users, where they can select to visualize only part a subset of sensors.
-                    I saved the nodes information in FST format and created a variable that controls the update of the nodes information or retrieves the previously saved one. I also created a basic plot and the comparison for the Current data and all of the tracked measures coming from the AoT source: when clicking on a node the plot is displayed for the selected measures, the user can also select another node and compare it two the previous one by visualizing an identical plot below the most recent's one.
+                <h1 class="display-2">Weekly Updates on progress</h1>
+                <h1 style="font-size: 32pt">Week 1</h1>
+                <h2>Mirko</h2>
+                For the first week I started my work by designing the initial high-level Graphical User Interface with sidebar, tabs, colors. I then concentrated on the Array of Things APIs. I integrated useful functions that we would need in our project inspired by the official R wrapper APIs that are currently not working. I noticed that there were a few problems in the AoT APIs, and with the queries that they provide it is tricky to get the initial information that we need for the map (dataset with all the nodes and the sensor that each node provides). Since right now there is no trivial way (apparently) to get the sensors list from a node, I got the same information parsing the observations of each individual node, this process is slow due to the need of querying each node and slow response from the AoT servers, it takes approximately 30 seconds. Once I created the needed dataset I noticed some interesting problems: only 38 nodes currently responde with data observations (the toal number of nodes already deployed is 119). Also, I cannot explain why 2 nodes with different vsn (070 and 072) have same exact location and address. I then plotted on the map the locations of the sensors and created the selection layers for the users, where they can select to visualize only part a subset of sensors.
+                I saved the nodes information in FST format and created a variable that controls the update of the nodes information or retrieves the previously saved one. I also created a basic plot and the comparison for the Current data and all of the tracked measures coming from the AoT source: when clicking on a node the plot is displayed for the selected measures, the user can also select another node and compare it two the previous one by visualizing an identical plot below the most recent's one.
 
-                    <h2>Abhishek</h2>
-                    Started working on preprocessing the OpenAQ data. Task is to bring it  to a certain dataframe format, so that reading it becomes easy.
-                    <h2>Ashwani</h2>
-                    During this week, I tried working with the R library for AoT and contacted the owner of repository for a fix for the recent changes.
-                    We then moved forward with using the AoT API directly. We discussed about the various project requirements and how to implement them.
-                    I worked on creating some of the graphical charts for the Array of Things data and added corresponding units of measure for them.
-
-
-                    <h1 style="font-size: 32pt">Week 2</h1>
-                    <h2>Mirko</h2>
-                    If I thought the Array of Things data source was bad from the first week impressions, now I can confirm this is the worst APIs and service I've ever used. The challenges I faced this week were related to showing the last 24 hours and last 7 days of data in a line chart upon clicking on a sensor. I discovered that a lot of sensor that have data, randomly shut down and turn back on disrupting the service and making it difficult to understand what is going on with the data. I had trouble in finding a node which was pretty good in terms of providing data constantly, eventually I picked node 08D. The issue now was on how to query the APIs to get the data I wanted. I initially tried to get all the observations in the last 24 hours and then preprocess them. I soon realized the infeasibility of this method because of the latency in downloading and preprocessing such a large quantity of data (around 100k rows) in real-time. It would take around 1 minute from when the user clicks the node to when the plot is generated. Way too much. I thought about a possible implementation in which data for each node are preloaded and processed when the application starts but that would take too much time and the user expects reactivity quickly. My final solution to solve this problem was that of subsampling the data (200 obs each hour/day) based on the timestamp. It also took me a long time to figure out how to create an HTTP request to the AoT APIs filtering based on timestamp. The official APIs documentation as of now lacks examples or proper explanation. Eventually I got it to work. Another cool surprised AoT gave us is that there are places in Chicago with -30 ppm of so2, which would be great if it was true but I'm afraid it's not really physically possible.
+                <h2>Abhishek</h2>
+                Started working on preprocessing the OpenAQ data. Task is to bring it to a certain dataframe format, so that reading it becomes easy.
+                <h2>Ashwani</h2>
+                During this week, I tried working with the R library for AoT and contacted the owner of repository for a fix for the recent changes.
+                We then moved forward with using the AoT API directly. We discussed about the various project requirements and how to implement them.
+                I worked on creating some of the graphical charts for the Array of Things data and added corresponding units of measure for them.
 
 
-                    <h2>Abhishek</h2>
-                    Done with the preprocessing script for openAQ data. Need to start working on creating 4 new tabs for displaying graph and tables for two subsets of data identified during our discussion.
-                    <h2>Ashwani</h2>
-                    During this week, I created the table for node and sensor information for Array of Things dataset. I then worked on the tabular visualzation for Darksky for the current time in a separte panel. The functionality to filter sites based on measures was added for the table representation of the sites. The graphical charts for Array of Things now can take input from the table and show corresponding visualizations. The selection of multiple inputs from table is a bit tricky and needs to be looked into in detail for the comparsion task.
+                <h1 style="font-size: 32pt">Week 2</h1>
+                <h2>Mirko</h2>
+                If I thought the Array of Things data source was bad from the first week impressions, now I can confirm this is the worst APIs and service I've ever used. The challenges I faced this week were related to showing the last 24 hours and last 7 days of data in a line chart upon clicking on a sensor. I discovered that a lot of sensor that have data, randomly shut down and turn back on disrupting the service and making it difficult to understand what is going on with the data. I had trouble in finding a node which was pretty good in terms of providing data constantly, eventually I picked node 08D. The issue now was on how to query the API s to get the data I wanted. I initially tried to get all the observations in the last 24 hours and then preprocess them. I soon realized the infeasibility of this method because of the latency in downloading and preprocessing such a large quantity of data (around 100k rows) in real-time. It would take around 1 minute from when the user clicks the node to when the plot is generated. Way too much. I thought about a possible implementation in which data for each node are preloaded and processed when the application starts but that would take too much time and the user expects reactivity quickly. My final solution to solve this problem was that of subsampling the data (200 obs each hour/day) based on the timestamp. It also took me a long time to figure out how to create an HTTP request to the AoT APIs filtering based on timestamp. The official APIs documentation as of now lacks examples or proper explanation. Eventually I got it to work. Another cool surprised AoT gave us is that there are places in Chicago with -30 ppm of so2, which would be great if it was true but I'm afraid it's not really physically possible.
 
 
-
-                    <h1 style="font-size: 32pt">Alpha version</h1>
-                    <h2>Mirko</h2>
-                    During the third week and for the Alpha version I integrated OpenAQ nodes on map, created nodes legend in map, added 4 different map backgrounds and refreshing the charts every minute which completed all the C requirements.
-
-                    <h2>Abhishek</h2>
-                    Merged panels for openAQ and AoT pollutants which will be tab 1. Tab 2 will contain other variables like intensity, humidity, etc. Merge needs to be done for this also which will act as tab 2.
-
-                    <h2>Ashwani</h2>
-                    During this week, I fixed the map and table inputs issue for graphical plots to handle them independently. I preprocessed the darksky data and created the 24 hours and last 7 days charts for Darksky. I worked on the issue of comparison of plots where same nodes were being shown on comparsion. The comparison fix currently has been done for Array of Things map and table inputs and needs to be added for Darksky once the reorganization of charts is done.
+                <h2>Abhishek</h2>
+                Done with the preprocessing script for openAQ data. Need to start working on creating 4 new tabs for displaying graph and tables for two subsets of data identified during our discussion.
+                <h2>Ashwani</h2>
+                During this week, I created the table for node and sensor information for Array of Things dataset. I then worked on the tabular visualzation for Darksky for the current time in a separte panel. The functionality to filter sites based on measures was added for the table representation of the sites. The graphical charts for Array of Things now can take input from the table and show corresponding visualizations. The selection of multiple inputs from table is a bit tricky and needs to be looked into in detail for the comparsion task.
 
 
 
-                    <h1 style="font-size: 32pt">Week 4</h1>
-                    <h2>Mirko</h2>
-                    After the professor's approval on the new data source to be used as a graduate additional requirement, I integrated real-time traffic and congestion data taken from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a> in the application. In particular, the dataset comes with 5 important features, which are: start and end of longitude and latitude and current traffic speed. I decided to show thid data graphically on the map by creating colored lines with the following color convention.
-                    colors: grey, no traffic (no cars), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.
-                    By clicking on a street, a popup appears showing data such as: the name of the main street and the crossings it joins, numeric speed in mph, link to APIs.
-                    The street layers can be toggled on or off from the respective layers menu.
+                <h1 style="font-size: 32pt">Alpha version</h1>
+                <h2>Mirko</h2>
+                During the third week and for the Alpha version I integrated OpenAQ nodes on map, created nodes legend in map, added 4 different map backgrounds and refreshing the charts every minute which completed all the C requirements.
+
+                <h2>Abhishek</h2>
+                Merged panels for openAQ and AoT pollutants which will be tab 1. Tab 2 will contain other variables like intensity, humidity, etc. Merge needs to be done for this also which will act as tab 2.
+
+                <h2>Ashwani</h2>
+                During this week, I fixed the map and table inputs issue for graphical plots to handle them independently. I preprocessed the darksky data and created the 24 hours and last 7 days charts for Darksky. I worked on the issue of comparison of plots where same nodes were being shown on comparsion. The comparison fix currently has been done for Array of Things map and table inputs and needs to be added for Darksky once the reorganization of charts is done.
 
 
 
-                    <h2>Abhishek</h2>
+                <h1 style="font-size: 32pt">Week 4</h1>
+                <h2>Mirko</h2>
+                After the professor's approval on the new data source to be used as a graduate additional requirement, I integrated real-time traffic and congestion data taken from <a href="https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf">Chicago Traffic Tracker</a> in the application. In particular, the dataset comes with 5 important features, which are: start and end of longitude and latitude and current traffic speed. I decided to show thid data graphically on the map by creating colored lines with the following color convention.
+                colors: grey, no traffic (no cars), blue: normal/high speed and above, yellow: medium speed, orange: low speed, red: very low or zero speed.
+                By clicking on a street, a popup appears showing data such as: the name of the main street and the crossings it joins, numeric speed in mph, link to APIs.
+                The street layers can be toggled on or off from the respective layers menu.
 
-                    <h2>Ashwani</h2>
-During this week, I changed the sensor table presentation to make it visually better. I fixed the filtering of sites from sensor table to show sites based on measure availability. I added a button to hide the table based on user preference. I fixed various issues related to graphical plots for Darksky. I started working on the heatmaps and preprocessed the Array of Things API data required for its heatmap.
 
-<!--
+
+                <h2>Abhishek</h2>
+
+                <h2>Ashwani</h2>
+                During this week, I changed the sensor table presentation to make it visually better. I fixed the filtering of sites from sensor table to show sites based on measure availability. I added a button to hide the table based on user preference. I fixed various issues related to graphical plots for Darksky. I started working on the heatmaps and preprocessed the Array of Things API data required for its heatmap.
+
+                <!--
                     <h1 style="font-size: 32pt">Week 4</h1>
                     <h2>Mirko</h2>
                     No scrolling is possible in the application. Modified panels for map. Added confidence input in map and modified color opacity based on days with data in map. Minor fixes to colors and sizes for Yearly plots.
@@ -457,200 +550,200 @@ During this week, I changed the sensor table presentation to make it visually be
                     top 12 counties in US. Updated the hourly preprocessing script for italy for performance. Minor fixes for yearly plots.
 -->
 
-                </div>
             </div>
+        </div>
 
-        </section>
+    </section>
 
-        <style>
-            .marginauto {
+    <style>
+        .marginauto {
                             margin: 10px auto 20px;
                             display: block;
                             }
                         </style>
 
-        <!-- services
+    <!-- services
     ================================================== -->
 
-        <!-- works
+    <!-- works
     ================================================== -->
-        <section id='video' class="s-works">
+    <section id='video' class="s-works">
 
-            <div class="intro-wrap">
-
-
-                <div class="row section-header has-bottom-sep light-sep" data-aos="fade-up">
-                    <div class="col-full">
-                        <h3 class="subhead">Video</h3>
-                        <h1 class="display-2 display-2--light">Video presentation</h1>
-
-<!--                        <iframe width="1080" height="720" src="https://www.youtube.com/embed/UCvc0h6yKMg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-
-                    </div>
-                </div>
-                <div class="row works-content">
-                    <div class="col-full masonry-wrap">
-                        <div class="masonry">
+        <div class="intro-wrap">
 
 
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-
-
-        <!-- contact
-    ================================================== -->
-        <section id="contact" class="s-contact">
-
-            <div class="overlay"></div>
-            <div class="contact__line"></div>
-
-            <div class="row section-header" data-aos="fade-up">
+            <div class="row section-header has-bottom-sep light-sep" data-aos="fade-up">
                 <div class="col-full">
-                    <h3 class="subhead">Contact Us</h3>
-                    <h1 class="display-2 display-2--light">Reach out for a new project or just say hello</h1>
+                    <h3 class="subhead">Video</h3>
+                    <h1 class="display-2 display-2--light">Video presentation</h1>
+
+                    <!--                        <iframe width="1080" height="720" src="https://www.youtube.com/embed/UCvc0h6yKMg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+
                 </div>
             </div>
+            <div class="row works-content">
+                <div class="col-full masonry-wrap">
+                    <div class="masonry">
 
-            <div class="row contact-content" data-aos="fade-up">
 
-                <div class="contact-primary">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <h3 class="h6">Send Me A Message</h3>
+    </section>
 
-                    <form name="contactForm" id="contactForm" method="post" action="" novalidate="novalidate">
-                        <fieldset>
 
-                            <div class="form-field">
-                                <input name="contactName" type="text" id="contactName" placeholder="Your Name" value="" minlength="2" required="" aria-required="true" class="full-width">
-                            </div>
-                            <div class="form-field">
-                                <input name="contactEmail" type="email" id="contactEmail" placeholder="Your Email" value="" required="" aria-required="true" class="full-width">
-                            </div>
-                            <div class="form-field">
-                                <input name="contactSubject" type="text" id="contactSubject" placeholder="Subject" value="" class="full-width">
-                            </div>
-                            <div class="form-field">
-                                <textarea name="contactMessage" id="contactMessage" placeholder="Your Message" rows="10" cols="50" required="" aria-required="true" class="full-width"></textarea>
-                            </div>
-                            <div class="form-field">
-                                <button class="full-width btn--primary">Submit</button>
-                                <div class="submit-loader">
-                                    <div class="text-loader">Sending...</div>
-                                    <div class="s-loader">
-                                        <div class="bounce1"></div>
-                                        <div class="bounce2"></div>
-                                        <div class="bounce3"></div>
-                                    </div>
+
+    <!-- contact
+    ================================================== -->
+    <section id="contact" class="s-contact">
+
+        <div class="overlay"></div>
+        <div class="contact__line"></div>
+
+        <div class="row section-header" data-aos="fade-up">
+            <div class="col-full">
+                <h3 class="subhead">Contact Us</h3>
+                <h1 class="display-2 display-2--light">Reach out for a new project or just say hello</h1>
+            </div>
+        </div>
+
+        <div class="row contact-content" data-aos="fade-up">
+
+            <div class="contact-primary">
+
+                <h3 class="h6">Send Me A Message</h3>
+
+                <form name="contactForm" id="contactForm" method="post" action="" novalidate="novalidate">
+                    <fieldset>
+
+                        <div class="form-field">
+                            <input name="contactName" type="text" id="contactName" placeholder="Your Name" value="" minlength="2" required="" aria-required="true" class="full-width">
+                        </div>
+                        <div class="form-field">
+                            <input name="contactEmail" type="email" id="contactEmail" placeholder="Your Email" value="" required="" aria-required="true" class="full-width">
+                        </div>
+                        <div class="form-field">
+                            <input name="contactSubject" type="text" id="contactSubject" placeholder="Subject" value="" class="full-width">
+                        </div>
+                        <div class="form-field">
+                            <textarea name="contactMessage" id="contactMessage" placeholder="Your Message" rows="10" cols="50" required="" aria-required="true" class="full-width"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <button class="full-width btn--primary">Submit</button>
+                            <div class="submit-loader">
+                                <div class="text-loader">Sending...</div>
+                                <div class="s-loader">
+                                    <div class="bounce1"></div>
+                                    <div class="bounce2"></div>
+                                    <div class="bounce3"></div>
                                 </div>
                             </div>
+                        </div>
 
-                        </fieldset>
-                    </form>
+                    </fieldset>
+                </form>
 
-                    <!-- contact-warning -->
-                    <div class="message-warning">
-                        Something went wrong. Please try again.
+                <!-- contact-warning -->
+                <div class="message-warning">
+                    Something went wrong. Please try again.
+                </div>
+
+                <!-- contact-success -->
+                <div class="message-success">
+                    Your message was sent, thank you!<br>
+                </div>
+
+            </div> <!-- end contact-primary -->
+
+            <div class="contact-secondary">
+                <div class="contact-info">
+
+                    <h3 class="h6 hide-on-fullwidth">Contact Info</h3>
+
+                    <div class="cinfo">
+                        <h5>Where I live</h5>
+                        <p>
+                            Chicago, IL<br>
+                            60622 USA
+                        </p>
                     </div>
 
-                    <!-- contact-success -->
-                    <div class="message-success">
-                        Your message was sent, thank you!<br>
+                    <div class="cinfo">
+                        <h5>Email Me At</h5>
+                        <p>
+                            mrk23 at hotmail dot it<br>
+
+                        </p>
                     </div>
 
-                </div> <!-- end contact-primary -->
+                    <div class="cinfo">
+                        <h5>Call Me At</h5>
+                        <p>
 
-                <div class="contact-secondary">
-                    <div class="contact-info">
+                            Mobile: <br>
 
-                        <h3 class="h6 hide-on-fullwidth">Contact Info</h3>
+                        </p>
+                    </div>
 
-                        <div class="cinfo">
-                            <h5>Where I live</h5>
-                            <p>
-                                Chicago, IL<br>
-                                60622 USA
-                            </p>
-                        </div>
+                    <ul class="contact-social">
+                        <li>
+                            <a href="https://www.facebook.com/mrkmantovani"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/in/mirkomantovani/"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                        </li>
+                        <li>
+                            <a href="https://www.instagram.com/mirkomantovani/"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+                        </li>
+                        <li>
+                            <a href="https://play.google.com/store/apps/developer?id=Mirko+Mantovani"><i class="fa fa-android" aria-hidden="true"></i></a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/mirkomantovani"><i class="fa fa-github" aria-hidden="true"></i></a>
+                        </li>
+                    </ul> <!-- end contact-social -->
 
-                        <div class="cinfo">
-                            <h5>Email Me At</h5>
-                            <p>
-                                mrk23 at hotmail dot it<br>
+                </div> <!-- end contact-info -->
+            </div> <!-- end contact-secondary -->
 
-                            </p>
-                        </div>
+        </div> <!-- end contact-content -->
 
-                        <div class="cinfo">
-                            <h5>Call Me At</h5>
-                            <p>
-
-                                Mobile: <br>
-
-                            </p>
-                        </div>
-
-                        <ul class="contact-social">
-                            <li>
-                                <a href="https://www.facebook.com/mrkmantovani"><i class="fa fa-facebook" aria-hidden="true"></i></a>
-                            </li>
-                            <li>
-                                <a href="https://www.linkedin.com/in/mirkomantovani/"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
-                            </li>
-                            <li>
-                                <a href="https://www.instagram.com/mirkomantovani/"><i class="fa fa-instagram" aria-hidden="true"></i></a>
-                            </li>
-                            <li>
-                                <a href="https://play.google.com/store/apps/developer?id=Mirko+Mantovani"><i class="fa fa-android" aria-hidden="true"></i></a>
-                            </li>
-                            <li>
-                                <a href="https://github.com/mirkomantovani"><i class="fa fa-github" aria-hidden="true"></i></a>
-                            </li>
-                        </ul> <!-- end contact-social -->
-
-                    </div> <!-- end contact-info -->
-                </div> <!-- end contact-secondary -->
-
-            </div> <!-- end contact-content -->
-
-        </section> <!-- end s-contact -->
+    </section> <!-- end s-contact -->
 
 
-        <!-- footer
+    <!-- footer
     ================================================== -->
-        <footer>
+    <footer>
 
-            <div class="row footer-main">
+        <div class="row footer-main">
 
-                <div class="col-six tab-full left footer-desc">
+            <div class="col-six tab-full left footer-desc">
 
-                    <div class="footer-logo"></div>
-                    Portfolio of Mirko Mantovani
+                <div class="footer-logo"></div>
+                Portfolio of Mirko Mantovani
+            </div>
+
+            <div class="col-six tab-full right footer-subscribe">
+
+                <h4>Get Notified</h4>
+                <p></p>
+
+                <div class="subscribe-form">
+                    <form id="mc-form" class="group" novalidate="true">
+                        <input type="email" value="" name="EMAIL" class="email" id="mc-email" placeholder="Email Address" required="">
+                        <input type="submit" name="subscribe" value="Subscribe">
+                        <label for="mc-email" class="subscribe-message"></label>
+                    </form>
                 </div>
 
-                <div class="col-six tab-full right footer-subscribe">
+            </div>
 
-                    <h4>Get Notified</h4>
-                    <p></p>
+        </div> <!-- end footer-main -->
 
-                    <div class="subscribe-form">
-                        <form id="mc-form" class="group" novalidate="true">
-                            <input type="email" value="" name="EMAIL" class="email" id="mc-email" placeholder="Email Address" required="">
-                            <input type="submit" name="subscribe" value="Subscribe">
-                            <label for="mc-email" class="subscribe-message"></label>
-                        </form>
-                    </div>
-
-                </div>
-
-            </div> <!-- end footer-main -->
-
-            <div class="row footer-bottom">
-                <!--
+        <div class="row footer-bottom">
+            <!--
             <div class="col-twelve">
                 <div class="copyright">
                     <span>© Copyright Glint 2017</span>
@@ -663,68 +756,68 @@ During this week, I changed the sensor table presentation to make it visually be
             </div>
 -->
 
-            </div> <!-- end footer-bottom -->
+        </div> <!-- end footer-bottom -->
 
-        </footer> <!-- end footer -->
+    </footer> <!-- end footer -->
 
 
-        <!-- photoswipe background
+    <!-- photoswipe background
     ================================================== -->
-        <div aria-hidden="true" class="pswp" role="dialog" tabindex="-1">
+    <div aria-hidden="true" class="pswp" role="dialog" tabindex="-1">
 
-            <div class="pswp__bg"></div>
-            <div class="pswp__scroll-wrap">
+        <div class="pswp__bg"></div>
+        <div class="pswp__scroll-wrap">
 
-                <div class="pswp__container">
-                    <div class="pswp__item"></div>
-                    <div class="pswp__item"></div>
-                    <div class="pswp__item"></div>
-                </div>
+            <div class="pswp__container">
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+                <div class="pswp__item"></div>
+            </div>
 
-                <div class="pswp__ui pswp__ui--hidden">
-                    <div class="pswp__top-bar">
-                        <div class="pswp__counter"></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button> <button class="pswp__button pswp__button--share" title="Share"></button> <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button> <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-                        <div class="pswp__preloader">
-                            <div class="pswp__preloader__icn">
-                                <div class="pswp__preloader__cut">
-                                    <div class="pswp__preloader__donut"></div>
-                                </div>
+            <div class="pswp__ui pswp__ui--hidden">
+                <div class="pswp__top-bar">
+                    <div class="pswp__counter"></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button> <button class="pswp__button pswp__button--share" title="Share"></button> <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button> <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                    <div class="pswp__preloader">
+                        <div class="pswp__preloader__icn">
+                            <div class="pswp__preloader__cut">
+                                <div class="pswp__preloader__donut"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                        <div class="pswp__share-tooltip"></div>
-                    </div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button> <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
-                    <div class="pswp__caption">
-                        <div class="pswp__caption__center"></div>
-                    </div>
                 </div>
-
-            </div>
-
-        </div> <!-- end photoSwipe background -->
-
-
-        <!-- preloader
-    ================================================== -->
-        <div id="preloader">
-            <div id="loader">
-                <div class="line-scale-pulse-out">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                    <div></div>
+                <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                    <div class="pswp__share-tooltip"></div>
+                </div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button> <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+                <div class="pswp__caption">
+                    <div class="pswp__caption__center"></div>
                 </div>
             </div>
+
         </div>
 
+    </div> <!-- end photoSwipe background -->
 
-        <!-- Java Script
+
+    <!-- preloader
     ================================================== -->
-        <script src="/js/jquery-3.2.1.min.js"></script>
-        <script src="/js/plugins.js"></script>
-        <script src="/js/main.js"></script>
+    <div id="preloader">
+        <div id="loader">
+            <div class="line-scale-pulse-out">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Java Script
+    ================================================== -->
+    <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/main.js"></script>
 
 
 </body>
