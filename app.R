@@ -700,21 +700,23 @@ server <- function(input, output, session) {
     df1 <- ls.observations(filters=list(node=vsn))
     # filter out nodes not yet deployed
     df <- data.frame(df1$node_vsn)
-    names(df) <- c("vsn")
-    df$measure <- df1$sensor_path
-    df$time <- df1$timestamp
-    df$value <- df1$value
-    df$measure <-lapply(df$measure,extract_sensor)
-    df$uom <- df1$uom
-    df <- filter_out_untracked_measures(df)
-    
-    df$measure <- unlist(df$measure)
-    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
-                        FUN=mean)
-    names(df) <- c("vsn","measure","time","uom","value")
-    
-    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
-    df <- extract_date_fields(df)
+    if(nrow(df)>0){
+      names(df) <- c("vsn")
+      df$measure <- df1$sensor_path
+      df$time <- df1$timestamp
+      df$value <- df1$value
+      df$measure <-lapply(df$measure,extract_sensor)
+      df$uom <- df1$uom
+      df <- filter_out_untracked_measures(df)
+      
+      df$measure <- unlist(df$measure)
+      df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
+                          FUN=mean)
+      names(df) <- c("vsn","measure","time","uom","value")
+      
+      df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+      df <- extract_date_fields(df)
+    }
     
     return(df)
   }
