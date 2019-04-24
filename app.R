@@ -713,7 +713,6 @@ server <- function(input, output, session) {
       df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
                           FUN=mean)
       names(df) <- c("vsn","measure","time","uom","value")
-      
       df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
       df <- extract_date_fields(df)
     }
