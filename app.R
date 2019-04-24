@@ -50,7 +50,7 @@ TIME_RANGE_CURRENT = "Current"
 TIME_RANGE_24HOURS = "Last 24 hours"
 TIME_RANGE_7DAYS = "Last 7 days"
 
-UPDATE_NODES_STATUS <- FALSE
+UPDATE_NODES_STATUS <- TRUE
 
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
