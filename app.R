@@ -37,10 +37,10 @@ library(RSocrata)
 
 library(base)
 
-# Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+ Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
-Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
+#Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
 
 
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
@@ -56,6 +56,10 @@ time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
 openaq_tracked_measures <- c("co","bc","no2","o3","so2","pm2.5","pm10")
 darksky_tracked_measures <- c("temperature", "humidity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+
+tab1_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","bc")
+tab2_measures <- c("temperature", "humidity","intensity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+
 
 last <- NULL
 
@@ -276,7 +280,10 @@ ui <- dashboardPage(
                               br(),
                               # h2("Node Data"),
                               selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
+                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
                               tabsetPanel(
+                                tabPanel("TAB-1",
+                                tabsetPanel(
                                 tabPanel("Graphical",
                                          plotOutput("graphical_data",height = "22vmin"),
                                          plotOutput("graphical_data_last",height = "22vmin")
@@ -284,20 +291,46 @@ ui <- dashboardPage(
                                 tabPanel("Tabular",
                                          h1("Wip2")
                                 )
+                                ),
+                                checkboxGroupButtons(
+                                  inputId = "measures1",
+                                  choices = tab1_measures[1:4],
+                                  justified = TRUE, status = "primary", selected = tab1_measures[1:4],
+                                  checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                                ),
+                                checkboxGroupButtons(
+                                  inputId = "measures2", 
+                                  choices = tab1_measures[5:8],
+                                  justified = TRUE, status = "primary", selected = tab1_measures[5:8],
+                                  checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                                )
                               ),
-                              checkboxGroupButtons(
-                                inputId = "measures1",
-                                choices = tracked_measures[1:5],
-                                justified = TRUE, status = "primary", selected = tracked_measures[1:5],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
-                              ),
-                              checkboxGroupButtons(
-                                inputId = "measures2", 
-                                choices = tracked_measures[6:10],
-                                justified = TRUE, status = "primary", selected = tracked_measures[6:10],
-                                checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                              tabPanel("TAB-2",
+                                tabsetPanel(
+                                tabPanel("Graphical",
+                                         plotOutput("graphical_data_ds",height = "22vmin"),
+                                         plotOutput("graphical_data_last_ds",height = "22vmin")
+                                ),
+                                tabPanel("Tabular",
+                                         h1("Wip2")
+                                )
+                                ),
+
+                                checkboxGroupButtons(
+                                  inputId = "measures1_ds",
+                                  choices = darksky_tracked_measures[1:5],
+                                  justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                  checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                                ),
+                                checkboxGroupButtons(
+                                  inputId = "measures2_ds",
+                                  choices = darksky_tracked_measures[6:9],
+                                  justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                  checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
+                                )
                               )
-                              # ,materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")                             
+                    )
+                              # ,materialSwitch(inputId = "switch_compare", label = "Compare nodes data", status = "primary")
                               # div( id="yearly_inputs",
                               #      selectizeInput(inputId = "D_month", "Select Month", H_months, selected = 'January',width = "100%"),
                               #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
@@ -807,6 +840,121 @@ server <- function(input, output, session) {
   filter_out_untracked_measures <- function(df){
     subset(df, measure %in% tracked_measures)
   }
+  
+  #####################################################  OpenAQ utils    #####################################################  
+  ls.observations_openaq <- function (vsn, time) {
+    # build url, send request, get response
+    print(vsn)
+    vsn <- sub(" ","+",vsn)
+    print(vsn)
+    # build data frame
+    #TODO A: Retrieving latest stats here as some locations do not have updates in the past hour
+    #data <- aq_measurements(city = "Chicago-Naperville-Joliet",location=vsn,date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date()))
+    data <- aq_latest(country = "US", city = "Chicago-Naperville-Joliet", location=vsn)
+    df <- as.data.frame.list(data)
+    attr(df, "value") <- data$value
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+  ls.observations_openaq_7d <- function (vsn, time) {
+    # build url, send request, get response
+    
+    vsn <- sub(" ","+",vsn) 
+    data <- aq_measurements(city = "Chicago-Naperville-Joliet",location=vsn,date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date()))
+    df <- as.data.frame.list(data)
+    attr(df, "value") <- data$value
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+  ls.observations_openaq_24h <- function (vsn, time) {
+    # build url, send request, get response
+    vsn <- sub(" ","+",vsn)     
+    # build data frame
+    data <- aq_measurements(city = "Chicago-Naperville-Joliet",location=vsn,date_from = as.character(Sys.Date()), date_to = as.character(Sys.Date()+1))
+    df <- as.data.frame.list(data)
+    attr(df, "timestamp") <- data$dateLocal # TODO modified because creates problems when no observations if as.POS.. as.POSIXlt(data$timestamp)
+    attr(df, "value") <- data$value
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+  
+  #PREPROCESS OPENAQ 7 DAYS
+  get_and_preprocess_observations_7d_openaq <- function(vsn){
+    df1 <- ls.observations_openaq_7d(vsn,"curr")
+    df <- data.frame(df1$location)
+    names(df) <- c("vsn")
+    df$measure <- df1$parameter
+    levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+    df$time <- df1$dateLocal
+    df$value <- df1$value
+    
+    df$uom <- df1$unit
+    
+    df$year <- format(df$time, format = "%Y")
+    df$month <- format(df$time, format = "%m")
+    df$day <- format(df$time, format = "%d")
+    df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms),
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
+    return(df)
+  }
+  
+  #PREPROCESS OPENAQ 24hours
+  get_and_preprocess_observations_24h_openaq <- function(vsn){
+    df1 <- ls.observations_openaq_24h(vsn,"curr")
+    df <- data.frame(df1$location)
+    names(df) <- c("vsn")
+    df$measure <- df1$parameter
+    levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+    df$time <- df1$dateLocal
+    df$value <- df1$value
+    
+    df$uom <- df1$unit
+    
+    df$year <- format(df$time, format = "%Y")
+    df$month <- format(df$time, format = "%m")
+    df$day <- format(df$time, format = "%d")
+    df$h <- format(df$time, format = "%H")
+    df$hms <- paste("d:",df$day, "h:", df$h)
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms),
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
+    return(df)
+  }
+  
+  #PREPROCESS OPENAQ current
+  get_and_preprocess_observations_openaq <- function(vsn){
+    df1 <- ls.observations_openaq(vsn,"curr")
+    df <- data.frame(df1$location)
+    names(df) <- c("vsn")
+    df$measure <- df1$parameter
+    levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+    df$time <- df1$lastUpdated
+    df$value <- df1$value
+    
+    df$uom <- df1$unit
+    
+    df$year <- format(df$time, format = "%Y")
+    df$month <- format(df$time, format = "%m")
+    df$day <- format(df$time, format = "%d")
+    df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms),
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
+    #print(df)
+    return(df)
+  }
+  
   ############################################### Extract sensors info ################################################
   
   
@@ -1139,21 +1287,21 @@ server <- function(input, output, session) {
       addControl(html = html_legend, position = "bottomright") %>%
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
     
-      for(i in 1:nrow(congestion_df)){
-        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
-                           lng = as.numeric(congestion_df[i, c(12, 7)]),
-                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
-                           opacity = 0.8,
-                           fillOpacity = 0.5,
-                           group = "Traffic",
-                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
-                           highlightOptions = highlightOptions(
-                             # color = "white",
-                             weight = 9, bringToFront = F, opacity = 1)
-                            
-                           )
-                           
-        }
+      # for(i in 1:nrow(congestion_df)){
+      #   map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
+      #                      lng = as.numeric(congestion_df[i, c(12, 7)]),
+      #                      color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+      #                      opacity = 0.8,
+      #                      fillOpacity = 0.5,
+      #                      group = "Traffic",
+      #                      popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+      #                      highlightOptions = highlightOptions(
+      #                        # color = "white",
+      #                        weight = 9, bringToFront = F, opacity = 1)
+      #                       
+      #                      )
+      #                      
+      #   }
     
     map
   })
@@ -1213,7 +1361,6 @@ server <- function(input, output, session) {
   output$graphical_data <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-
     if(!is.null(vsn_)){
       #get input type either map or table
       
@@ -1284,10 +1431,10 @@ server <- function(input, output, session) {
       gl
     }
     else {
-
+    #some node is selected
     time_range <- input$time_range
     
-    if(!(active == "Inactive")){
+    if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
     # TODO check if AoT node or openAQ and get corresponding dataset
       # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
       
@@ -1318,17 +1465,29 @@ server <- function(input, output, session) {
     else{
       v$lastvsn <-NULL
     }
-    
-    # df <- get_and_preprocess_observations(vsn)
-    if(time_range == TIME_RANGE_CURRENT){
-      df <- get_and_preprocess_observations(vsn)
-    } else if(time_range == TIME_RANGE_24HOURS){
-      df <- get_and_preprocess_observations_24h(vsn)
-    } else if(time_range == TIME_RANGE_7DAYS){
-      df <- get_and_preprocess_observations_7d(vsn)
+    if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+    {
+      #openaq
+      # df <- get_and_preprocess_observations(vsn)
+      if(time_range == TIME_RANGE_CURRENT){
+        df <- get_and_preprocess_observations_openaq(vsn)
+      } else if(time_range == TIME_RANGE_24HOURS){
+        df <- get_and_preprocess_observations_24h_openaq(vsn)
+      } else if(time_range == TIME_RANGE_7DAYS){
+        df <- get_and_preprocess_observations_7d_openaq(vsn)
+      }
     }
-
-            
+    else
+    {
+      # df <- get_and_preprocess_observations(vsn)
+      if(time_range == TIME_RANGE_CURRENT){
+        df <- get_and_preprocess_observations(vsn)
+      } else if(time_range == TIME_RANGE_24HOURS){
+        df <- get_and_preprocess_observations_24h(vsn)
+      } else if(time_range == TIME_RANGE_7DAYS){
+        df <- get_and_preprocess_observations_7d(vsn)
+      }      
+    }
       if(time_range == TIME_RANGE_CURRENT){
         plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
       } else if(time_range == TIME_RANGE_24HOURS){
@@ -1394,21 +1553,34 @@ server <- function(input, output, session) {
         gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
           geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
       }
-      if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
-        suffx_humidity = unique(subset(df, measure == "humidity")$uom)
-        # y = subset(df, measure == "humidity")$value
-          gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
-            geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
-          labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
-          vals <-c(vals,"humidity" = "#194649")
+      if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
+        suffx_co = unique(subset(df, measure == "bc")$uom)
+        labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
+        vals <-c(vals,"bc" = "#c6c60f")
+        gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+          geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
       }
-      if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
-        suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
-        gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
-          geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
-        labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
-        vals <-c(vals,"intensity" = "#a3d659")
-      }
+      
+      
+      # TODO A: MOVE THIS TO PANEL 2
+      # if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
+      #   suffx_humidity = unique(subset(df, measure == "humidity")$uom)
+      #   # y = subset(df, measure == "humidity")$value
+      #     gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
+      #       geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
+      #     labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+      #     vals <-c(vals,"humidity" = "#194649")
+      # }
+
+      # TODO A: MOVE THIS TO PANEL 2
+      # if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
+      #   suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+      #   gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
+      #     geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+      #   labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
+      #   vals <-c(vals,"intensity" = "#a3d659")
+      # }
+      
       if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
         suffx_o3 = unique(subset(df, measure == "o3")$uom)
         labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
@@ -1569,7 +1741,7 @@ server <- function(input, output, session) {
     irrelevant_variable <- input$map_marker_click
     
     vsn <- isolate(v$lastvsn)
-    
+    print(paste("VSN!?!?!?!?",vsn))
     # || input$switch_compare
     if(is.null(vsn)){
 
@@ -1599,12 +1771,28 @@ server <- function(input, output, session) {
     else {
       if(!(vsn == "Inactive")){
         
-        if(time_range == TIME_RANGE_CURRENT){
-          df <- get_and_preprocess_observations(vsn)
-        } else if(time_range == TIME_RANGE_24HOURS){
-          df <- get_and_preprocess_observations_24h(vsn)
-        } else if(time_range == TIME_RANGE_7DAYS){
-          df <- get_and_preprocess_observations_7d(vsn)
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations_openaq(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h_openaq(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d_openaq(vsn)
+          }
+        }
+        else
+        {
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d(vsn)
+          }      
         }
 
         if(time_range == TIME_RANGE_CURRENT){
@@ -1672,22 +1860,23 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
         }
-        if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
-          suffx_humidity = unique(subset(df, measure == "humidity")$uom)
-
-            gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
-              geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
-            labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
-            vals <-c(vals,"humidity" = "#194649")
-
-        }
-        if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
-          suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
-          gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
-            geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
-          labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
-          vals <-c(vals,"intensity" = "#a3d659")
-        }
+        #TODO A: Move to second panel
+        # if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
+        #   suffx_humidity = unique(subset(df, measure == "humidity")$uom)
+        # 
+        #     gl <- gl + geom_line(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms, color = "humidity"), size = line_size(), group = 3) +
+        #       geom_point(aes(y = subset(df, measure == "humidity")$value, x = subset(df, measure == "humidity")$hms , color = "humidity"), size = line_size()*3)
+        #     labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+        #     vals <-c(vals,"humidity" = "#194649")
+        # 
+        # }
+        # if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
+        #   suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
+        #   gl <- gl + geom_line(aes(subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms, color = "intensity"), size = line_size(), group = 4) +
+        #     geom_point(aes( y = subset(df, measure == "intensity" & uom == "lux")$value, x = subset(df, measure == "intensity" & uom == "lux")$hms , color = "intensity"), size = line_size()*3)
+        #   labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
+        #   vals <-c(vals,"intensity" = "#a3d659")
+        # }
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
@@ -1701,6 +1890,13 @@ server <- function(input, output, session) {
           vals <-c(vals,"so2" = "#B899E7")
           gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
+        }
+        if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
+          suffx_co = unique(subset(df, measure == "bc")$uom)
+          labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
+          vals <-c(vals,"bc" = "#c6c60f")
+          gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+            geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
         }
         if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
@@ -1878,9 +2074,21 @@ server <- function(input, output, session) {
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        #determine if aot or openaq node was clicked
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #OpenAQ node
+          vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+          lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
+          lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+          active <- "active"
+        }
+        else
+        {
         active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
         lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
         lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+        }
       }
       # if table input, get the vsn and the active status
       else{
@@ -1890,7 +2098,7 @@ server <- function(input, output, session) {
         vsn <- selected_row$vsn
         lng <-selected_row$longitude
         lat <- selected_row$latitude
-        }
+      }
     }
     else
       vsn <-NULL
@@ -1928,10 +2136,10 @@ server <- function(input, output, session) {
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
         
         if(!is.null(input$map_marker_click)){
-          v$lastvsn_dark <- vsn
+          v$lastvsn <- vsn #changed from lastvsn_dark
         }
         else if(!is.null(input$nodes_table_rows_selected)){
-          v$lastvsn_dark <-vsn
+          v$lastvsn <-vsn #changed from lastvsn_dark
         }
         
         if(time_range == TIME_RANGE_24HOURS){
@@ -2095,15 +2303,21 @@ server <- function(input, output, session) {
 
     
     time_range <- input$time_range
+    irrelevant_variable <- input$map_marker_click
+    
+    vsn <- isolate(v$lastvsn)
+    print("VSN!!!")
+    print(vsn)
     # vsn <- input$map_marker_click
-    if(!is.null(input$map_marker_click)){
-      vsn <- isolate(v$lastvsn_dark)
-    }
-    else if(!is.null(input$nodes_table_rows_selected)){
-      vsn <- isolate(v$lastvsn_dark)
-    }
-    else
-      vsn <- NULL
+    #COMMENTED THIS BECAUSE IT MAKES NO SENSE FOR COMPARISON GRAPH
+    # if(!is.null(input$map_marker_click)){
+    #   vsn <- isolate(v$lastvsn) #TODO A: Revert to v$lastvsn_dark if this causes problems
+    # }
+    # else if(!is.null(input$nodes_table_rows_selected)){
+    #   vsn <- isolate(v$lastvsn) #TODO A: Revert to v$lastvsn_dark if this causes problems
+    # }
+    # else
+    #   vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
       
@@ -2131,6 +2345,22 @@ server <- function(input, output, session) {
       gl
     }
     else {
+
+      #determine if aot or openaq node was clicked
+      if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+      {
+        #OpenAQ node
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
+        lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+        active <- "active"
+      }
+      else
+      {
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+        lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
+        lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+      }
       if(!(vsn == "Inactive")){
         
         if(time_range == TIME_RANGE_24HOURS){
