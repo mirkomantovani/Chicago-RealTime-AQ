@@ -37,12 +37,14 @@ library(RSocrata)
 
 library(base)
 
- Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+#Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
-#Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
+Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
 
+#new key by abhishek
 
+#Sys.setenv(DARKSKY_API_KEY = "5ba09d7b0b3669a512befe6433d35f33")
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
 
 # Constants
@@ -280,7 +282,7 @@ ui <- dashboardPage(
                               br(),
                               # h2("Node Data"),
                               selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),
-                              selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
+                              #selectizeInput(inputId = "time_range_ds", "Select time range", time_ranges, selected = time_ranges[2],width = "100%"),
                               tabsetPanel(
                                 tabPanel("TAB-1",
                                 tabsetPanel(
@@ -318,14 +320,14 @@ ui <- dashboardPage(
 
                                 checkboxGroupButtons(
                                   inputId = "measures1_ds",
-                                  choices = darksky_tracked_measures[1:5],
-                                  justified = TRUE, status = "primary", selected = darksky_tracked_measures[1:5],
+                                  choices = tab2_measures[1:5],
+                                  justified = TRUE, status = "primary", selected = tab2_measures[1:5],
                                   checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                                 ),
                                 checkboxGroupButtons(
                                   inputId = "measures2_ds",
-                                  choices = darksky_tracked_measures[6:9],
-                                  justified = TRUE, status = "primary", selected = darksky_tracked_measures[6:9],
+                                  choices = tab2_measures[6:10],
+                                  justified = TRUE, status = "primary", selected = tab2_measures[6:10],
                                   checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                                 )
                               )
@@ -1209,7 +1211,6 @@ server <- function(input, output, session) {
     nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
     nodes_by_sensor_oaq <- lapply(openaq_tracked_measures, function(measure) subset(nodes_oaq, nodes_oaq[[measure]] == TRUE))
     
-    
     nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
                                    nodes[[tracked_measures[2]]] == FALSE &
                                    nodes[[tracked_measures[3]]] == FALSE &
@@ -1657,20 +1658,21 @@ server <- function(input, output, session) {
       # currently the same values is shown for both imperial and metric 
       # to be changed accordingly based on the units in the dataset
       
-      if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
-        if(input$switch_units){
-          temp_suffx = "(Degrees Fahrenheit)"
-          gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-            geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
-        }
-        else{
-            temp_suffx = "(Degrees Celsius)"
-            gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-              geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
-            labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#6B1F13")
-        }
-      }
+      #MOVE THIS TO PANEL 2
+      # if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
+      #   if(input$switch_units){
+      #     temp_suffx = "(Degrees Fahrenheit)"
+      #     gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+      #       geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+      #   }
+      #   else{
+      #       temp_suffx = "(Degrees Celsius)"
+      #       gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+      #         geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+      #       labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
+      #       vals <-c(vals,"temperature" = "#6B1F13")
+      #   }
+      # }
       gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                     values = vals)
       gl
@@ -1742,7 +1744,6 @@ server <- function(input, output, session) {
     irrelevant_variable <- input$map_marker_click
     
     vsn <- isolate(v$lastvsn)
-    print(paste("VSN!?!?!?!?",vsn))
     # || input$switch_compare
     if(is.null(vsn)){
 
@@ -2005,7 +2006,7 @@ server <- function(input, output, session) {
   
   # Darksky table for current time 
   output$table_ds <- DT::renderDataTable(
-    if(is.null(input$map_marker_click$lat) && is.null(input$map_marker_click$lat)){
+    if(is.null(input$map_marker_click$lat) && is.null(input$map_marker_click$long)){
       DT::datatable({
         empty <- data.frame()
         empty
@@ -2067,6 +2068,7 @@ server <- function(input, output, session) {
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
+
     if(!is.null(vsn_)){
       #get input type either map or table
       
@@ -2130,7 +2132,7 @@ server <- function(input, output, session) {
     }
     else {
       
-      time_range <- input$time_range_ds
+      time_range <- input$time_range #changed from time_range_ds
       
       if(!(active == "Inactive")){
         # TODO check if AoT node or openAQ and get corresponding dataset
@@ -2143,6 +2145,38 @@ server <- function(input, output, session) {
           v$lastvsn <-vsn #changed from lastvsn_dark
         }
         
+        
+        flag <- -1
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          #no data from openaq in tab 2 , so ignore
+          flag <- 0
+        }
+        else
+        {
+          print("vsn:")
+          print(vsn)
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df_aot <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df_aot <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df_aot <- get_and_preprocess_observations_7d(vsn)
+          }
+          df_aot <- as.data.frame(lapply(df_aot, unlist))
+          retrieved_measures <- unique(df_aot$measure)
+          print("RETRIEVED MEASURES:")
+          print(retrieved_measures)
+          levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
+          levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
+          levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
+          flag <- 1
+        }
+
+        
+        
         if(time_range == TIME_RANGE_24HOURS){
           df <- get_and_preprocess_observations_24h_ds(lng,lat)
         } else if(time_range == TIME_RANGE_7DAYS){
@@ -2150,13 +2184,12 @@ server <- function(input, output, session) {
         }
 
         if(time_range == TIME_RANGE_CURRENT){
-          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+          plot_title <- paste("Current (or most recent) data for node:",as.character(vsn))
         } else if(time_range == TIME_RANGE_24HOURS){
-          plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+          plot_title <- paste("Last 24 hours data for node:",as.character(vsn))
         } else {
-          plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+          plot_title <- paste("Last 7 days data for node:",as.character(vsn))
         }
-
         
         
         gl <- ggplot() +
@@ -2188,6 +2221,43 @@ server <- function(input, output, session) {
             vals <-c(vals,"humidity" = "#a6cee3")
           
         }
+        
+        if(flag == 1)
+        {
+        if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
+          suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$uom)
+          gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
+            geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms , color = "intensity(AOT)"), size = line_size()*3)
+          labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
+          vals <-c(vals,"intensity(AOT)" = "#a3d659")
+        }
+
+
+        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
+          suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
+          # y = subset(df, measure == "humidity")$value
+            gl <- gl + geom_line(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms, color = "humidity(AOT)"), size = line_size(), group = 3) +
+              geom_point(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms , color = "humidity(AOT)"), size = line_size()*3)
+            labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
+            vals <-c(vals,"humidity(AOT)" = "#194649")
+        }
+
+        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
+          if(input$switch_units){
+            temp_suffx = "(Degrees Fahrenheit)"
+            gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
+              geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
+          }
+          else{
+            temp_suffx = "(Degrees Celsius)"
+            gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
+              geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
+            labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
+            vals <-c(vals,"temperature(AOT)" = "#6B1F13")
+          }
+        }
+        }
+        
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_windSpeed = ""
             gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
@@ -2212,14 +2282,14 @@ server <- function(input, output, session) {
             vals <-c(vals,"cloudCover" = "#33a02c")
           
         }
-        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_visibility =""
-            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
-              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
-            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-            vals <-c(vals,"visibility" = "#fb9a99")
-          
-        }
+        # if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
+        #   suffx_visibility =""
+        #     gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+        #       geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+        #     labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+        #     vals <-c(vals,"visibility" = "#fb9a99")
+        #   
+        # }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_pressure = ""
             gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
@@ -2262,7 +2332,7 @@ server <- function(input, output, session) {
               labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
               vals <-c(vals,"temperature" = "#ff7f00")
         }
-      
+        print(vals)
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                       values = vals)
         gl
@@ -2296,19 +2366,18 @@ server <- function(input, output, session) {
   
 
   
-  #####################################################  GRAPHICAL DATA COMPARISON    #####################################################  
+  #####################################################  GRAPHICAL DATA DARKSKY COMPARISON    #####################################################  
   
   # Darksky Second plot for comparison
   output$graphical_data_last_ds <- renderPlot({
     autoInvalidate50()
-
-    
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
     
     vsn <- isolate(v$lastvsn)
     print("VSN!!!")
     print(vsn)
+    
     # vsn <- input$map_marker_click
     #COMMENTED THIS BECAUSE IT MAKES NO SENSE FOR COMPARISON GRAPH
     # if(!is.null(input$map_marker_click)){
@@ -2346,30 +2415,33 @@ server <- function(input, output, session) {
       gl
     }
     else {
-
       #determine if aot or openaq node was clicked
       if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
       {
         #OpenAQ node
-        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
-        lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
-        lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+        #vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        print(nodes_oaq)
+        lat <- subset(nodes_oaq,vsn==vsn)$latitude[1]
+        lng <- subset(nodes_oaq,vsn==vsn)$longitude[1]
         active <- "active"
       }
       else
       {
-        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
-        lat <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[4]][2]
-        lng <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[5]][2]
+        #active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+        lat <- subset(nodes,address==vsn)$latitude[1]
+        lng <- subset(nodes,address==vsn)$longitude[1]
+        active <- "active"
       }
       if(!(vsn == "Inactive")){
         
+        #This is darksky preprocessing
         if(time_range == TIME_RANGE_24HOURS){
-          df <- get_and_preprocess_observations_24h_ds(vsn)
+          df <- get_and_preprocess_observations_24h_ds(lng,lat)
         } else if(time_range == TIME_RANGE_7DAYS){
-          df <- get_and_preprocess_observations_7d_ds(vsn)
+          df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
         
+        #need to do preprocessing for aot/openaq here
         
         plot_title <- paste("Data for node:",vsn)
         # df <- as.data.frame(lapply(df, unlist))
@@ -2530,11 +2602,33 @@ server <- function(input, output, session) {
     ,
       options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
       ), rownames = FALSE,
-      caption = 'Nodes infomration for the various sensors availability',selection = "single"
+      caption = 'Nodes information for the various sensors availability',selection = "single"
       )
   )
   
-    
+  # AoT sensor nodes table
+  output$tab1_table <- DT::renderDataTable(
+    DT::datatable({
+      tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
+      
+      # nodes[nodes_with_no_data,nodes$status] <-"inactive"
+      
+      cols <- c("vsn","address","status")
+      nodes_main <-nodes_table %>% select(cols)
+      #show only the selected measures infomration
+      selected = c(input$measures1_sites,input$measures2_sites)
+      for(measure in selected){
+        nodes_main[[measure]] <- nodes_table[[measure]]
+      }
+      nodes_main <- nodes_main[which(apply(nodes_main, 1, function(r) any(r %in% c("TRUE")))),]
+      nodes_main
+    }
+    ,
+    options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
+    ), rownames = FALSE,
+    caption = 'Nodes information for the various sensors availability',selection = "single"
+    )
+  )
 
 
   # About HTML
