@@ -254,7 +254,7 @@ ui <- dashboardPage(
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
-               materialSwitch(inputId = "nodes_table_switch", label = "Show map sites only", status = "primary",value=FALSE)
+               materialSwitch(inputId = "nodes_table_switch", label = "Hide tabular nodes panel", status = "primary",value=FALSE)
                ),
       menuItem("Heatmap Inputs",
                div(
