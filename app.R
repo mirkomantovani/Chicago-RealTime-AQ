@@ -1224,7 +1224,7 @@ server <- function(input, output, session) {
       addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
       addLayersControl(
         baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
-        overlayGroups = c(tracked_measures, "Inactive", "Traffic"),
+        overlayGroups = c(tracked_measures, "bc", "Inactive", "Traffic"),
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
