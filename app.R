@@ -37,6 +37,9 @@ library(RSocrata)
 
 library(base)
 
+library(sp)
+library(raster)
+library(gstat)
 # Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
@@ -56,6 +59,12 @@ time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
 openaq_tracked_measures <- c("co","bc","no2","o3","so2","pm2.5","pm10")
 darksky_tracked_measures <- c("temperature", "humidity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+
+all_measures <- paste0("AoT-",tracked_measures)
+all_measures <- c(all_measures,paste0("Darksky-",darksky_tracked_measures))
+all_measures <- c(all_measures,paste0("OpenAQ-",openaq_tracked_measures))
+
+value_types <- c("min","max","average")
 
 last <- NULL
 
@@ -239,20 +248,21 @@ ui <- dashboardPage(
     width = 250,
     sidebarMenu(
       useShinyalert(),
-      span(h2("  Main Menu", style = "margin-left: 10px; font-size: 20px;")),
+      span(h2("Main Menu", style = "margin-left: 10px; font-size: 20px;")),
       menuItem("Geospatial Visualizations", tabName = "geospatial_viz"),
       # menuItem("Tabular Visualizations", tabName = "tabular_viz"),
-
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
-               materialSwitch(inputId = "nodes_table_switch", label = "Show map sites only", status = "primary",value=FALSE),
-               
-               startExpanded = TRUE),
+               materialSwitch(inputId = "nodes_table_switch", label = "Show map sites only", status = "primary",value=FALSE)
+               ),
+      menuItem("Heatmap Inputs",
+               div(
+               selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-co",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_7DAYS,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
-
     ),
-    # custom CSS
     includeCSS("style.css")
   ),
   dashboardBody(
@@ -309,7 +319,6 @@ ui <- dashboardPage(
                               width = 1000, height = "auto",
                               br(),
                               box(width=NULL,height=NULL,
-
                               div(DT::dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
                               )
                               ,
@@ -325,8 +334,6 @@ ui <- dashboardPage(
                                 justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                 checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                               )
-                              
-                              
                 ),
                 
                 # absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
@@ -521,6 +528,7 @@ server <- function(input, output, session) {
     df <- cbind(df[c("vsn", "address")], temp)
   }
   
+  
   #gets the observations relative to h hours ago
   get_h_hours_observations <- function(h, vsn){
     # d <- get_last_available_date()
@@ -544,21 +552,20 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  get_7_days_observations <- function(d){
-    
+  #gets the observations relative to h hours ago for all nodes
+  
+  get_h_hours_observations_all_nodes <- function(h){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(size=1))$timestamp
-    # print(timestamp)
-    t1 <- ymd_hms(timestamp)-lubridate::days(d-1)
-    t1 <- force_tz(t1, "America/Chicago")
-    t2 <- ymd_hms(timestamp)-lubridate::days(d)
-    t2 <- force_tz(t2, "America/Chicago")
-    # print(t1)
-    # print(t2)
+    
+    t1 <- sub_hour_to_timestamp(timestamp,h-1)
+    t2 <- sub_hour_to_timestamp(timestamp,h)
     df <- ls.observations(filters=list(
       timestamp=paste("ge:",t2,sep=""),
       timestamp=paste("lt:",t1,sep=""),
       size=200
+      # timestamp="ge:2018-08-01T00:00:00",
+      # timestamp="lt:2018-09-01T00:00:00"
     ))
     
     df <- data.frame(df)
@@ -568,6 +575,7 @@ server <- function(input, output, session) {
     return(df)
   }
   
+    
   #gets the observations relative to h hours ago
   get_d_days_observations <- function(d, vsn){
     # d <- get_last_available_date()
@@ -614,9 +622,36 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  get_and_preprocess_observations_7d_allnodes <- function(){
+  # function to get data for all the nodes for a day
+  get_d_days_observations_all_nodes <- function(d){
+    
+    # d <- get_last_available_date()
+    timestamp <- ls.observations(filters=list(size=1))$timestamp
+    # print(timestamp)
+    t1 <- ymd_hms(timestamp)-lubridate::days(d-1)
+    t1 <- force_tz(t1, "America/Chicago")
+    t2 <- ymd_hms(timestamp)-lubridate::days(d)
+    t2 <- force_tz(t2, "America/Chicago")
+    # print(t1)
+    # print(t2)
+    df <- ls.observations(filters=list(
+      timestamp=paste("ge:",t2,sep=""),
+      timestamp=paste("lt:",t1,sep=""),
+      size=200
+    ))
+    
+    df <- data.frame(df)
+    df$location.type <- NULL
+    df$location.geometry <- NULL
+    
+    return(df)
+  }
+  
+  # function to get data for all the nodes for seven days
+  
+    get_and_preprocess_observations_7d_allnodes <- function(){
     days <- c(1:7)
-    dfs <- lapply(days, get_7_days_observations)
+    dfs <- lapply(days, get_d_days_observations_all_nodes)
     df1 <- do.call(rbind, dfs)
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
@@ -635,8 +670,6 @@ server <- function(input, output, session) {
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
     
-    
-
     return(df)
   }
   
@@ -696,6 +729,37 @@ server <- function(input, output, session) {
     return(df)
   }
   
+  # get data for all nodes for last 24 horus
+  get_and_preprocess_observations_24h_all_nodes <- function(){
+    # Every 5210 observations it's 1 hour
+    
+    # OLD METHOD, 24 requests
+    hours <- c(1:24)
+    dfs <- lapply(hours, get_h_hours_observations_all_nodes)
+    df1 <- do.call(rbind, dfs)
+    df <- data.frame(df1$node_vsn)
+    
+    # All the observations in 1 request strategy
+    # df1 <- get_last_24h_data(vsn)
+    # df <- data.frame(df1$node_vsn)
+    
+    names(df) <- c("vsn")
+    df$measure <- df1$sensor_path
+    df$time <- df1$timestamp
+    df$value <- df1$value
+    df$measure <-lapply(df$measure,extract_sensor)
+    df$uom <- df1$uom
+    df <- filter_out_untracked_measures(df)
+    df$measure <- unlist(df$measure)
+    df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+    df <- extract_date_fields_h(df)
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms), 
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","h","year","month","day", "hms", "value")
+    
+    return(df)
+  }
+  
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
     # filter out nodes not yet deployed
@@ -719,6 +783,33 @@ server <- function(input, output, session) {
     
     return(df)
   }
+  
+  # get current data for all the nodes
+  
+  get_and_preprocess_observations_all_nodes <- function(){
+    df1 <- ls.observations(filters=list())
+    # filter out nodes not yet deployed
+    df <- data.frame(df1$node_vsn)
+    if(nrow(df)>0){
+      names(df) <- c("vsn")
+      df$measure <- df1$sensor_path
+      df$time <- df1$timestamp
+      df$value <- df1$value
+      df$measure <-lapply(df$measure,extract_sensor)
+      df$uom <- df1$uom
+      df <- filter_out_untracked_measures(df)
+      
+      df$measure <- unlist(df$measure)
+      df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom), 
+                     FUN=mean)
+      names(df) <- c("vsn","measure","time","uom","value")
+      df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
+      df <- extract_date_fields(df)
+    }
+    
+    return(df)
+  }
+  
   
   sub_hour_to_timestamp <- function(timestamp, h){
     pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
@@ -915,7 +1006,7 @@ server <- function(input, output, session) {
       v$pie_text_size <<- 15
       v$slant_text_angle <<- 0
       v$point_size <<- 30
-      v$zoom_level <<- 13
+      v$zoom_level <<- 12
       v$tooltip_width <<- 180
       v$tooltip_height <<- 80
       v$tooltip_text_size <<- 28
@@ -1052,6 +1143,7 @@ server <- function(input, output, session) {
   nodes_table[nodes_table[[tracked_measures[9]]] == FALSE, ][, tracked_measures[9]] <- "-"
   nodes_table[nodes_table[[tracked_measures[10]]] == FALSE, ][, tracked_measures[10]] <- "-"
   
+
   ################################# MAP #################################
   output$map <- renderLeaflet({
     
@@ -1097,8 +1189,6 @@ server <- function(input, output, session) {
     
     # highlightOptions = highlightOptions(weight = 9, bringToFront = F, opacity = 1)
     
-  
-    
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
@@ -1107,7 +1197,8 @@ server <- function(input, output, session) {
     openAQColor <- "green"
     
     map = leaflet(nodes) %>% 
-      # AoT nodes
+    
+            # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
       addCircleMarkers(nodes_by_sensor[[3]]$longitude, nodes_by_sensor[[3]]$latitude, group = tracked_measures[3], layerId=paste(nodes_by_sensor[[3]]$vsn,tracked_measures[3]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[3]]$vsn,"</b>"),nodes_by_sensor[[3]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1131,7 +1222,6 @@ server <- function(input, output, session) {
       addProviderTiles(providers$CartoDB.DarkMatter, group = "Dark Matter") %>%
       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
       addProviderTiles(providers$Stamen.Terrain, group = "Terrain") %>%
-      
       addLayersControl(
         baseGroups = c("Default", "Dark Matter", "Satellite", "Terrain"),
         overlayGroups = c(tracked_measures, "Inactive", "Traffic"),
@@ -1141,7 +1231,7 @@ server <- function(input, output, session) {
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level()) 
     
       for(i in 1:nrow(congestion_df)){
-        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]), 
+        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
                            lng = as.numeric(congestion_df[i, c(12, 7)]),
                            color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
                            opacity = 0.8,
@@ -1151,9 +1241,9 @@ server <- function(input, output, session) {
                            highlightOptions = highlightOptions(
                              # color = "white",
                              weight = 9, bringToFront = F, opacity = 1)
-                            
+
                            )
-                           
+
         }
     
     map
@@ -1207,7 +1297,111 @@ server <- function(input, output, session) {
                  v$table_inputs <- append(v$table_inputs,list(v$vsn))
                  }
     )
+    
+    pt2grid <- function(ptframe,n) {
+      bb <- bbox(ptframe)  
+      ptcrs <- proj4string(ptframe)  
+      xrange <- abs(bb[1,1] - bb[1,2])  
+      yrange <- abs(bb[2,1] - bb[2,2])  
+      cs <- c(xrange/n,yrange/n)  
+      cc <- bb[,1] + (cs/2)  
+      dc <- c(n,n)  
+      x1 <- GridTopology(cellcentre.offset=cc,cellsize=cs,cells.dim=dc)  
+      x2 <- SpatialGrid(grid=x1,proj4string=CRS(ptcrs))
+      return(x2)
+    }
+    
+    #function to get the raster image for interpolated measure map for the selected measure
+    
+    get_interpolated_map <- function(sel_measure,time_range,sel_value_type){
+      
+      selected <- strsplit(sel_measure, "-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+      source <- strsplit(sel_measure, "-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
 
+      if(source=="AoT"){
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_all_nodes()
+        } else if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h_all_nodes()
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d_allnodes()
+        }
+      }
+      else if(source=="Darksky"){
+        #TODO
+      }
+      else if (source=="OpenAQ"){
+        #TODO
+      }
+      
+      #get the specific value aggregation
+      
+      if(sel_value_type=="average"){
+        df[df$measure==selected,]%>%
+          group_by(vsn) %>%
+          summarize(req_measure = mean(value))%>%
+          {. ->> results}
+      }
+      else if (sel_value_type=="min"){
+        df[df$measure==selected,]%>%
+          group_by(vsn) %>%
+          summarize(req_measure = min(value))%>%
+          {. ->> results}
+      }
+      else{
+        df[df$measure==selected,]%>%
+          group_by(vsn) %>%
+          summarize(req_measure = max(value))%>%
+          {. ->> results}
+      }
+        
+
+      chiCA <- shapefile("data/ChiComArea.shp")
+      
+      active_nodes <- nodes_table[nodes_table$status=="Active",]
+      
+      data <- merge(results, active_nodes, by = c("vsn"))
+      
+
+      coordinates(data) <- data[,c("longitude", "latitude")]
+      
+      proj4string(data) <- CRS("+init=epsg:4326")
+      
+      mes <- data$req_measure
+      
+      # print(mes)
+      
+      tmp.vgm <- variogram(data$req_measure ~ 1, data)
+      
+      fit.sph<- fit.variogram(tmp.vgm, model=vgm("Sph"))
+      
+      
+      chi.grid <- pt2grid((chiCA),30)
+      
+      chi.grid <- pt2grid((chiCA),100)
+      
+      projection(chi.grid) <- CRS("+init=epsg:4326")
+      projection(data) <-  CRS("+init=epsg:4326")
+      projection(chiCA) <- CRS("+init=epsg:4326")
+      
+      kriged <- krige(data$req_measure ~ 1, data, chi.grid, model = fit.sph)
+      
+      chi.kriged <- kriged[chiCA,]
+      
+      return (chi.kriged)
+      
+    }
+    
+    # add the heatmap when the heatmap switch is enabled or based on any change in heatmap inputs
+    observeEvent({input$heat_map
+      input$heatmap_measure
+      input$map_time_range
+      input$measure_type}, {
+      proxy <- leafletProxy("map")
+      #interpolation map
+      if(input$heat_map)
+        proxy %>% addRasterImage(raster(get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)), opacity = 0.8)
+    })
     
   
 #####################################################  GRAPHICAL DATA    #####################################################  
@@ -2288,7 +2482,8 @@ server <- function(input, output, session) {
     # nodes[nodes_with_no_data,nodes$status] <-"inactive"
 
     cols <- c("vsn","address","status")
-    nodes_main <-nodes_table %>% select(cols)
+    nodes_main <-nodes_table %>% dplyr::select(cols)
+
     #show only the selected measures infomration
     selected = c(input$measures1_sites,input$measures2_sites)
     for(measure in selected){
