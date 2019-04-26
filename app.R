@@ -258,7 +258,7 @@ ui <- dashboardPage(
                ),
       menuItem("Heatmap Inputs",
                div(
-               selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-co",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-temperature",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_7DAYS,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
@@ -649,7 +649,7 @@ server <- function(input, output, session) {
   
   # function to get data for all the nodes for seven days
   
-    get_and_preprocess_observations_7d_allnodes <- function(){
+    get_and_preprocess_observations_7d_all_nodes <- function(){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations_all_nodes)
     df1 <- do.call(rbind, dfs)
@@ -1324,15 +1324,23 @@ server <- function(input, output, session) {
         } else if(time_range == TIME_RANGE_24HOURS){
           df <- get_and_preprocess_observations_24h_all_nodes()
         } else if(time_range == TIME_RANGE_7DAYS){
-          df <- get_and_preprocess_observations_7d_allnodes()
+          df <- get_and_preprocess_observations_7d_all_nodes()
         }
       }
       else if(source=="Darksky"){
-        #TODO
+        # if(time_range == TIME_RANGE_CURRENT){
+        #   df <- get_and_preprocess_observations_all_nodes()
+        # } else if(time_range == TIME_RANGE_24HOURS){
+        #   df <- get_and_preprocess_observations_24h_all_nodes_ds()
+        # } else if(time_range == TIME_RANGE_7DAYS){
+        #   df <- get_and_preprocess_observations_7d_all_nodes_ds()
+        # }
       }
       else if (source=="OpenAQ"){
         #TODO
       }
+      
+      # print(head(df))
       
       #get the specific value aggregation
       
@@ -2048,9 +2056,34 @@ server <- function(input, output, session) {
     res <- extract_date_fields_h(res)
     return (res)
   }
+
+  #preprocess darksky data for last 24 hours for all nodes
+  
+  get_and_preprocess_observations_24h_all_nodes_ds <- function(lng,lat){
+    
+    now <-Sys.time()
+    yes <-ymd_hms(now) - lubridate::hours(24)
+    yes<-force_tz(yes, "America/Chicago")
+    ds <-seq(yes, now,by="hour")[1:25]
+    ds <-ymd_hms(ds)
+    
+    #get all active nodes from AoT and their coordinates and then query them
+    
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+    
+    lng <- c(active_nodes$lng)
+    lat <- c(active_nodes$lat)
+    
+    dfs <- mapply(lng,lat, get_and_preprocess_observations_24h_ds)
+    
+    res <- do.call(rbind, dfs)
+    
+    return (res)
+  }
   
   #preprocess darksky data for last 7 days
   get_and_preprocess_observations_7d_ds <- function(lng,lat){
+    
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
     map(~get_forecast_for(lng, lat, .x)) %>%
     map_df("daily") %>%
@@ -2058,7 +2091,28 @@ server <- function(input, output, session) {
     last_7 <- extract_date_fields_d(last_7)
     return (last_7)
   }
-  
+
+  #preprocess darksky data for last 7 days for all nodes
+  get_and_preprocess_observations_7d_all_nodes_ds <- function(lng,lat){
+    
+    #get all active nodes from AoT and their coordinates and then query them
+
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
+
+    dfs <- mapply(get_and_preprocess_observations_7d_ds,lng,lat)
+    
+    res <- do.call(rbind, dfs)
+    
+    save_df_as_fst(res,"fst/all_nodes_7days.fst")
+    print(head(res))
+    
+    return (res)
+  }
+
+    
   #Darksky graphical data
   #This takes the input from AoT table and maps markets
   
