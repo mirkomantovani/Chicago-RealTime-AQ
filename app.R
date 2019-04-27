@@ -37,14 +37,17 @@ library(RSocrata)
 
 library(base)
 
-Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+#Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
-#Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
+Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
 
 #new key by abhishek
 
 #Sys.setenv(DARKSKY_API_KEY = "5ba09d7b0b3669a512befe6433d35f33")
+
+Sys.setenv(DARKSKY_API_KEY = "3a786ec08cd24ff6a6f807d957d5cfff")
+
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
 
 # Constants
