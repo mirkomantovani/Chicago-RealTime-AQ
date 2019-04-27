@@ -1631,7 +1631,9 @@ server <- function(input, output, session) {
         
         chi.kriged <- kriged[chiCA,]
         
-        return (chi.kriged)
+        response <- list("map"=chi.kriged,"avg"=results$req_measure)
+        
+        return (response)
         
       }
       
@@ -1645,10 +1647,24 @@ server <- function(input, output, session) {
       proxy <- leafletProxy("map")
       #interpolation map
       if(input$heat_map){
-        interpolated_map <- get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)
-        if(!is.null(interpolated_map))
-          proxy %>% addRasterImage(raster(interpolated_map), opacity = 0.8)
-      }
+          response <- get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)
+          if(!is.null(response$map)){
+            mypal <- colorNumeric(palette = "viridis", reverse = TRUE, domain = response$avg
+                                  ,na.color = "#ffffff11"
+            )
+            html_legend <- "
+      <b>Nodes</b><br>
+            <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
+            <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
+            <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
+            "
+            
+            proxy %>% clearControls() %>% 
+            addControl(html = html_legend, position = "bottomright") %>%
+              
+            addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)        
+          }
+        }
     })
     
   
