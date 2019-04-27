@@ -58,7 +58,7 @@ UPDATE_NODES_STATUS <- FALSE
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
 openaq_tracked_measures <- c("co","bc","no2","o3","so2","pm2.5","pm10")
-darksky_tracked_measures <- c("temperature", "humidity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
 
 all_measures <- paste0("AoT-",tracked_measures)
 all_measures <- c(all_measures,paste0("Darksky-",darksky_tracked_measures))
@@ -784,7 +784,7 @@ server <- function(input, output, session) {
     return(df)
   }
   
-  # get current data for all the nodes
+  # get current data for all the AOT nodes
   
   get_and_preprocess_observations_all_nodes <- function(){
     df1 <- ls.observations(filters=list())
@@ -809,6 +809,7 @@ server <- function(input, output, session) {
     
     return(df)
   }
+  
   
   
   sub_hour_to_timestamp <- function(timestamp, h){
@@ -1328,13 +1329,19 @@ server <- function(input, output, session) {
         }
       }
       else if(source=="Darksky"){
-        # if(time_range == TIME_RANGE_CURRENT){
-        #   df <- get_and_preprocess_observations_all_nodes()
-        # } else if(time_range == TIME_RANGE_24HOURS){
-        #   df <- get_and_preprocess_observations_24h_all_nodes_ds()
-        # } else if(time_range == TIME_RANGE_7DAYS){
-        #   df <- get_and_preprocess_observations_7d_all_nodes_ds()
-        # }
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_all_nodes_ds()
+        } else if(time_range == TIME_RANGE_24HOURS){
+          if(file.exists("fst/all_nodes_24hours.fst"))
+            df <- read_fst("fst/all_nodes_24hours.fst")
+          else  
+            df <- get_and_preprocess_observations_24h_all_nodes_ds()
+        } else if(time_range == TIME_RANGE_7DAYS){
+          if(file.exists("fst/all_nodes_7days.fst"))
+            df <- read_fst("fst/all_nodes_7days.fst")
+          else  
+            df <- get_and_preprocess_observations_7d_all_nodes_ds()
+        }
       }
       else if (source=="OpenAQ"){
         #TODO
@@ -1343,26 +1350,61 @@ server <- function(input, output, session) {
       # print(head(df))
       
       #get the specific value aggregation
-      
-      if(sel_value_type=="average"){
-        df[df$measure==selected,]%>%
-          group_by(vsn) %>%
-          summarize(req_measure = mean(value))%>%
-          {. ->> results}
-      }
-      else if (sel_value_type=="min"){
-        df[df$measure==selected,]%>%
-          group_by(vsn) %>%
-          summarize(req_measure = min(value))%>%
-          {. ->> results}
-      }
-      else{
-        df[df$measure==selected,]%>%
-          group_by(vsn) %>%
-          summarize(req_measure = max(value))%>%
-          {. ->> results}
-      }
+      if(source=="AoT"){
         
+        if(sel_value_type=="average"){
+          df[df$measure==selected,]%>%
+            group_by(vsn) %>%
+            summarize(req_measure = mean(value))%>%
+            {. ->> results}
+        }
+        else if (sel_value_type=="min"){
+          df[df$measure==selected,]%>%
+            group_by(vsn) %>%
+            summarize(req_measure = min(value))%>%
+            {. ->> results}
+        }
+        else{
+          df[df$measure==selected,]%>%
+            group_by(vsn) %>%
+            summarize(req_measure = max(value))%>%
+            {. ->> results}
+        }
+      }
+      else if(source=="Darksky"){
+        if(sel_value_type=="average"){
+          df1 <- data.frame(df$vsn)
+          names(df1) <- c("vsn")
+          df1$measure <- df[[selected]]
+          
+          df1 %>%
+            group_by(vsn) %>%
+            summarize(req_measure = mean(measure))%>%
+            {. ->> results}
+        }
+        else if (sel_value_type=="min"){
+          df1 <- data.frame(df$vsn)
+          names(df1) <- c("vsn")
+          df1$measure <- df[[selected]]
+          
+          df1 %>%
+            group_by(vsn) %>%
+            summarize(req_measure = min(measure))%>%
+            {. ->> results}
+        }
+        else{
+          df1 <- data.frame(df$vsn)
+          names(df1) <- c("vsn")
+          df1$measure <- df[[selected]]
+          
+          df1 %>%
+            group_by(vsn) %>%
+            summarize(req_measure = max(measure))%>%
+            {. ->> results}
+        }
+        
+      
+      }
 
       chiCA <- shapefile("data/ChiComArea.shp")
       
@@ -2037,9 +2079,48 @@ server <- function(input, output, session) {
     }
     )
 
+  # get current data for darksky
+  
+  get_and_preprocess_observations_ds <- function(lng,lat) {
+    
+    current_forecast = get_current_forecast(input$map_marker_click$lat, input$map_marker_click$lng,exclude="minutely,hourly,daily")
+    curr = data.frame(current_forecast['currently'])
+    names(curr) <- substring(names(curr),11,nchar((names(curr))))
+    darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
+    df <- data.frame(t(subset(curr,select = darksky_tracked_measures)))
+    names(df) <- c("value")
+    measures <-darksky_tracked_measures
+    curr_data <- data.frame(measures = darksky_tracked_measures,
+                            value = df)
+  }
+  
+  
+  # get current data for all the nodes for darksky
+  
+  get_and_preprocess_observations_all_nodes_ds <- function(){
+    #get all active nodes from AoT and their coordinates and then query them
+    
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+    
+    lng <- c(active_nodes$lng)
+    lat <- c(active_nodes$lat)
+    
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()
+    
+    save_df_as_fst(res,"fst/all_nodes_current.fst")
+    
+    # print(head(res))
+    
+    df <- extract_date_fields(df)
+  
+    return(df)
+  }
+
+  
   #preprocess darksky data for last 24 hours  
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
 
+    # print("in preprocess")
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
     yes<-force_tz(yes, "America/Chicago")
@@ -2061,22 +2142,20 @@ server <- function(input, output, session) {
   
   get_and_preprocess_observations_24h_all_nodes_ds <- function(lng,lat){
     
-    now <-Sys.time()
-    yes <-ymd_hms(now) - lubridate::hours(24)
-    yes<-force_tz(yes, "America/Chicago")
-    ds <-seq(yes, now,by="hour")[1:25]
-    ds <-ymd_hms(ds)
-    
     #get all active nodes from AoT and their coordinates and then query them
     
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
     
-    lng <- c(active_nodes$lng)
-    lat <- c(active_nodes$lat)
+    print(head(active_nodes))
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
     
-    dfs <- mapply(lng,lat, get_and_preprocess_observations_24h_ds)
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_24h_ds)) %>% unnest()
     
-    res <- do.call(rbind, dfs)
+    save_df_as_fst(res,"fst/all_nodes_24hours.fst")
+    
+    print(head(res))
+    
     
     return (res)
   }
@@ -2097,19 +2176,18 @@ server <- function(input, output, session) {
     
     #get all active nodes from AoT and their coordinates and then query them
 
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
 
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
 
-    dfs <- mapply(get_and_preprocess_observations_7d_ds,lng,lat)
+    df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
     
-    res <- do.call(rbind, dfs)
+    save_df_as_fst(df,"fst/all_nodes_7days.fst")
     
-    save_df_as_fst(res,"fst/all_nodes_7days.fst")
-    print(head(res))
+    print(head(df))
     
-    return (res)
+    return (df)
   }
 
     
