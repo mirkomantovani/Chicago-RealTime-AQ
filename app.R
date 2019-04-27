@@ -811,7 +811,126 @@ server <- function(input, output, session) {
   }
   
   
+  # get all nodes data for open AQ last 7 days
   
+  ls.observations_openaq_7d_all_nodes <- function (time) {
+    # build url, send request, get response
+    
+    data <- aq_measurements(city = "Chicago-Naperville-Joliet",date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date()))
+    df <- as.data.frame.list(data)
+    attr(df, "value") <- data$value
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+  # get all nodes data for open AQ last 7 days
+  
+  get_and_preprocess_observations_7d_all_nodes_openaq <- function(){
+    
+    df1 <- ls.observations_openaq_7d_all_nodes("curr")
+
+    df <- data.frame(df1$location)
+    names(df) <- c("vsn")
+    df$measure <- df1$parameter
+    levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+    df$time <- df1$dateLocal
+    df$value <- df1$value
+    
+    df$uom <- df1$unit
+    df$longitude <- df1$longitude
+    df$latitude <- df1$latitude
+    df$year <- format(df$time, format = "%Y")
+    df$month <- format(df$time, format = "%m")
+    df$day <- format(df$time, format = "%d")
+    df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms,df$longitude,df$latitude),
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms", "longitude","latitude","value")
+    return(df)
+    
+  }
+  
+  # get data for all nodes for open aq last 24 hours
+  
+  ls.observations_openaq_24h_all_nodes <- function (time) {
+    # build url, send request, get response
+    # build data frame
+    data <- aq_measurements(city = "Chicago-Naperville-Joliet",date_from = as.character(Sys.Date()), date_to = as.character(Sys.Date()+1))
+    df <- as.data.frame.list(data)
+    attr(df, "timestamp") <- data$dateLocal # TODO modified because creates problems when no observations if as.POS.. as.POSIXlt(data$timestamp)
+    attr(df, "value") <- data$value
+    attr(df, "location") <- data$location
+    
+    # return data frame
+    return(df)
+  }
+  
+    get_and_preprocess_observations_24h_openaq_all_nodes <- function(){
+    df1 <- ls.observations_openaq_24h_all_nodes("curr")
+    df <- data.frame(df1$location)
+    names(df) <- c("vsn")
+    df$measure <- df1$parameter
+    levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+    df$time <- df1$dateLocal
+    df$value <- df1$value
+    df$longitude <- df1$longitude
+    df$latitude <- df1$latitude
+    
+    df$uom <- df1$unit
+    
+    df$year <- format(df$time, format = "%Y")
+    df$month <- format(df$time, format = "%m")
+    df$day <- format(df$time, format = "%d")
+    df$h <- format(df$time, format = "%H")
+    df$hms <- paste("d:",df$day, "h:", df$h)
+    df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms,df$longitude,df$latitude),
+                   FUN=mean)
+    names(df) <- c("vsn","measure","uom","year","month","day","hms","longitude","latitude","value")
+    return(df)
+  }
+  
+    #get all nodes data for openAQ for current time
+    
+    ls.observations_openaq_all_nodes <- function (time) {
+      # build url, send request, get response
+      # build data frame
+      #TODO A: Retrieving latest stats here as some locations do not have updates in the past hour
+      #data <- aq_measurements(city = "Chicago-Naperville-Joliet",location=vsn,date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date()))
+      data <- aq_latest(country = "US", city = "Chicago-Naperville-Joliet")
+      df <- as.data.frame.list(data)
+      attr(df, "value") <- data$value
+      attr(df, "location") <- data$location
+      
+      # return data frame
+      return(df)
+    }
+    
+    get_and_preprocess_observations_openaq_all_nodes <- function(){
+      df1 <- ls.observations_openaq_all_nodes("curr")
+      df <- data.frame(df1$location)
+      names(df) <- c("vsn")
+      df$measure <- df1$parameter
+      levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
+      df$time <- df1$lastUpdated
+      df$value <- df1$value
+      df$longitude <- df1$longitude
+      df$latitude <- df1$latitude
+      
+      df$uom <- df1$unit
+      
+      df$year <- format(df$time, format = "%Y")
+      df$month <- format(df$time, format = "%m")
+      df$day <- format(df$time, format = "%d")
+      df$hms <- paste(df$month, "/", df$day,"/",substr(df$year,3,4), sep="")
+      df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms,df$longitude,df$latitude),
+                     FUN=mean)
+      names(df) <- c("vsn","measure","uom","year","month","day","hms","longitude","latitude","value")
+      #print(df)
+      return(df)
+    }
+    
   sub_hour_to_timestamp <- function(timestamp, h){
     pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
     pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
@@ -1344,13 +1463,18 @@ server <- function(input, output, session) {
         }
       }
       else if (source=="OpenAQ"){
-        #TODO
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_openaq_all_nodes()
+        } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h_openaq_all_nodes()
+        } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d_all_nodes_openaq()
+        }
       }
       
-      # print(head(df))
       
       #get the specific value aggregation
-      if(source=="AoT"){
+      if(source=="AoT" || source=="OpenAQ"){
         
         if(sel_value_type=="average"){
           df[df$measure==selected,]%>%
@@ -1402,24 +1526,28 @@ server <- function(input, output, session) {
             summarize(req_measure = max(measure))%>%
             {. ->> results}
         }
-        
-      
       }
+        
 
       chiCA <- shapefile("data/ChiComArea.shp")
-      
+
+      if(source=="AoT" || source=="Darksky"){
       active_nodes <- nodes_table[nodes_table$status=="Active",]
-      
       data <- merge(results, active_nodes, by = c("vsn"))
+      coordinates(data) <- data[,c("longitude", "latitude")]
+      }
+      else{
+        active_nodes <- nodes_oaq
+        data <- merge(results, active_nodes, by = c("vsn"))
+        coordinates(data) <- data[,c("longitude", "latitude")]
+        
+      }   
       
 
-      coordinates(data) <- data[,c("longitude", "latitude")]
       
       proj4string(data) <- CRS("+init=epsg:4326")
       
       mes <- data$req_measure
-      
-      # print(mes)
       
       tmp.vgm <- variogram(data$req_measure ~ 1, data)
       
@@ -2109,8 +2237,6 @@ server <- function(input, output, session) {
     
     save_df_as_fst(res,"fst/all_nodes_current.fst")
     
-    # print(head(res))
-    
     df <- extract_date_fields(df)
   
     return(df)
@@ -2146,7 +2272,6 @@ server <- function(input, output, session) {
     
     active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
     
-    print(head(active_nodes))
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
     
@@ -2154,7 +2279,7 @@ server <- function(input, output, session) {
     
     save_df_as_fst(res,"fst/all_nodes_24hours.fst")
     
-    print(head(res))
+    # print(head(res))
     
     
     return (res)
@@ -2184,8 +2309,6 @@ server <- function(input, output, session) {
     df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
     
     save_df_as_fst(df,"fst/all_nodes_7days.fst")
-    
-    print(head(df))
     
     return (df)
   }
