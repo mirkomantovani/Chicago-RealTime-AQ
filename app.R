@@ -37,14 +37,14 @@ library(RSocrata)
 
 library(base)
 
-#Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
 #Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
 
 #new key by abhishek
 
-Sys.setenv(DARKSKY_API_KEY = "5ba09d7b0b3669a512befe6433d35f33")
+#Sys.setenv(DARKSKY_API_KEY = "5ba09d7b0b3669a512befe6433d35f33")
 ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
 
 # Constants
@@ -2910,12 +2910,14 @@ server <- function(input, output, session) {
         #print(retrieved_measures)
 
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
+        
         df <- df[, (colnames(df) %in% keep)]
         print(df)
 
-
+        #labs and labs2 are the required variables for AoT 
+        #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
         labs2 <- list()
-
+        labs4 <- list()
         labs1 <- names(df)
         labs3 <- labs1[ - which(names(labs1) == c("hms"))]
         print(labs3)
@@ -2955,34 +2957,37 @@ server <- function(input, output, session) {
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_humidity = ""
           labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+          labs4 <- c(labs4,"humidity")
         }
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_windSpeed = ""
           labs3 <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+          labs4 <- c(labs4,"windSpeed")
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_windBearing = ""
           labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-
+          labs4 <- c(labs4,"windBearing")
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_cloudCover = ""
           labs3 <-c(labs3,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
-
+          labs4 <- c(labs4,"cloudCover")
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_visibility =""
           labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+          labs4 <- c(labs4,"visibility")
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_pressure = ""
           labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-
+          labs4 <- c(labs4,"pressure")
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_ozone  = ""
           labs3 <-c(labs3,"ozone" = paste("ozone",suffx_ozone, sep=" "))
-
+          labs4 <- c(labs4,"ozone")
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
         #   suffx_summary  = ""
@@ -2993,11 +2998,13 @@ server <- function(input, output, session) {
           if(input$switch_units){
             temp_suffx= df$""
             labs3 <-c(labs3,"temperature" = paste("temperature",suffx_summary, sep=" "))
+            labs4 <- c(labs4,"temperature")
           }
         }
         else{
           temp_suffx  = ""
           labs3 <-c(labs3,"temperature"= paste("temperature",temp_suffx, sep=" "))
+          labs4 <- c(labs4,"temperature")
         }
 
         convert_temp_to_metric <- function(values){
@@ -3005,6 +3012,10 @@ server <- function(input, output, session) {
         }
         #
         #final dataframe which is to be shown as table is df
+        #keep only variables in lab3 and discard others
+
+        df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
+
         if(flag == 1)
         {
           drops <- c("vsn","year","month","day","uom")
@@ -3021,10 +3032,37 @@ server <- function(input, output, session) {
         }
         else
         {
+          if(length(names(df))>1)
+          {
           df_combined <- df
           df_combined <- df_combined %>% select(hms, everything())
+          }
+          else
+          {
+            df_combined <- df
+          }
         }
-        if(length(names(df_combined))==1)
+        
+        labs <- unlist(labs)
+        labs2 <- unlist(labs2)
+        labs3 <- unlist(labs3)
+        labs4 <- unlist(labs4)
+        print(labs)
+        print(labs2)
+        print(labs3)
+        print(labs4)
+        #replace names of variables with variables+unit
+        #darksky
+        for(i in 1:length(labs3))
+        {
+          names(df_combined)[names(df_combined)==labs4[i]] <- labs3[i]
+        }
+        #aot
+        for(i in 1:length(labs))
+        {
+          names(df_combined)[names(df_combined)==labs2[i]] <- labs[i]
+        }
+        if(length(names(df_combined))<=1)
         {
           DT::datatable({
             empty <- data.frame()
