@@ -64,6 +64,8 @@ all_measures <- paste0("AoT-",tracked_measures)
 all_measures <- c(all_measures,paste0("Darksky-",darksky_tracked_measures))
 all_measures <- c(all_measures,paste0("OpenAQ-",openaq_tracked_measures))
 
+all_measures <-all_measures[-which(all_measures=="Darksky-summary")]
+
 value_types <- c("min","max","average")
 
 last <- NULL
@@ -260,7 +262,7 @@ ui <- dashboardPage(
                div(
                selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-temperature",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
-               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_7DAYS,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
+               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
     ),
     includeCSS("style.css")
@@ -1504,8 +1506,6 @@ server <- function(input, output, session) {
         }
       }
       else if(source=="Darksky"){
-        if(time_range!=TIME_RANGE_CURRENT){
-          
           if(sel_value_type=="average"){
             df1 <- data.frame(df$vsn)
             names(df1) <- c("vsn")
@@ -1537,34 +1537,7 @@ server <- function(input, output, session) {
               {. ->> results}
           }
         }
-        else{
-          #current has different format 
 
-          #TODO current has one records 
-          #fix this by querying multiple records for current time for darksky
-          
-          if(sel_value_type=="average"){
-            df[df$measures==selected,]%>%
-              group_by(vsn) %>%
-              summarize(req_measure = mean(value))%>%
-              {. ->> results}
-          }
-          else if (sel_value_type=="min"){
-            df[df$measures==selected,]%>%
-              group_by(vsn) %>%
-              summarize(req_measure = min(value))%>%
-              {. ->> results}
-          }
-          else{
-            df[df$measures==selected,]%>%
-              group_by(vsn) %>%
-              summarize(req_measure = max(value))%>%
-              {. ->> results}
-          }
-        
-        }
-      }
-        
       # print(nrow(results))
       
       # Show alert if no current available for the measure
@@ -1616,7 +1589,7 @@ server <- function(input, output, session) {
         }
         
         
-        fit.sph<- fit.variogram(tmp.vgm, model=vgm("Sph"))
+        fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = TRUE))
         
         
         chi.grid <- pt2grid((chiCA),30)
@@ -1659,7 +1632,7 @@ server <- function(input, output, session) {
             <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
             "
             
-            proxy %>% clearControls() %>% 
+            proxy %>% clearControls() %>% clearImages() %>%
             addControl(html = html_legend, position = "bottomright") %>%
               
             addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)        
@@ -2296,15 +2269,20 @@ server <- function(input, output, session) {
   # get current data for darksky
   
   get_and_preprocess_observations_ds <- function(lng,lat) {
-    current_forecast = get_current_forecast(lat, lng,exclude="minutely,hourly,daily")
-    curr = data.frame(current_forecast['currently'])
-    names(curr) <- substring(names(curr),11,nchar((names(curr))))
-    darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
-    df <- data.frame(t(subset(curr,select = darksky_tracked_measures)))
-    names(df) <- c("value")
-    measures <-darksky_tracked_measures
-    curr_data <- data.frame(measures = darksky_tracked_measures,
-                            value = df)
+    now <-Sys.time()
+    curr <-ymd_hms(now) - lubridate::minutes(10)
+    curr<-force_tz(yes, "America/Chicago")
+    ds <-seq(yes, now,by="min")[1:10]
+    ds <-ymd_hms(ds)
+    force_tz(ds, "America/Chicago")%>%
+      map(~get_forecast_for(lng, lat,.x))%>%
+      map_df("currently")%>%
+      {. ->> response}
+    
+    response$time<-ymd_hms(response$time)
+    response$time<-force_tz(response$time, "America/Chicago")
+    
+    return (response)
   }
   
   
@@ -2318,7 +2296,12 @@ server <- function(input, output, session) {
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
     
-    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()%>% 
+    {. ->> current_result}
+
+    res<- extract_date_fields(res)
+    
+    res <- res %>% unnest()
     
     save_df_as_fst(res,"fst/all_nodes_current.fst")
     
