@@ -1449,7 +1449,10 @@ server <- function(input, output, session) {
       }
       else if(source=="Darksky"){
         if(time_range == TIME_RANGE_CURRENT){
-          df <- get_and_preprocess_observations_all_nodes_ds()
+          if(file.exists("fst/all_nodes_current.fst"))
+            df <- read_fst("fst/all_nodes_current.fst")
+          else  
+            df <- get_and_preprocess_observations_all_nodes_ds()
         } else if(time_range == TIME_RANGE_24HOURS){
           if(file.exists("fst/all_nodes_24hours.fst"))
             df <- read_fst("fst/all_nodes_24hours.fst")
@@ -1472,6 +1475,11 @@ server <- function(input, output, session) {
         }
       }
       
+      # print(nrow(df))
+      
+      # Show alert if no current available for the measure
+      if(nrow(df)==0)
+        shinyalert(paste0("No data for ", source, " for this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
       
       #get the specific value aggregation
       if(source=="AoT" || source=="OpenAQ"){
@@ -1496,77 +1504,136 @@ server <- function(input, output, session) {
         }
       }
       else if(source=="Darksky"){
-        if(sel_value_type=="average"){
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
+        if(time_range!=TIME_RANGE_CURRENT){
           
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = mean(measure))%>%
-            {. ->> results}
-        }
-        else if (sel_value_type=="min"){
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
-          
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = min(measure))%>%
-            {. ->> results}
+          if(sel_value_type=="average"){
+            df1 <- data.frame(df$vsn)
+            names(df1) <- c("vsn")
+            df1$measure <- df[[selected]]
+            
+            df1 %>%
+              group_by(vsn) %>%
+              summarize(req_measure = mean(measure))%>%
+              {. ->> results}
+          }
+          else if (sel_value_type=="min"){
+            df1 <- data.frame(df$vsn)
+            names(df1) <- c("vsn")
+            df1$measure <- df[[selected]]
+            
+            df1 %>%
+              group_by(vsn) %>%
+              summarize(req_measure = min(measure))%>%
+              {. ->> results}
+          }
+          else{
+            df1 <- data.frame(df$vsn)
+            names(df1) <- c("vsn")
+            df1$measure <- df[[selected]]
+            
+            df1 %>%
+              group_by(vsn) %>%
+              summarize(req_measure = max(measure))%>%
+              {. ->> results}
+          }
         }
         else{
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
+          #current has different format 
+
+          #TODO current has one records 
+          #fix this by querying multiple records for current time for darksky
           
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = max(measure))%>%
-            {. ->> results}
+          if(sel_value_type=="average"){
+            df[df$measures==selected,]%>%
+              group_by(vsn) %>%
+              summarize(req_measure = mean(value))%>%
+              {. ->> results}
+          }
+          else if (sel_value_type=="min"){
+            df[df$measures==selected,]%>%
+              group_by(vsn) %>%
+              summarize(req_measure = min(value))%>%
+              {. ->> results}
+          }
+          else{
+            df[df$measures==selected,]%>%
+              group_by(vsn) %>%
+              summarize(req_measure = max(value))%>%
+              {. ->> results}
+          }
+        
         }
       }
         
-
-      chiCA <- shapefile("data/ChiComArea.shp")
-
-      if(source=="AoT" || source=="Darksky"){
-      active_nodes <- nodes_table[nodes_table$status=="Active",]
-      data <- merge(results, active_nodes, by = c("vsn"))
-      coordinates(data) <- data[,c("longitude", "latitude")]
+      # print(nrow(results))
+      
+      # Show alert if no current available for the measure
+      if(nrow(results)==0){
+    
+        shinyalert(paste0("No data of this measure for ", source), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
+        return (NULL);
       }
       else{
-        active_nodes <- nodes_oaq
-        data <- merge(results, active_nodes, by = c("vsn"))
-        coordinates(data) <- data[,c("longitude", "latitude")]
+        chiCA <- shapefile("data/ChiComArea.shp")
         
-      }   
-      
-
-      
-      proj4string(data) <- CRS("+init=epsg:4326")
-      
-      mes <- data$req_measure
-      
-      tmp.vgm <- variogram(data$req_measure ~ 1, data)
-      
-      fit.sph<- fit.variogram(tmp.vgm, model=vgm("Sph"))
-      
-      
-      chi.grid <- pt2grid((chiCA),30)
-      
-      chi.grid <- pt2grid((chiCA),100)
-      
-      projection(chi.grid) <- CRS("+init=epsg:4326")
-      projection(data) <-  CRS("+init=epsg:4326")
-      projection(chiCA) <- CRS("+init=epsg:4326")
-      
-      kriged <- krige(data$req_measure ~ 1, data, chi.grid, model = fit.sph)
-      
-      chi.kriged <- kriged[chiCA,]
-      
-      return (chi.kriged)
+        if(source=="AoT" || source=="Darksky"){
+          active_nodes <- nodes_table[nodes_table$status=="Active",]
+          data <- merge(results, active_nodes, by = c("vsn"))
+          if(nrow(data)==0){
+            shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
+            return (NULL);
+          }
+          else
+            coordinates(data) <- data[,c("longitude", "latitude")]
+        }
+        else{
+          active_nodes <- nodes_oaq
+          data <- merge(results, active_nodes, by = c("vsn"))
+          #if there are no active nodes reporting the measure
+          if(nrow(data)==0){
+            shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
+            return (NULL);
+          }
+          else
+            coordinates(data) <- data[,c("longitude", "latitude")]
+          
+        }   
+        
+        
+        #if there are no active nodes reporting the measure
+        if(nrow(data)>1){
+          proj4string(data) <- CRS("+init=epsg:4326")
+          mes <- data$req_measure
+          tmp.vgm <- variogram(data$req_measure ~ 1, data)
+        }
+        else
+          tmp.vgm <- NULL
+        
+        
+        if(is.null(tmp.vgm)){
+          shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
+          return (NULL);
+        }
+        
+        
+        fit.sph<- fit.variogram(tmp.vgm, model=vgm("Sph"))
+        
+        
+        chi.grid <- pt2grid((chiCA),30)
+        
+        chi.grid <- pt2grid((chiCA),100)
+        
+        projection(chi.grid) <- CRS("+init=epsg:4326")
+        projection(data) <-  CRS("+init=epsg:4326")
+        projection(chiCA) <- CRS("+init=epsg:4326")
+        
+        kriged <- krige(data$req_measure ~ 1, data, chi.grid, model = fit.sph)
+        
+        chi.kriged <- kriged[chiCA,]
+        
+        return (chi.kriged)
+        
+      }
       
     }
     
@@ -1577,8 +1644,11 @@ server <- function(input, output, session) {
       input$measure_type}, {
       proxy <- leafletProxy("map")
       #interpolation map
-      if(input$heat_map)
-        proxy %>% addRasterImage(raster(get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)), opacity = 0.8)
+      if(input$heat_map){
+        interpolated_map <- get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)
+        if(!is.null(interpolated_map))
+          proxy %>% addRasterImage(raster(interpolated_map), opacity = 0.8)
+      }
     })
     
   
@@ -2210,8 +2280,7 @@ server <- function(input, output, session) {
   # get current data for darksky
   
   get_and_preprocess_observations_ds <- function(lng,lat) {
-    
-    current_forecast = get_current_forecast(input$map_marker_click$lat, input$map_marker_click$lng,exclude="minutely,hourly,daily")
+    current_forecast = get_current_forecast(lat, lng,exclude="minutely,hourly,daily")
     curr = data.frame(current_forecast['currently'])
     names(curr) <- substring(names(curr),11,nchar((names(curr))))
     darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
@@ -2228,18 +2297,16 @@ server <- function(input, output, session) {
   get_and_preprocess_observations_all_nodes_ds <- function(){
     #get all active nodes from AoT and their coordinates and then query them
     
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("longitude","latitude")]
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
     
-    lng <- c(active_nodes$lng)
-    lat <- c(active_nodes$lat)
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
     
     res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()
     
     save_df_as_fst(res,"fst/all_nodes_current.fst")
     
-    df <- extract_date_fields(df)
-  
-    return(df)
+    return(res)
   }
 
   
