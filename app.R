@@ -2665,10 +2665,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   }
 
     
-  #Darksky graphical data
-  #This takes the input from AoT table and maps markets
-  
-  output$graphical_data_ds <- renderPlot({
+  # TAB 1 table
+  output$table_data <- DT::renderDataTable({
     autoInvalidate45()
     vsn_ <- v$vsn
     print(vsn_)
@@ -3171,14 +3169,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           names(df_aot) <- unlist(c("hms",labs))
           
           df_combined <- merge(df_aot, df, by="hms", all =TRUE)
-          df_combined <- df_combined %>% select(hms, everything())
+          df_combined <- df_combined %>% dplyr::select(hms, everything())
         }
         else
         {
           if(length(names(df))>1)
           {
             df_combined <- df
-            df_combined <- df_combined %>% select(hms, everything())
+            df_combined <- df_combined %>% dplyr::select(hms, everything())
           }
           else
           {
