@@ -37,7 +37,10 @@ library(RSocrata)
 
 library(base)
 
-#Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
+library(sp)
+library(raster)
+library(gstat)
+# Sys.setenv(DARKSKY_API_KEY = "17b13339acc2cb53e53ea50ea4142528")
 
 #use this key if the above one does not work
 Sys.setenv(DARKSKY_API_KEY = "049f7d70c4d28508cffd077381fad386")
@@ -65,6 +68,8 @@ darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBeari
 all_measures <- paste0("AoT-",tracked_measures)
 all_measures <- c(all_measures,paste0("Darksky-",darksky_tracked_measures))
 all_measures <- c(all_measures,paste0("OpenAQ-",openaq_tracked_measures))
+
+all_measures <-all_measures[-which(all_measures=="Darksky-summary")]
 
 value_types <- c("min","max","average")
 
@@ -265,9 +270,9 @@ ui <- dashboardPage(
       ),
       menuItem("Heatmap Inputs",
                div(
-                 selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-temperature",multiple=FALSE,options=NULL,width = "200%"),
-                 selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
-                 selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_7DAYS,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
+               selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-temperature",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
       
     ),
@@ -1552,21 +1557,21 @@ server <- function(input, output, session) {
       addControl(html = html_legend, position = "bottomright") %>%
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
     
-    # for(i in 1:nrow(congestion_df)){
-    #   map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
-    #                       lng = as.numeric(congestion_df[i, c(12, 7)]),
-    #                       color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
-    #                       opacity = 0.8,
-    #                       fillOpacity = 0.5,
-    #                       group = "Traffic",
-    #                       popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
-    #                       highlightOptions = highlightOptions(
-    #                         # color = "white",
-    #                         weight = 9, bringToFront = F, opacity = 1)
-    #                       
-    #   )
-    #   
-    # }
+      for(i in 1:nrow(congestion_df)){
+        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
+                           lng = as.numeric(congestion_df[i, c(12, 7)]),
+                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+                           opacity = 0.8,
+                           fillOpacity = 0.5,
+                           group = "Traffic",
+                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+                           highlightOptions = highlightOptions(
+                             # color = "white",
+                             weight = 9, bringToFront = F, opacity = 1)
+
+                           )
+
+        }
     
     map
   })
@@ -1818,7 +1823,7 @@ server <- function(input, output, session) {
       }
       
       
-      fit.sph<- fit.variogram(tmp.vgm, model=vgm("Sph"))
+fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = TRUE))
       
       
       chi.grid <- pt2grid((chiCA),30)
@@ -1833,7 +1838,8 @@ server <- function(input, output, session) {
       
       chi.kriged <- kriged[chiCA,]
       
-      return (chi.kriged)
+        response <- list("map"=chi.kriged,"avg"=results$req_measure)
+        return (response)
       
     }
     
@@ -1847,10 +1853,24 @@ server <- function(input, output, session) {
       proxy <- leafletProxy("map")
       #interpolation map
       if(input$heat_map){
-        interpolated_map <- get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)
-        if(!is.null(interpolated_map))
-          proxy %>% addRasterImage(raster(interpolated_map), opacity = 0.8)
-      }
+          response <- get_interpolated_map(input$heatmap_measure,input$map_time_range,input$measure_type)
+          if(!is.null(response$map)){
+            mypal <- colorNumeric(palette = "viridis", reverse = TRUE, domain = response$avg
+                                  ,na.color = "#ffffff11"
+            )
+            html_legend <- "
+      <b>Nodes</b><br>
+            <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
+            <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
+            <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
+            "
+            
+            proxy %>% clearControls() %>% clearImages() %>%
+            addControl(html = html_legend, position = "bottomright") %>%
+              
+            addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)        
+          }
+        }
     })
   
   
@@ -2527,9 +2547,124 @@ server <- function(input, output, session) {
       )
     }
   )
+  # get current data for darksky
   
-  # TAB 1 table
-  output$table_data <- DT::renderDataTable({
+  get_and_preprocess_observations_ds <- function(lng,lat) {
+    now <-Sys.time()
+    curr <-ymd_hms(now) - lubridate::minutes(10)
+    curr<-force_tz(yes, "America/Chicago")
+    ds <-seq(yes, now,by="min")[1:10]
+    ds <-ymd_hms(ds)
+    force_tz(ds, "America/Chicago")%>%
+      map(~get_forecast_for(lng, lat,.x))%>%
+      map_df("currently")%>%
+      {. ->> response}
+    
+    response$time<-ymd_hms(response$time)
+    response$time<-force_tz(response$time, "America/Chicago")
+    
+    return (response)
+  }
+  
+  
+  # get current data for all the nodes for darksky
+  
+  get_and_preprocess_observations_all_nodes_ds <- function(){
+    #get all active nodes from AoT and their coordinates and then query them
+    
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
+    
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
+    
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()%>% 
+    {. ->> current_result}
+
+    res<- extract_date_fields(res)
+    
+    res <- res %>% unnest()
+    
+    save_df_as_fst(res,"fst/all_nodes_current.fst")
+    
+    return(res)
+  }
+
+  
+  #preprocess darksky data for last 24 hours  
+  get_and_preprocess_observations_24h_ds <- function(lng,lat){
+
+    # print("in preprocess")
+    now <-Sys.time()
+    yes <-ymd_hms(now) - lubridate::hours(24)
+    yes<-force_tz(yes, "America/Chicago")
+    ds <-seq(yes, now,by="hour")[1:25]
+    ds <-ymd_hms(ds)
+    force_tz(ds, "America/Chicago")%>%
+      map(~get_forecast_for(lng, lat,.x))%>%
+      map_df("hourly")%>%
+      distinct()%>%
+      {. ->> response}
+    response$time<-ymd_hms(response$time)
+    response$time<-force_tz(response$time, "America/Chicago")
+    res <-tail(filter(response,(day(response$time)<day(now) | (day(response$time)==day(now) & hour(response$time)<=hour(now)))),24)
+    res <- extract_date_fields_h(res)
+    return (res)
+  }
+
+  #preprocess darksky data for last 24 hours for all nodes
+  
+  get_and_preprocess_observations_24h_all_nodes_ds <- function(lng,lat){
+    
+    #get all active nodes from AoT and their coordinates and then query them
+    
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
+    
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
+    
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_24h_ds)) %>% unnest()
+    
+    save_df_as_fst(res,"fst/all_nodes_24hours.fst")
+    
+    # print(head(res))
+    
+    
+    return (res)
+  }
+  
+  #preprocess darksky data for last 7 days
+  get_and_preprocess_observations_7d_ds <- function(lng,lat){
+    
+    seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
+    map(~get_forecast_for(lng, lat, .x)) %>%
+    map_df("daily") %>%
+    {. ->> last_7 }
+    last_7 <- extract_date_fields_d(last_7)
+    return (last_7)
+  }
+
+  #preprocess darksky data for last 7 days for all nodes
+  get_and_preprocess_observations_7d_all_nodes_ds <- function(lng,lat){
+    
+    #get all active nodes from AoT and their coordinates and then query them
+
+    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
+
+    lng <- c(active_nodes$longitude)
+    lat <- c(active_nodes$latitude)
+
+    df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
+    
+    save_df_as_fst(df,"fst/all_nodes_7days.fst")
+    
+    return (df)
+  }
+
+    
+  #Darksky graphical data
+  #This takes the input from AoT table and maps markets
+  
+  output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
     print(vsn_)
@@ -3853,7 +3988,7 @@ server <- function(input, output, session) {
       # nodes[nodes_with_no_data,nodes$status] <-"inactive"
       
       cols <- c("vsn","address","status")
-      nodes_main <-nodes_table %>% select(cols)
+    nodes_main <-nodes_table %>% dplyr::select(cols)
       #show only the selected measures infomration
       selected = c(input$measures1_sites,input$measures2_sites)
       for(measure in selected){
@@ -3865,7 +4000,7 @@ server <- function(input, output, session) {
     ,
     options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
     ), rownames = FALSE,
-    caption = 'Nodes information for the various sensors availability',selection = "single"
+      caption = 'Nodes infomration for the various sensors availability',selection = "single"
     )
   )
   
