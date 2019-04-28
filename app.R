@@ -3870,7 +3870,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       for(measure in selected){
         nodes_main[[measure]] <- nodes_table[[measure]]
       }
-      nodes_main <- nodes_main[which(apply(nodes_main, 1, function(r) any(r %in% c("TRUE")))),]
+      # nodes_main <- nodes_main[which(apply(nodes_main, 1, function(r) any(r %in% c("TRUE")))),]
       nodes_main
     }
     ,
