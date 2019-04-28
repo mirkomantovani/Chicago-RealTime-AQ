@@ -608,7 +608,7 @@ server <- function(input, output, session) {
     df <- ls.observations(filters=list(
       timestamp=paste("ge:",t2,sep=""),
       timestamp=paste("lt:",t1,sep=""),
-      size=200
+      size=600
       # timestamp="ge:2018-08-01T00:00:00",
       # timestamp="lt:2018-09-01T00:00:00"
     ))
@@ -682,7 +682,7 @@ server <- function(input, output, session) {
     df <- ls.observations(filters=list(
       timestamp=paste("ge:",t2,sep=""),
       timestamp=paste("lt:",t1,sep=""),
-      size=200
+      size=600
     ))
     
     df <- data.frame(df)
@@ -1572,7 +1572,7 @@ server <- function(input, output, session) {
                            )
 
         }
-    
+
     map
   })
   
