@@ -97,7 +97,7 @@ middle_c <- "rgb(52, 57, 104)"
 lighter_c <- "rgb(76, 82, 136)"
 
 mirko_theme <- shinyDashboardThemeDIY(
-  
+
   ### general
   appFontFamily = "Arial"
   ,appFontColor = "rgb(204, 228, 249)" #"rgb(128,177,221)"
@@ -110,19 +110,19 @@ mirko_theme <- shinyDashboardThemeDIY(
     ,colorMiddlePos = 70
     ,colorEndPos = 100
   )
-  
+
   ### header
   ,logoBackColor = lighter_c
-  
+
   ,headerButtonBackColor = lighter_c
   ,headerButtonIconColor = "rgb(62,133,179)"
   ,headerButtonBackColorHover = "rgb(49,56,107)"
   ,headerButtonIconColorHover = "rgb(255,255,255)"
-  
+
   ,headerBackColor = lighter_c
   ,headerBoxShadowColor = ""
   ,headerBoxShadowSize = "0px 0px 0px"
-  
+
   ### sidebar
   ,sidebarBackColor = cssGradientThreeColors(
     direction = "down"
@@ -133,11 +133,11 @@ mirko_theme <- shinyDashboardThemeDIY(
     ,colorMiddlePos = 70
     ,colorEndPos = 100
   )
-  
+
   ,sidebarShadowRadius = ""
   ,sidebarPadding = 10
   ,sidebarShadowColor = "0px 0px 0px"
-  
+
   ,sidebarMenuBackColor = cssGradientThreeColors(
     direction = "right"
     ,colorStart = "rgb(48,103,157)"
@@ -149,19 +149,19 @@ mirko_theme <- shinyDashboardThemeDIY(
   )
   ,sidebarMenuPadding = 3
   ,sidebarMenuBorderRadius = 25
-  
+
   ,sidebarUserTextColor = "rgb(128,177,221)"
-  
+
   ,sidebarSearchBackColor = "rgb(40,70,115)"
   ,sidebarSearchIconColor = "rgb(50,115,145)"
   ,sidebarSearchBorderColor = "rgb(30,60,105)"
-  
+
   ,sidebarTabTextColor = "rgb(128,177,221)"
   ,sidebarTabTextSize = 13
   ,sidebarTabBorderStyle = "none"
   ,sidebarTabBorderColor = "none"
   ,sidebarTabBorderWidth = 0
-  
+
   ,sidebarTabBackColorSelected = cssGradientThreeColors(
     direction = "right"
     ,colorStart = "rgb(56,137,189)"
@@ -173,7 +173,7 @@ mirko_theme <- shinyDashboardThemeDIY(
   )
   ,sidebarTabTextColorSelected = "rgb(255,255,255)"
   ,sidebarTabRadiusSelected = "30px"
-  
+
   ,sidebarTabBackColorHover = cssGradientThreeColors(
     direction = "right"
     ,colorStart = "rgb(56,137,189)"
@@ -188,7 +188,7 @@ mirko_theme <- shinyDashboardThemeDIY(
   ,sidebarTabBorderColorHover = "none"
   ,sidebarTabBorderWidthHover = 0
   ,sidebarTabRadiusHover = "30px"
-  
+
   ### boxes
   ,boxBackColor = cssGradientThreeColors(
     direction = "right"
@@ -208,7 +208,7 @@ mirko_theme <- shinyDashboardThemeDIY(
   ,boxSuccessColor = "rgb(64,186,170)"
   ,boxWarningColor = "rgb(255,217,144)"
   ,boxDangerColor = "rgb(249,144,144)"
-  
+
   ,tabBoxTabColor = "rgb(80,95,155)"
   ,tabBoxTabTextSize = 14
   ,tabBoxTabTextColor = "rgb(128,177,221)"
@@ -224,29 +224,29 @@ mirko_theme <- shinyDashboardThemeDIY(
   )
   ,tabBoxHighlightColor = "rgb(80,95,155)"
   ,tabBoxBorderRadius = 15
-  
+
   ### inputs
   ,buttonBackColor = "rgb(72,190,229)"
   ,buttonTextColor = "rgb(40,63,106)"
   ,buttonBorderColor = "rgb(72,190,229)"
   ,buttonBorderRadius = 20
-  
+
   ,buttonBackColorHover = "rgb(115,210,240)"
   ,buttonTextColorHover = "rgb(255,255,255)"
   ,buttonBorderColorHover = "rgb(115,210,240)"
-  
+
   ,textboxBackColor = "rgb(40,70,115)"
   ,textboxBorderColor = "rgb(30,60,105)"
   ,textboxBorderRadius = 20
   ,textboxBackColorSelect = "rgb(40,70,115)"
   ,textboxBorderColorSelect = "rgb(30,60,105)"
-  
+
   ### tables
   ,tableBackColor = "transparent"
   ,tableBorderColor = "rgb(80,95,155)"
   ,tableBorderTopSize = 1
   ,tableBorderRowSize = 1
-  
+
 )
 
 
@@ -267,7 +267,7 @@ ui <- dashboardPage(
       span(h2("Main Menu", style = "margin-left: 10px; font-size: 20px;")),
       menuItem("Geospatial Visualizations", tabName = "geospatial_viz"),
       # menuItem("Tabular Visualizations", tabName = "tabular_viz"),
-      
+
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
@@ -279,13 +279,13 @@ ui <- dashboardPage(
                selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
-      
+
     ),
     includeCSS("style.css")
   ),
   dashboardBody(
     mirko_theme,
-    
+
     tags$head(
       # Include custom JS
       includeScript("sage2responsive.js")
@@ -296,7 +296,7 @@ ui <- dashboardPage(
               div(class="outer",
                   # If not using custom CSS, set height of leafletOutput to a number instead of percent
                   leafletOutput("map", width="100%", height="100%"),
-                  
+
                   # Shiny versions prior to 0.11 should use class = "modal" instead.
                   absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                                 draggable = TRUE, top = 90, left = "auto", right = 20, bottom = "auto",
@@ -339,7 +339,7 @@ ui <- dashboardPage(
                                                       div(DT::dataTableOutput("table_data_ds", height = "44vmin"),style = "font-size:80%")
                                              )
                                            ),
-                                           
+
                                            checkboxGroupButtons(
                                              inputId = "measures1_ds",
                                              choices = tab2_measures[1:5],
@@ -360,13 +360,13 @@ ui <- dashboardPage(
                                 #      selectizeInput(inputId = "D_day", "Select Day", H_days, selected = '1',width = "100%")
                                 # )
                   ),
-                  
+
                   absolutePanel(id = "nodes", class = "panel panel-default", fixed = TRUE,
                                 draggable = TRUE, top = 60, left = "auto", right = 840, bottom = "auto",
                                 width = 1000, height = "auto",
                                 br(),
                                 box(width=NULL,height=NULL,
-                                    
+
                                     div(DT::dataTableOutput("nodes_table", height = "22vmin"),style = "font-size:80%")
                                 )
                                 ,
@@ -382,10 +382,10 @@ ui <- dashboardPage(
                                   justified = TRUE, status = "primary", selected = tracked_measures[6:10],
                                   checkIcon = list(yes = icon("ok-sign", lib = "glyphicon"), no = icon("remove-sign", lib = "glyphicon"))
                                 )
-                                
-                                
+
+
                   ),
-                  
+
                   # absolutePanel(id = "counties_panel", class = "panel panel-default", fixed = TRUE,
                   #               draggable = FALSE, top = "auto", left = "auto", right = 20, bottom = -40,
                   #               width = 330, height = "auto",
@@ -409,7 +409,7 @@ ui <- dashboardPage(
                   #                           # ,width = "90%"
                   #               )
                   # ),
-                  
+
                   tags$div(id="cite",
                            'Visual Analytics, University of Illinois at Chicago 2019'
                   )
@@ -427,9 +427,9 @@ ui <- dashboardPage(
 ############################################# SERVER ##############################################
 
 server <- function(input, output, session) {
-  
+
   ########################## AoT R APIs modified ######################
-  
+
   #' Timestamped message -- primarily used to push error output to user
   #'
   #' @param msg - The message to be logged
@@ -438,7 +438,7 @@ server <- function(input, output, session) {
   log_msg <- function (msg) {
     cat(format(Sys.time(), "%Y-%m-%d %H:%M:%OS3 "), ": ", msg, "\n", sep="")
   }
-  
+
   #' Sends a request to the API, ensures 200 response and returns the response
   #'
   #' Given a URL and optional filters/query params, this sends an HTTP GET request
@@ -458,7 +458,7 @@ server <- function(input, output, session) {
     } else {
       resp <- httr::GET(url)
     }
-    
+
     # if not 200, log error
     if (resp$status_code != 200) {
       msg <- paste("Error in httr GET:", resp$status_code, resp$headers$statusmessage, url)
@@ -468,13 +468,13 @@ server <- function(input, output, session) {
       }
       log_msg(msg)
     }
-    
+
     # stop or return
     httr::stop_for_status(resp)
     return(resp)
   }
-  
-  
+
+
   #' Parses a response object as JSON and returns the `data` object
   #'
   #' @param resp - The response object
@@ -487,8 +487,8 @@ server <- function(input, output, session) {
     data <- json$data
     return(data)
   }
-  
-  
+
+
   #' Sends a request and parses the result as a single map object
   #'
   #' Given a URL and optional filters, a request is sent and the response
@@ -505,7 +505,7 @@ server <- function(input, output, session) {
     details <- parse_content(resp)
     return(details)
   }
-  
+
   #' Gets a data frame of `node` metadata
   #'
   #' Nodes are the physical devices deployed to collect observations.
@@ -519,7 +519,7 @@ server <- function(input, output, session) {
     # build url, send request, get response
     url <- "https://api.arrayofthings.org/api/nodes"
     resp <- send_request(url, filters)
-    
+
     # build data frame
     data <- parse_content(resp)
     df <- as.data.frame.list(data)
@@ -527,11 +527,11 @@ server <- function(input, output, session) {
     attr(df, "location") <- data$location.geometry #location.geometry.coordinates
     attr(df, "address") <- data$human_address
     attr(df, "description") <- data$description
-    
+
     # return data frame
     return(df)
   }
-  
+
   #' Gets a data frame of `obserations` data.
   #'
   #' Observation data are the environmental measurements made
@@ -545,7 +545,7 @@ server <- function(input, output, session) {
     # build url, send request, get response
     url <- "https://api.arrayofthings.org/api/observations"
     resp <- send_request(url, filters)
-    
+
     # build data frame
     data <- parse_content(resp)
     df <- as.data.frame.list(data)
@@ -555,14 +555,14 @@ server <- function(input, output, session) {
     attr(df, "value") <- data$value
     attr(df, "uom") <- data$uom
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   #####################################################  AoT utils    #####################################################
-  
-  
+
+
   get_and_preprocess_nodes <- function(){
     df <- ls.nodes()
     # filter out nodes not yet deployed
@@ -577,13 +577,13 @@ server <- function(input, output, session) {
     colnames(temp) <- c("longitude","latitude")
     df <- cbind(df[c("vsn", "address")], temp)
   }
-  
-  
+
+
   #gets the observations relative to h hours ago
   get_h_hours_observations <- function(h, vsn){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
-    
+
     t1 <- sub_hour_to_timestamp(timestamp,h-1)
     t2 <- sub_hour_to_timestamp(timestamp,h)
     df <- ls.observations(filters=list(
@@ -594,20 +594,20 @@ server <- function(input, output, session) {
       # timestamp="ge:2018-08-01T00:00:00",
       # timestamp="lt:2018-09-01T00:00:00"
     ))
-    
+
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    
+
     return(df)
   }
-  
+
   #gets the observations relative to h hours ago for all nodes
-  
+
   get_h_hours_observations_all_nodes <- function(h){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(size=1))$timestamp
-    
+
     t1 <- sub_hour_to_timestamp(timestamp,h-1)
     t2 <- sub_hour_to_timestamp(timestamp,h)
     df <- ls.observations(filters=list(
@@ -617,20 +617,20 @@ server <- function(input, output, session) {
       # timestamp="ge:2018-08-01T00:00:00",
       # timestamp="lt:2018-09-01T00:00:00"
     ))
-    
+
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    
+
     return(df)
   }
-  
-  
+
+
   #gets the observations relative to h hours ago
   get_d_days_observations <- function(d, vsn){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
-    
+
     t1 <- sub_day_to_timestamp(timestamp,d-1)
     t2 <- sub_day_to_timestamp(timestamp,d)
     df <- ls.observations(filters=list(
@@ -641,19 +641,19 @@ server <- function(input, output, session) {
       # timestamp="ge:2018-08-01T00:00:00",
       # timestamp="lt:2018-09-01T00:00:00"
     ))
-    
+
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    
+
     return(df)
   }
-  
+
   #gets all the observation in the past 24 h, limited to 50k (max api limit should be 100k)
   get_last_24h_data <- function(vsn){
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(node=vsn,size=1))$timestamp
-    
+
     t1 <- sub_day_to_timestamp(timestamp,1)
     t2 <- sub_day_to_timestamp(timestamp,0)
     df <- ls.observations(filters=list(
@@ -664,17 +664,17 @@ server <- function(input, output, session) {
       # timestamp="ge:2018-08-01T00:00:00",
       # timestamp="lt:2018-09-01T00:00:00"
     ))
-    
+
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    
+
     return(df)
   }
-  
+
   # function to get data for all the nodes for a day
   get_d_days_observations_all_nodes <- function(d){
-    
+
     # d <- get_last_available_date()
     timestamp <- ls.observations(filters=list(size=1))$timestamp
     # print(timestamp)
@@ -689,16 +689,16 @@ server <- function(input, output, session) {
       timestamp=paste("lt:",t1,sep=""),
       size=600
     ))
-    
+
     df <- data.frame(df)
     df$location.type <- NULL
     df$location.geometry <- NULL
-    
+
     return(df)
   }
-  
+
   # function to get data for all the nodes for seven days
-  
+
   get_and_preprocess_observations_7d_all_nodes <- function(){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations_all_nodes)
@@ -710,26 +710,26 @@ server <- function(input, output, session) {
     df$value <- df1$value
     df$measure <-lapply(df$measure,extract_sensor)
     df$uom <- df1$uom
-    
+
     df$measure <- unlist(df$measure)
-    
+
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
     df <- extract_date_fields_d(df)
-    
+
     df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms),
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
-    
-    
-    
+
+
+
     return(df)
   }
-  
+
   get_and_preprocess_observations_7d <- function(vsn){
     days <- c(1:7)
     dfs <- lapply(days, get_d_days_observations, vsn)
     df1 <- do.call(rbind, dfs)
-    
+
     df <- data.frame(df1$node_vsn)
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
@@ -738,32 +738,32 @@ server <- function(input, output, session) {
     df$measure <-lapply(df$measure,extract_sensor)
     df$uom <- df1$uom
     df <- filter_out_untracked_measures(df)
-    
+
     df$measure <- unlist(df$measure)
-    
+
     df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
     df <- extract_date_fields_d(df)
-    
+
     df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$year, df$month, df$day, df$hms),
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
-    
+
     return(df)
   }
-  
+
   get_and_preprocess_observations_24h <- function(vsn){
     # Every 5210 observations it's 1 hour
-    
+
     # OLD METHOD, 24 requests
     hours <- c(1:24)
     dfs <- lapply(hours, get_h_hours_observations, vsn)
     df1 <- do.call(rbind, dfs)
     df <- data.frame(df1$node_vsn)
-    
+
     # All the observations in 1 request strategy
     # df1 <- get_last_24h_data(vsn)
     # df <- data.frame(df1$node_vsn)
-    
+
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
     df$time <- df1$timestamp
@@ -777,24 +777,24 @@ server <- function(input, output, session) {
     df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms),
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","h","year","month","day", "hms", "value")
-    
+
     return(df)
   }
-  
+
   # get data for all nodes for last 24 horus
   get_and_preprocess_observations_24h_all_nodes <- function(){
     # Every 5210 observations it's 1 hour
-    
+
     # OLD METHOD, 24 requests
     hours <- c(1:24)
     dfs <- lapply(hours, get_h_hours_observations_all_nodes)
     df1 <- do.call(rbind, dfs)
     df <- data.frame(df1$node_vsn)
-    
+
     # All the observations in 1 request strategy
     # df1 <- get_last_24h_data(vsn)
     # df <- data.frame(df1$node_vsn)
-    
+
     names(df) <- c("vsn")
     df$measure <- df1$sensor_path
     df$time <- df1$timestamp
@@ -808,10 +808,10 @@ server <- function(input, output, session) {
     df <-aggregate(df$value, by=list(df$vsn,df$measure,df$uom, df$h, df$year, df$month, df$day, df$hms),
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","h","year","month","day", "hms", "value")
-    
+
     return(df)
   }
-  
+
   get_and_preprocess_observations <- function(vsn){
     df1 <- ls.observations(filters=list(node=vsn))
     # filter out nodes not yet deployed
@@ -824,7 +824,7 @@ server <- function(input, output, session) {
       df$measure <-lapply(df$measure,extract_sensor)
       df$uom <- df1$uom
       df <- filter_out_untracked_measures(df)
-      
+
       df$measure <- unlist(df$measure)
       df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom),
                      FUN=mean)
@@ -832,12 +832,12 @@ server <- function(input, output, session) {
       df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
       df <- extract_date_fields(df)
     }
-    
+
     return(df)
   }
-  
+
   # get current data for all the AOT nodes
-  
+
   get_and_preprocess_observations_all_nodes <- function(){
     df1 <- ls.observations(filters=list())
     # filter out nodes not yet deployed
@@ -850,7 +850,7 @@ server <- function(input, output, session) {
       df$measure <-lapply(df$measure,extract_sensor)
       df$uom <- df1$uom
       df <- filter_out_untracked_measures(df)
-      
+
       df$measure <- unlist(df$measure)
       df <-aggregate(df$value, by=list(df$vsn,df$measure,df$time,df$uom),
                      FUN=mean)
@@ -858,38 +858,38 @@ server <- function(input, output, session) {
       df$time <- lapply(df$time,convert_timestamp_to_chicago_timezone)
       df <- extract_date_fields(df)
     }
-    
+
     return(df)
   }
-  
-  
+
+
   # get all nodes data for open AQ last 7 days
-  
+
   ls.observations_openaq_7d_all_nodes <- function (time) {
     # build url, send request, get response
-    
+
     data <- aq_measurements(city = "Chicago-Naperville-Joliet",date_from = as.character(Sys.Date()-7), date_to = as.character(Sys.Date()))
     df <- as.data.frame.list(data)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   # get all nodes data for open AQ last 7 days
-  
+
   get_and_preprocess_observations_7d_all_nodes_openaq <- function(){
-    
+
     df1 <- ls.observations_openaq_7d_all_nodes("curr")
-    
+
     df <- data.frame(df1$location)
     names(df) <- c("vsn")
     df$measure <- df1$parameter
     levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
     df$time <- df1$dateLocal
     df$value <- df1$value
-    
+
     df$uom <- df1$unit
     df$longitude <- df1$longitude
     df$latitude <- df1$latitude
@@ -901,11 +901,11 @@ server <- function(input, output, session) {
                    FUN=mean)
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "longitude","latitude","value")
     return(df)
-    
+
   }
-  
+
   # get data for all nodes for open aq last 24 hours
-  
+
   ls.observations_openaq_24h_all_nodes <- function (time) {
     # build url, send request, get response
     # build data frame
@@ -914,11 +914,11 @@ server <- function(input, output, session) {
     attr(df, "timestamp") <- data$dateLocal # TODO modified because creates problems when no observations if as.POS.. as.POSIXlt(data$timestamp)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   get_and_preprocess_observations_24h_openaq_all_nodes <- function(){
     df1 <- ls.observations_openaq_24h_all_nodes("curr")
     df <- data.frame(df1$location)
@@ -929,9 +929,9 @@ server <- function(input, output, session) {
     df$value <- df1$value
     df$longitude <- df1$longitude
     df$latitude <- df1$latitude
-    
+
     df$uom <- df1$unit
-    
+
     df$year <- format(df$time, format = "%Y")
     df$month <- format(df$time, format = "%m")
     df$day <- format(df$time, format = "%d")
@@ -942,9 +942,9 @@ server <- function(input, output, session) {
     names(df) <- c("vsn","measure","uom","year","month","day","hms","longitude","latitude","value")
     return(df)
   }
-  
+
   #get all nodes data for openAQ for current time
-  
+
   ls.observations_openaq_all_nodes <- function (time) {
     # build url, send request, get response
     # build data frame
@@ -954,11 +954,11 @@ server <- function(input, output, session) {
     df <- as.data.frame.list(data)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   get_and_preprocess_observations_openaq_all_nodes <- function(){
     df1 <- ls.observations_openaq_all_nodes("curr")
     df <- data.frame(df1$location)
@@ -969,9 +969,9 @@ server <- function(input, output, session) {
     df$value <- df1$value
     df$longitude <- df1$longitude
     df$latitude <- df1$latitude
-    
+
     df$uom <- df1$unit
-    
+
     df$year <- format(df$time, format = "%Y")
     df$month <- format(df$time, format = "%m")
     df$day <- format(df$time, format = "%d")
@@ -982,7 +982,7 @@ server <- function(input, output, session) {
     #print(df)
     return(df)
   }
-  
+
   sub_hour_to_timestamp <- function(timestamp, h){
     pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
     pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
@@ -990,9 +990,9 @@ server <- function(input, output, session) {
     return(paste(strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1],
                  "T",
                  strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2],sep=""))
-    
+
   }
-  
+
   sub_day_to_timestamp <- function(timestamp, d){
     pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
     pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
@@ -1000,15 +1000,15 @@ server <- function(input, output, session) {
     return(paste(strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1],
                  "T",
                  strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2],sep=""))
-    
+
   }
-  
+
   convert_timestamp_to_chicago_timezone <- function(timestamp){
     pb.txt <- strptime(timestamp,"%Y-%m-%dT%H:%M:%S", tz="GMT")
     pb.date <- as.POSIXct(pb.txt, tz="Europe/London")
     return(format(pb.date, tz="America/Chicago",usetz=TRUE))
   }
-  
+
   # Before calling this convert_timestamp_to_chicago_timezone should be applied to the time column
   extract_date_fields <- function(df){
     df$hms <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2])
@@ -1020,7 +1020,7 @@ server <- function(input, output, session) {
     df$time <- NULL
     return(df)
   }
-  
+
   extract_date_fields_h <- function(df){
     df$hsm <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2])
     df$h <- lapply(df$hsm, function(t) strsplit(as.character(t),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
@@ -1035,7 +1035,7 @@ server <- function(input, output, session) {
     df$time <- NULL
     return(df)
   }
-  
+
   extract_date_fields_d <- function(df){
     df$time <- lapply(df$time, function(t) strsplit(as.character(t)," ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1])
     df$time <- as.Date(unlist(df$time))
@@ -1046,32 +1046,32 @@ server <- function(input, output, session) {
     df$time <- NULL
     return(df)
   }
-  
+
   get_last_available_date <- function(){
     timestamp <- ls.observations(filters=list(size=1))$timestamp
-    
+
     year <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
     month <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
     rest <- strsplit(as.character(timestamp),"-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
     day <- strsplit(as.character(rest),"T", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
     rest <- strsplit(as.character(rest),"T", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
     hour <- strsplit(as.character(rest),":", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-    
+
     date <- list("year" = year, "month" = month, "day" = day, "hour" = hour)
-    
+
     return(date)
   }
-  
-  
+
+
   autoInvalidate45 <- reactiveTimer(45000, session)
   autoInvalidate50 <- reactiveTimer(50000, session)
-  
-  
+
+
   #get the measures required for the plots
   filter_out_untracked_measures <- function(df){
     subset(df, measure %in% tracked_measures)
   }
-  
+
   #####################################################  OpenAQ utils    #####################################################
   ls.observations_openaq <- function (vsn, time) {
     print(vsn)
@@ -1099,14 +1099,14 @@ server <- function(input, output, session) {
     df <- as.data.frame.list(data)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   ls.observations_openaq_7d <- function (vsn, time) {
     # build url, send request, get response
-    
+
     if(vsn=="Kingery")
     {
       vsn <- "Kingery Near-road+#1"
@@ -1127,11 +1127,11 @@ server <- function(input, output, session) {
     df <- as.data.frame.list(data)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
+
   ls.observations_openaq_24h <- function (vsn, time) {
     # build url, send request, get response
     if(vsn=="Kingery")
@@ -1156,12 +1156,12 @@ server <- function(input, output, session) {
     attr(df, "timestamp") <- data$dateLocal # TODO modified because creates problems when no observations if as.POS.. as.POSIXlt(data$timestamp)
     attr(df, "value") <- data$value
     attr(df, "location") <- data$location
-    
+
     # return data frame
     return(df)
   }
-  
-  
+
+
   #PREPROCESS OPENAQ 7 DAYS
   get_and_preprocess_observations_7d_openaq <- function(vsn){
     df1 <- ls.observations_openaq_7d(vsn,"curr")
@@ -1171,9 +1171,9 @@ server <- function(input, output, session) {
     levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
     df$time <- df1$dateLocal
     df$value <- df1$value
-    
+
     df$uom <- df1$unit
-    
+
     df$year <- format(df$time, format = "%Y")
     df$month <- format(df$time, format = "%m")
     df$day <- format(df$time, format = "%d")
@@ -1183,7 +1183,7 @@ server <- function(input, output, session) {
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
     return(df)
   }
-  
+
   #PREPROCESS OPENAQ 24hours
   get_and_preprocess_observations_24h_openaq <- function(vsn){
     df1 <- ls.observations_openaq_24h(vsn,"curr")
@@ -1193,9 +1193,9 @@ server <- function(input, output, session) {
     levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
     df$time <- df1$dateLocal
     df$value <- df1$value
-    
+
     df$uom <- df1$unit
-    
+
     df$year <- format(df$time, format = "%Y")
     df$month <- format(df$time, format = "%m")
     df$day <- format(df$time, format = "%d")
@@ -1206,7 +1206,7 @@ server <- function(input, output, session) {
     names(df) <- c("vsn","measure","uom","year","month","day","hms", "value")
     return(df)
   }
-  
+
   #PREPROCESS OPENAQ current
   get_and_preprocess_observations_openaq <- function(vsn){
     df1 <- ls.observations_openaq(vsn,"curr")
@@ -1216,9 +1216,9 @@ server <- function(input, output, session) {
     levels(df$measure)[levels(df$measure)=="pm25"] <- "pm2.5"
     df$time <- df1$lastUpdated
     df$value <- df1$value
-    
+
     df$uom <- df1$unit
-    
+
     df$year <- format(df$time, format = "%Y")
     df$month <- format(df$time, format = "%m")
     df$day <- format(df$time, format = "%d")
@@ -1229,14 +1229,14 @@ server <- function(input, output, session) {
     #print(df)
     return(df)
   }
-  
+
   ############################################### Extract sensors info ################################################
-  
-  
+
+
   save_df_as_fst <- function(df,path){
     write.fst(df, path)
   }
-  
+
   #function to extract the sensor information using the sensor path in observation data
   extract_sensor <- function(elem){
     elem <- as.character(elem)
@@ -1253,14 +1253,14 @@ server <- function(input, output, session) {
     }
   }
   # IMPORTANT CODE
-  
+
   update_nodes_status <- function(){
     nodes <- get_and_preprocess_nodes()
-    
+
     for(m in tracked_measures){
       nodes[m] <- FALSE
     }
-    
+
     for(n in unique(nodes$vsn)){
       df <- ls.observations(filters=list(node=n))
       df$sensor_path <-lapply(df$sensor_path,extract_sensor)
@@ -1274,28 +1274,28 @@ server <- function(input, output, session) {
     #save to file
     save_df_as_fst(nodes,"fst/nodes.fst")
   }
-  
+
   ########### reading data ###########
-  
+
   if(UPDATE_NODES_STATUS){
     update_nodes_status()
   }
-  
+
   nodes <- read_fst("fst/nodes.fst")
   nodes_oaq <- read_fst("fst/openaq.fst")
-  
+
   # preprocessing nodes_oaq
   nodes_oaq$vsn <- nodes_oaq$location
   nodes_oaq$location <- NULL
-  
+
   congestion_df <- read.socrata(
     "https://data.cityofchicago.org/resource/n4j6-wkkf.json",
     app_token = "wrXJQ8XKYqlE8TxQoHCSSYvwV",
     email     = "mirkomantovani23@gmail.com",
     password  = "iBdN3u5BPbhmiMW"
   )
-  
-  
+
+
   # customizing values for responsitivity in normal display and SAGE display
   v <- reactiveValues(axis_title_size = 14,
                       axis_text_size = 12,
@@ -1322,9 +1322,9 @@ server <- function(input, output, session) {
                       table_inputs = list(),
                       vsn=NULL
   )
-  
-  
-  
+
+
+
   observeEvent(input$dimension, {
     if(input$dimension[1] >= 2000){
       v$axis_title_size <<- 20
@@ -1384,7 +1384,7 @@ server <- function(input, output, session) {
       v$daily_legend_size = 30
     }
   })
-  
+
   axis_title_size <- reactive({v$axis_title_size})
   axis_text_size <- reactive({v$axis_text_size})
   margin_x <- reactive({v$margin_x})
@@ -1402,16 +1402,16 @@ server <- function(input, output, session) {
   line_size <- reactive({v$line_size})
   tbl_pagelength <- reactive({v$tbl_pagelength})
   annotate_text_size <- reactive({v$annotate_text_size})
-  
+
   marker_text_size <- reactive({v$marker_text_size})
   select_input_width <- reactive({v$select_input_width})
-  
+
   output$dimension_display <- renderText({
     paste(input$dimension[1], input$dimension[2], input$dimension[1]/input$dimension[2])
   })
-  
+
   ############################################### Other utils ################################################
-  
+
   translate_to_column_name <- function(pollutant) {
     if(pollutant == "CO"){
       return("Days.CO")
@@ -1428,14 +1428,14 @@ server <- function(input, output, session) {
     } else if (pollutant == "AQI"){
       return("Median.AQI")
     }
-    
+
     return("Days.CO")
   }
-  
+
   convert_to_imperial <- function(values){
     return(values*1000000000000* 0.000000035274/35315)
   }
-  
+
   # Mirko
   # !Important
   # The round county numbers updates continously invalidating the input for as many times as the there are
@@ -1443,13 +1443,13 @@ server <- function(input, output, session) {
   # make the app unusable. I will try to use a reactive value to compute the county number input based on
   # the round number picker and use debounce (or throttle) to delay the execution for a number of ms needed
   # for the user to choose the right number
-  
+
   delayes_num_counties <- reactive({
     input$num_counties
   })
-  
+
   delayes_num_counties_debounced <- delayes_num_counties %>% debounce(300)
-  
+
   nodes_table <- read_fst("fst/nodes.fst")
   nodes_table$status <- "Active"
   nodes_table[nodes_table[[tracked_measures[1]]] == FALSE &
@@ -1462,7 +1462,7 @@ server <- function(input, output, session) {
                 nodes_table[[tracked_measures[8]]] == FALSE &
                 nodes_table[[tracked_measures[9]]] == FALSE &
                 nodes_table[[tracked_measures[10]]] == FALSE, ][, "status"] <- "Inactive"
-  
+
   nodes_table[nodes_table[[tracked_measures[1]]] == FALSE, ][, tracked_measures[1]] <- "-"
   nodes_table[nodes_table[[tracked_measures[2]]] == FALSE, ][, tracked_measures[2]] <- "-"
   nodes_table[nodes_table[[tracked_measures[3]]] == FALSE, ][, tracked_measures[3]] <- "-"
@@ -1473,17 +1473,17 @@ server <- function(input, output, session) {
   nodes_table[nodes_table[[tracked_measures[8]]] == FALSE, ][, tracked_measures[8]] <- "-"
   nodes_table[nodes_table[[tracked_measures[9]]] == FALSE, ][, tracked_measures[9]] <- "-"
   nodes_table[nodes_table[[tracked_measures[10]]] == FALSE, ][, tracked_measures[10]] <- "-"
-  
-  
+
+
   ################################# MAP #################################
   output$map <- renderLeaflet({
-    
+
     initial_lat <- 41.900613
     initial_lng <- -87.678211
-    
+
     nodes_by_sensor <- lapply(tracked_measures, function(measure) subset(nodes, nodes[[measure]] == TRUE))
     nodes_by_sensor_oaq <- lapply(openaq_tracked_measures, function(measure) subset(nodes_oaq, nodes_oaq[[measure]] == TRUE))
-    
+
     nodes_with_no_data <- subset(nodes, nodes[[tracked_measures[1]]] == FALSE &
                                    nodes[[tracked_measures[2]]] == FALSE &
                                    nodes[[tracked_measures[3]]] == FALSE &
@@ -1494,14 +1494,14 @@ server <- function(input, output, session) {
                                    nodes[[tracked_measures[8]]] == FALSE &
                                    nodes[[tracked_measures[9]]] == FALSE &
                                    nodes[[tracked_measures[10]]] == FALSE )
-    
+
     html_legend <- "
     <b>Nodes</b><br>
     <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
     <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
     <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
     "
-    
+
     # Function to compute traffic color based on speed
     trafficColor <- function(speed){
       if(speed == -1){
@@ -1516,20 +1516,20 @@ server <- function(input, output, session) {
         return("#3e50e0");
       }
     }
-    
+
     # highlightOptions = highlightOptions(weight = 9, bringToFront = F, opacity = 1)
-    
-    
-    
+
+
+
     opacity <- 0.1
     oaqOpacity <- 0.3
     inactiveColor <- "red"
     inactiveOpacity <- 0.5
     normalColor <- "navy"
     openAQColor <- "green"
-    
+
     map = leaflet(nodes) %>%
-      
+
       # AoT nodes
       addCircleMarkers(nodes_by_sensor[[1]]$longitude, nodes_by_sensor[[1]]$latitude, group = tracked_measures[1], layerId=paste(nodes_by_sensor[[1]]$vsn,tracked_measures[1]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[1]]$vsn,"</b>"),nodes_by_sensor[[1]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>% #, layerId=~vsn
       addCircleMarkers(nodes_by_sensor[[2]]$longitude, nodes_by_sensor[[2]]$latitude, group = tracked_measures[2], layerId=paste(nodes_by_sensor[[2]]$vsn,tracked_measures[2]), popup = paste(sep = "<br/>",paste("<b>",nodes_by_sensor[[2]]$vsn,"</b>"),nodes_by_sensor[[2]]$address, "<a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a>"), stroke = FALSE, radius = point_size(), fillOpacity = opacity, color= normalColor) %>%
@@ -1561,7 +1561,7 @@ server <- function(input, output, session) {
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
-    
+
       for(i in 1:nrow(congestion_df)){
         map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
                            lng = as.numeric(congestion_df[i, c(12, 7)]),
@@ -1576,16 +1576,16 @@ server <- function(input, output, session) {
 
                            )
 
-        }
+       }
 
     map
   })
-  
+
   # observe({
   #   a <- input$map_marker_click
   #
   # })
-  
+
   # DYNAMIC RENDERING of things in the map
   # observe({
   #   opacity <- 0.1
@@ -1611,10 +1611,10 @@ server <- function(input, output, session) {
   #       options = layersControlOptions(collapsed = TRUE)
   #     )
   # })
-  
-  
+
+
   #observe map input and add type identifier
-  
+
   observeEvent(input$map_marker_click,
                {
                  v$vsn <- paste0("map ",input$map_marker_click)
@@ -1622,14 +1622,14 @@ server <- function(input, output, session) {
                }
   )
   #observe table input and add type indentifier
-  
+
   observeEvent(input$nodes_table_rows_selected,
                {
                  v$vsn <- paste0("table ",input$nodes_table_rows_selected)
                  v$table_inputs <- append(v$table_inputs,list(v$vsn))
                }
   )
-  
+
   pt2grid <- function(ptframe,n) {
     bb <- bbox(ptframe)
     ptcrs <- proj4string(ptframe)
@@ -1642,14 +1642,14 @@ server <- function(input, output, session) {
     x2 <- SpatialGrid(grid=x1,proj4string=CRS(ptcrs))
     return(x2)
   }
-  
+
   #function to get the raster image for interpolated measure map for the selected measure
-  
+
   get_interpolated_map <- function(sel_measure,time_range,sel_value_type){
-    
+
     selected <- strsplit(sel_measure, "-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
     source <- strsplit(sel_measure, "-", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-    
+
     if(source=="AoT"){
       if(time_range == TIME_RANGE_CURRENT){
         df <- get_and_preprocess_observations_all_nodes()
@@ -1686,16 +1686,16 @@ server <- function(input, output, session) {
         df <- get_and_preprocess_observations_7d_all_nodes_openaq()
       }
     }
-    
+
     # print(nrow(df))
-    
+
     # Show alert if no current available for the measure
     if(nrow(df)==0)
       shinyalert(paste0("No data for ", source, " for this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
-    
+
     #get the specific value aggregation
     if(source=="AoT" || source=="OpenAQ"){
-      
+
       if(sel_value_type=="average"){
         df[df$measure==selected,]%>%
           group_by(vsn) %>%
@@ -1717,12 +1717,12 @@ server <- function(input, output, session) {
     }
     else if(source=="Darksky"){
       if(time_range!=TIME_RANGE_CURRENT){
-        
+
         if(sel_value_type=="average"){
           df1 <- data.frame(df$vsn)
           names(df1) <- c("vsn")
           df1$measure <- df[[selected]]
-          
+
           df1 %>%
             group_by(vsn) %>%
             summarize(req_measure = mean(measure))%>%
@@ -1732,7 +1732,7 @@ server <- function(input, output, session) {
           df1 <- data.frame(df$vsn)
           names(df1) <- c("vsn")
           df1$measure <- df[[selected]]
-          
+
           df1 %>%
             group_by(vsn) %>%
             summarize(req_measure = min(measure))%>%
@@ -1742,7 +1742,7 @@ server <- function(input, output, session) {
           df1 <- data.frame(df$vsn)
           names(df1) <- c("vsn")
           df1$measure <- df[[selected]]
-          
+
           df1 %>%
             group_by(vsn) %>%
             summarize(req_measure = max(measure))%>%
@@ -1752,10 +1752,10 @@ server <- function(input, output, session) {
 
       else{
         #current has different format
-        
+
         #TODO current has one records
         #fix this by querying multiple records for current time for darksky
-        
+
         if(sel_value_type=="average"){
           df[df$measures==selected,]%>%
             group_by(vsn) %>%
@@ -1774,22 +1774,22 @@ server <- function(input, output, session) {
             summarize(req_measure = max(value))%>%
             {. ->> results}
         }
-        
+
       }
     }
 
-    
+
     # print(nrow(results))
-    
+
     # Show alert if no current available for the measure
     if(nrow(results)==0){
-      
+
       shinyalert(paste0("No data of this measure for ", source), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
       return (NULL);
     }
     else{
       chiCA <- shapefile("data/ChiComArea.shp")
-      
+
       if(source=="AoT" || source=="Darksky"){
         active_nodes <- nodes_table[nodes_table$status=="Active",]
         data <- merge(results, active_nodes, by = c("vsn"))
@@ -1812,10 +1812,10 @@ server <- function(input, output, session) {
         else
           coordinates(data) <- data[,c("longitude", "latitude")]
 
-        
+
       }
-      
-      
+
+
       #if there are no active nodes reporting the measure
       if(nrow(data)>1){
         proj4string(data) <- CRS("+init=epsg:4326")
@@ -1824,36 +1824,36 @@ server <- function(input, output, session) {
       }
       else
         tmp.vgm <- NULL
-      
-      
+
+
       if(is.null(tmp.vgm)){
         shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
         return (NULL);
       }
-      
-      
+
+
 fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = TRUE))
-      
-      
+
+
       chi.grid <- pt2grid((chiCA),30)
-      
+
       chi.grid <- pt2grid((chiCA),100)
-      
+
       projection(chi.grid) <- CRS("+init=epsg:4326")
       projection(data) <-  CRS("+init=epsg:4326")
       projection(chiCA) <- CRS("+init=epsg:4326")
-      
+
       kriged <- krige(data$req_measure ~ 1, data, chi.grid, model = fit.sph)
-      
+
       chi.kriged <- kriged[chiCA,]
-      
+
         response <- list("map"=chi.kriged,"avg"=results$req_measure)
         return (response)
-      
+
     }
-    
+
   }
-  
+
   # add the heatmap when the heatmap switch is enabled or based on any change in heatmap inputs
   observeEvent({input$heat_map
     input$heatmap_measure
@@ -1873,34 +1873,34 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
             <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
             "
-            
+
             proxy %>% clearControls() %>% clearImages() %>%
             addControl(html = html_legend, position = "bottomright") %>%
-              
-            addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)        
+
+            addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)
           }
         }
     })
-  
-  
-  
+
+
+
   #####################################################  GRAPHICAL DATA    #####################################################
   output$graphical_data <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
     if(!is.null(vsn_)){
       #get input type either map or table
-      
+
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
       # print(type)
-      
+
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
         active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$map_inputs)<2){
           prev_input <-NULL
@@ -1919,15 +1919,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         vsn <- selected_row$vsn
         # print(row_id)
         # print(vsn)
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-          
+
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -1935,10 +1935,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
     else
       vsn <-NULL
-    
+
     if(is.null(vsn)){
       plot_title <- "No node selected"
-      
+
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -1957,24 +1957,24 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-      
+
       gl
     }
     else {
       #some node is selected
       time_range <- input$time_range
-      
+
       if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
-        
+
+
         #set the previous click
         if(!is.null(prev_input)){
           #get input type either map or table
-          
+
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-          
+
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -1983,13 +1983,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-            
+
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-            
+
           }
         }
         else{
@@ -2025,10 +2025,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else {
           plot_title <- paste("Last 7 days data for node:",df$vsn[1])
         }
-        
+
         df <- as.data.frame(lapply(df, unlist))
-        
-        
+
+
         # gl <- ggplot(data = df, aes(x = df$hms)) +
         gl <- ggplot() +
           theme(
@@ -2048,7 +2048,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         labs <-c()
         vals <-c()
         # This doesnt work because R sucks
@@ -2065,10 +2065,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # }
         # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
         # test <- subset(df, measure == "co")
-        
+
         retrieved_measures <- unique(df$measure)
-        
-        
+
+
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
@@ -2090,8 +2090,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
             geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
         }
-        
-        
+
+
         # TODO A: MOVE THIS TO PANEL 2
         # if ("humidity" %in% c(input$measures1,input$measures2) && "humidity" %in% retrieved_measures){
         #   suffx_humidity = unique(subset(df, measure == "humidity")$uom)
@@ -2101,7 +2101,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #     labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
         #     vals <-c(vals,"humidity" = "#194649")
         # }
-        
+
         # TODO A: MOVE THIS TO PANEL 2
         # if ("intensity" %in% c(input$measures1,input$measures2) && "intensity" %in% retrieved_measures){
         #   suffx_intensity = unique(subset(df, measure == "intensity" & uom == "lux")$uom)
@@ -2110,7 +2110,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #   labs <-c(labs,"intensity" = paste("intensity",suffx_intensity, sep=" "))
         #   vals <-c(vals,"intensity" = "#a3d659")
         # }
-        
+
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
@@ -2135,7 +2135,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         convert_to_imperial <- function(values){
           return(values*1000000000000* 0.000000035274/35315)
         }
-        
+
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
@@ -2148,20 +2148,20 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
           }
           else{
-            
+
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             vals <-c(vals,"pm2.5" = "#cc8112")
-            
+
           }
         }
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
-        
+
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -2171,13 +2171,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           }
           else{
-            
+
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
             gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
             vals <-c(vals,"pm10" = "#ba1010")
-            
+
           }
         }
         convert_temp_to_metric <- function(values){
@@ -2185,7 +2185,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
-        
+
         #MOVE THIS TO PANEL 2
         # if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
         #   if(input$switch_units){
@@ -2206,7 +2206,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         gl
       } else {
         plot_title <- "This node has no observations"
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -2225,21 +2225,21 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         gl
       }
     }
   })
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
   last_vsn <- reactive({
-    
+
     input_id <- input$map_marker_click
     if(!is.null(input_id)){
       vsn_ <- input_id$id
@@ -2261,22 +2261,22 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       NULL
     }
   })
-  
+
   #####################################################  GRAPHICAL DATA COMPARISON    #####################################################
-  
+
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
     autoInvalidate50()
-    
+
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
-    
+
     vsn <- isolate(v$lastvsn)
     # || input$switch_compare
     if(is.null(vsn)){
-      
+
       plot_title <- "No node selected for previous output"
-      
+
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -2295,12 +2295,12 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-      
+
       gl
     }
     else {
       if(!(vsn == "Inactive")){
-        
+
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
           #openaq
@@ -2324,7 +2324,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             df <- get_and_preprocess_observations_7d(vsn)
           }
         }
-        
+
         if(time_range == TIME_RANGE_CURRENT){
           plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
         } else if(time_range == TIME_RANGE_24HOURS){
@@ -2332,10 +2332,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else {
           plot_title <- paste("Last 7 days data for node:",df$vsn[1])
         }
-        
+
         # df <- subset(df, measure == "co")
         df <- as.data.frame(lapply(df, unlist))
-        
+
         # gl <- ggplot(data = df, aes(x = df$hms)) +
         gl <- ggplot() +
           theme(
@@ -2355,7 +2355,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         labs <-c()
         vals <-c()
         # This doesnt work because R sucks
@@ -2371,11 +2371,11 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #   g <- g+1
         # }
         # tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-        
+
         # Getting all the measures that this dataset contains
         retrieved_measures <- unique(df$measure)
-        
-        
+
+
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
@@ -2438,7 +2438,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         convert_to_imperial <- function(values){
           return(values*1000000000000* 0.000000035274/35315)
         }
-        
+
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
@@ -2451,18 +2451,18 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
           }
           else{
-            
+
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             vals <-c(vals,"pm2.5" = "#cc8112")
-            
+
           }
         }
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
-        
+
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
           if(input$switch_units){
             # df$data_conv <-df$"pm10"
@@ -2473,13 +2473,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           }
           else{
-            
+
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
             gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
             vals <-c(vals,"pm10" = "#ba1010")
-            
+
           }
         }
         convert_temp_to_metric <- function(values){
@@ -2487,7 +2487,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
-        
+
         if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
           if(input$switch_units){
             temp_suffx = "(Degrees Fahrenheit)"
@@ -2507,7 +2507,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         gl
       } else {
         plot_title <- "This node has no observations"
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -2526,31 +2526,31 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         gl
       }
     }
   })
-  
+
   #Darksky graphical data
   #This takes the input from AoT table and maps markets
-  
+
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
     print(vsn_)
     if(!is.null(vsn_)){
       #get input type either map or table
-      
+
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-      
+
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
         active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$map_inputs)<2){
           prev_input <-NULL
@@ -2567,15 +2567,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-          
+
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -2583,30 +2583,30 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
     else
       vsn <-NULL
-    
+
     if(is.null(vsn)){
-      
+
       DT::datatable({
         empty <- data.frame()
         empty
       })
-      
+
     }
     else {
       #some node is selected
       time_range <- input$time_range
-      
+
       if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
-        
+
+
         #set the previous click
         if(!is.null(prev_input)){
           #get input type either map or table
-          
+
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-          
+
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -2615,13 +2615,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-            
+
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-            
+
           }
         }
         else{
@@ -2650,10 +2650,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             df <- get_and_preprocess_observations_7d(vsn)
           }
         }
-        
+
         df <- as.data.frame(lapply(df, unlist))
         retrieved_measures <- unique(df$measure)
-        
+
         print(retrieved_measures)
         labs <- names(df)
         labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
@@ -2661,7 +2661,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         print(labs)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-        
+
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
@@ -2672,7 +2672,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
           labs2 = c(labs2,"no2")
         }
-        
+
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
@@ -2693,7 +2693,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
           labs2 = c(labs2,"h2s")
         }
-        
+
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
@@ -2706,7 +2706,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs2 = c(labs2,c("pm2.5"))
           }
           else{
-            
+
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
@@ -2718,7 +2718,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # to be changed accordingly based on the units in the dataset
         #
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -2728,7 +2728,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs2 = c(labs2,c("pm10"))
           }
           else{
-            
+
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
             labs2 = c(labs2,"pm10")
@@ -2739,7 +2739,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         #
         #final dataframe which is to be shown as table is df
-        
+
         print(df)
         drops <- c("vsn","year","month","day","uom")
         df <- df[ , !(names(df) %in% drops)]
@@ -2747,7 +2747,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         '%ni%' <- Negate('%in%')
         df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
         df <- spread(df, measure, value)
-        
+
         # print(df)
         keep <- c("hms",labs2)
         df <- df[unlist(keep)]
@@ -2768,22 +2768,257 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
       }
     }
-    
+
   })
-  
-  
-  
+
+  # TAB 1 table
+  output$table_data <- DT::renderDataTable({
+    autoInvalidate45()
+    vsn_ <- v$vsn
+    print(vsn_)
+    if(!is.null(vsn_)){
+      #get input type either map or table
+
+      type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+
+      # if map input, get the vsn and the active status
+      if(type=="map"){
+        vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+
+        #get the last two clicks
+
+        #check the size of the map_inputs if it is less than 2.
+        if(length(v$map_inputs)<2){
+          prev_input <-NULL
+        }
+        else{
+          last_two <- tail(v$map_inputs,2)
+          prev <- last_two[[1]]
+          prev_input <- prev[1]
+        }
+      }
+      # if table input, get the vsn and the active status
+      else{
+        row_id <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+        selected_row <- nodes_table[row_id,]
+        active <- selected_row$status
+        vsn <- selected_row$vsn
+
+        #get the last two clicks
+
+        #check the size of the map_inputs if it is less than 2.
+        if(length(v$table_inputs)<2)
+          prev_input <-NULL
+        else{
+          last_two <- tail(v$table_inputs,2)
+
+          prev <- last_two[[1]]
+          prev_input <- prev[1]
+        }
+      }
+    }
+    else
+      vsn <-NULL
+
+    if(is.null(vsn)){
+
+      DT::datatable({
+        empty <- data.frame()
+        empty
+      })
+
+    }
+    else {
+      #some node is selected
+      time_range <- input$time_range
+
+      if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
+        # TODO check if AoT node or openAQ and get corresponding dataset
+        # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
+
+
+        #set the previous click
+        if(!is.null(prev_input)){
+          #get input type either map or table
+
+          type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+
+          # if map input, get the vsn and the active status
+          if(type=="map"){
+            v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+          }
+          # if table input, get the vsn and the active status
+          else{
+            prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+            prev_row <- nodes_table[prev_row_id,]
+
+            #if the previous table node was inactive, set vsn as inactive
+            if(prev_row$status=="Active")
+              v$lastvsn <- prev_row$vsn
+            else
+              v$lastvsn <- "Inactive"
+
+          }
+        }
+        else{
+          v$lastvsn <-NULL
+        }
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations_openaq(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h_openaq(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d_openaq(vsn)
+          }
+        }
+        else
+        {
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d(vsn)
+          }
+        }
+
+        df <- as.data.frame(lapply(df, unlist))
+        retrieved_measures <- unique(df$measure)
+
+        print(retrieved_measures)
+        labs <- names(df)
+        labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
+        labs2 <- list()
+        print(labs)
+        #add check conditions:
+        #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+
+        if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
+          suffx_co = unique(subset(df, measure == "co")$uom)
+          labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
+          labs2 = c(labs2,"co")
+        }
+        if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
+          suffx_no2 = unique(subset(df, measure == "no2")$uom)
+          labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
+          labs2 = c(labs2,"no2")
+        }
+
+        if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
+          suffx_o3 = unique(subset(df, measure == "o3")$uom)
+          labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
+          labs2 = c(labs2,c("o3"))
+        }
+        if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
+          suffx_so2 =  unique(subset(df, measure == "so2")$uom)
+          labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
+          labs2 = c(labs2,"so2")
+        }
+        if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
+          suffx_co = unique(subset(df, measure == "bc")$uom)
+          labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
+          labs2 = c(labs2,"bc")
+        }
+        if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
+          suffx_h2s = unique(subset(df, measure == "h2s")$uom)
+          labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
+          labs2 = c(labs2,"h2s")
+        }
+
+        # currently the same values is shown for both imperial and metric
+        # to be changed accordingly based on the units in the dataset
+        if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
+          if(input$switch_units){
+            # df$data_conv <-df$"pm2.5"
+            # df$data_conv <- convert_to_imperial(df$data_conv)
+            # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
+            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            labs2 = c(labs2,c("pm2.5"))
+          }
+          else{
+
+            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
+              geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
+            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            labs2 = c(labs2,c("pm2.5"))
+          }
+        }
+        # currently the same values is shown for both imperial and metric
+        # to be changed accordingly based on the units in the dataset
+        #
+        if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
+
+          if(input$switch_units){
+            # df$data_conv <-df$"pm10"
+            # df$data_conv <- convert_to_imperial(df$data_conv)
+            # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
+            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            labs2 = c(labs2,c("pm10"))
+          }
+          else{
+
+            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            labs2 = c(labs2,"pm10")
+          }
+        }
+        convert_temp_to_metric <- function(values){
+          return((values-32)/1.8)
+        }
+        #
+        #final dataframe which is to be shown as table is df
+
+        print(df)
+        drops <- c("vsn","year","month","day","uom")
+        df <- df[ , !(names(df) %in% drops)]
+        print(df)
+        '%ni%' <- Negate('%in%')
+        df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
+        df <- spread(df, measure, value)
+
+        # print(df)
+        keep <- c("hms",labs2)
+        df <- df[unlist(keep)]
+        if(length(keep)==1)
+        {
+          DT::datatable({
+            empty <- data.frame()
+            empty
+          })
+        }
+        else
+        {
+          names(df) = unlist(c("hms",labs))
+          DT::datatable({df},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(list(1, 'desc'))
+          ), rownames = FALSE,
+          caption = 'Pollutant measures'
+          )
+        }
+      }
+    }
+
+  })
+
   #TABLE 2:
   # TAB 2 table
   output$table_data_ds <- DT::renderDataTable({
     autoInvalidate45()
     vsn_ <- v$vsn
-    
+
     if(!is.null(vsn_)){
       #get input type either map or table
-      
+
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-      
+
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -2817,15 +3052,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-          
+
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -2833,30 +3068,30 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
     else
       vsn <-NULL
-    
+
     if(is.null(vsn)){
-      
+
       DT::datatable({
         empty <- data.frame()
         empty
       })
-      
+
     }
     else {
       #some node is selected
       time_range <- input$time_range
-      
+
       if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
-        
+
+
         #set the previous click
         if(!is.null(prev_input)){
           #get input type either map or table
-          
+
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-          
+
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -2865,13 +3100,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-            
+
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-            
+
           }
         }
         else{
@@ -2909,21 +3144,26 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           labs <- names(df_aot)
           labs <- labs[ - which(names(labs) == c("vsn","year","month","day","uom"))]
         }
+
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_ds(lng,lat)
+          df <- as.data.frame(lapply(df, unlist))
+        }
         if(time_range == TIME_RANGE_24HOURS){
           df <- get_and_preprocess_observations_24h_ds(lng,lat)
         } else if(time_range == TIME_RANGE_7DAYS){
           df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
-        
-        
+
+
         #print(retrieved_measures)
-        
+
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
-        
+
         df <- df[, (colnames(df) %in% keep)]
         print(df)
-        
-        #labs and labs2 are the required variables for AoT 
+
+        #labs and labs2 are the required variables for AoT
         #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
         labs <- list()
         labs2 <- list()
@@ -2933,8 +3173,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         print(labs3)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-        
-        
+
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -2942,14 +3182,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"intensity(AOT)"=paste("intensity(AOT)",suffx_intensity, sep=" "))
             labs2 = c(labs2,c("intensity(AOT)"))
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             labs <-c(labs,"humidity(AOT)"=paste("humidity(AOT)",suffx_humidity, sep=" "))
             labs2 = c(labs2,c("humidity(AOT)"))
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -2963,7 +3203,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             }
           }
         }
-        
+
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds)){
           suffx_humidity = ""
           labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
@@ -3016,16 +3256,16 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           labs3 <-c(labs3,"temperature"= paste("temperature",temp_suffx, sep=" "))
           labs4 <- c(labs4,"temperature")
         }
-        
+
         convert_temp_to_metric <- function(values){
           return((values-32)/1.8)
         }
         #
         #final dataframe which is to be shown as table is df
         #keep only variables in lab3 and discard others
-        
+
         df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
-        
+
         if(flag == 1)
         {
           drops <- c("vsn","year","month","day","uom")
@@ -3036,7 +3276,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           keep <- c("hms",labs2)
           df_aot <- df_aot[unlist(keep)]
           names(df_aot) <- unlist(c("hms",labs))
-          
+
           df_combined <- merge(df_aot, df, by="hms", all =TRUE)
           df_combined <- df_combined %>% dplyr::select(hms, everything())
         }
@@ -3052,7 +3292,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             df_combined <- df
           }
         }
-        
+
         labs <- unlist(labs)
         labs2 <- unlist(labs2)
         labs3 <- unlist(labs3)
@@ -3081,7 +3321,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         else
         {
-          
+
           DT::datatable({df_combined},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(1, 'desc')
           ), rownames = FALSE,
           caption = paste('Measures table for',vsn)
@@ -3089,9 +3329,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
       }
     }
-    
+
   })
-  
+
   # Darksky table for current time
   output$table_ds <- DT::renderDataTable(
     if(is.null(input$map_marker_click$lat) && is.null(input$map_marker_click$lat)){
@@ -3115,13 +3355,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       options = list(searching = FALSE, pageLength = 4, lengthChange = FALSE, order = list(list(1, 'desc'))
       ), rownames = FALSE,
       caption = 'Current Time measures from Datasky'
-      
+
       )
     }
   )
-  
+
   # get current data for darksky
-  
+
   get_and_preprocess_observations_ds <- function(lng,lat) {
     now <-Sys.time()
     curr <-ymd_hms(now) - lubridate::minutes(10)
@@ -3132,40 +3372,40 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       map(~get_forecast_for(lng, lat,.x))%>%
       map_df("currently")%>%
       {. ->> response}
-    
+
     response$time<-ymd_hms(response$time)
     response$time<-force_tz(response$time, "America/Chicago")
-    
+    response <- extract_date_fields(response)
     return (response)
   }
-  
-  
+
+
   # get current data for all the nodes for darksky
-  
+
   get_and_preprocess_observations_all_nodes_ds <- function(){
     #get all active nodes from AoT and their coordinates and then query them
-    
+
     active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-    
+
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
-    
-    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()%>% 
+
+    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()%>%
     {. ->> current_result}
 
     res<- extract_date_fields(res)
-    
+
     res <- res %>% unnest()
-    
+
     save_df_as_fst(res,"fst/all_nodes_current.fst")
-    
+
     return(res)
   }
-  
-  
+
+
   #preprocess darksky data for last 24 hours
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
-    
+
     # print("in preprocess")
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
@@ -3183,31 +3423,31 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     res <- extract_date_fields_h(res)
     return (res)
   }
-  
+
   #preprocess darksky data for last 24 hours for all nodes
-  
+
   get_and_preprocess_observations_24h_all_nodes_ds <- function(lng,lat){
-    
+
     #get all active nodes from AoT and their coordinates and then query them
-    
+
     active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-    
+
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
-    
+
     res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_24h_ds)) %>% unnest()
-    
+
     save_df_as_fst(res,"fst/all_nodes_24hours.fst")
-    
+
     # print(head(res))
-    
-    
+
+
     return (res)
   }
-  
+
   #preprocess darksky data for last 7 days
   get_and_preprocess_observations_7d_ds <- function(lng,lat){
-    
+
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
       map(~get_forecast_for(lng, lat, .x)) %>%
       map_df("daily") %>%
@@ -3215,37 +3455,37 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     last_7 <- extract_date_fields_d(last_7)
     return (last_7)
   }
-  
+
   #preprocess darksky data for last 7 days for all nodes
   get_and_preprocess_observations_7d_all_nodes_ds <- function(lng,lat){
-    
+
     #get all active nodes from AoT and their coordinates and then query them
-    
+
     active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-    
+
     lng <- c(active_nodes$longitude)
     lat <- c(active_nodes$latitude)
-    
+
     df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
-    
+
     save_df_as_fst(df,"fst/all_nodes_7days.fst")
-    
+
     return (df)
   }
-  
-  
+
+
   #Darksky graphical data
   #This takes the input from AoT table and maps markets
-  
+
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-    
+
     if(!is.null(vsn_)){
       #get input type either map or table
-      
+
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-      
+
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -3273,7 +3513,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
-        
+
       }
       # if table input, get the vsn and the active status
       else{
@@ -3281,15 +3521,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-        
+
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-          
+
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -3297,10 +3537,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
     else
       vsn <-NULL
-    
+
     if(is.null(vsn)){
       plot_title <- "No node selected"
-      
+
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3319,18 +3559,18 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-      
+
       gl
     }
     else {
-      
+
       time_range <- input$time_range #changed from time_range_ds
-      
+
       if(!(active == "Inactive")){
         #get input type either map or table
         if(!is.null(prev_input)){
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-          
+
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -3339,13 +3579,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-            
+
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-            
+
           }
         }
         else{
@@ -3372,16 +3612,16 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           }
           df_aot <- as.data.frame(lapply(df_aot, unlist))
           retrieved_measures <- unique(df_aot$measure)
-          print("RETRIEVED MEASURES:")
-          print(retrieved_measures)
           levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
           flag <- 1
         }
-        
-        
-        
+
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_ds(lng,lat)
+          df <- as.data.frame(lapply(df, unlist))
+        }
         if(time_range == TIME_RANGE_24HOURS){
           df <- get_and_preprocess_observations_24h_ds(lng,lat)
         } else if(time_range == TIME_RANGE_7DAYS){
@@ -3395,8 +3635,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else {
           plot_title <- paste("Last 7 days data for node:",as.character(vsn))
         }
-        
-        
+
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3415,7 +3655,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         labs <-c()
         vals <-c()
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
@@ -3424,9 +3664,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#a6cee3")
-          
+
         }
-        
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -3436,8 +3676,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
             vals <-c(vals,"intensity(AOT)" = "#a3d659")
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             # y = subset(df, measure == "humidity")$value
@@ -3446,7 +3686,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity(AOT)" = "#194649")
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -3464,14 +3704,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             }
           }
         }
-        
+
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
           suffx_windSpeed = ""
           gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
             geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
           labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
           vals <-c(vals,"windSpeed" = "#1f78b4")
-          
+
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
           suffx_windBearing = ""
@@ -3479,7 +3719,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
           labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
           vals <-c(vals,"windBearing" = "#b2df8a")
-          
+
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
           suffx_cloudCover = ""
@@ -3487,7 +3727,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
           vals <-c(vals,"cloudCover" = "#33a02c")
-          
+
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
           suffx_visibility =""
@@ -3495,7 +3735,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
           labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
           vals <-c(vals,"visibility" = "#fb9a99")
-          
+
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
           suffx_pressure = ""
@@ -3503,7 +3743,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
           labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
           vals <-c(vals,"pressure" = "#e31a1c")
-          
+
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
           suffx_ozone  = ""
@@ -3511,7 +3751,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
           vals <-c(vals,"ozone" = "#fdbf6f")
-          
+
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
         #   suffx_summary  = ""
@@ -3533,7 +3773,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # s_county$data_conv <-s_county$"Temperature"
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-            
+
             temp_suffx  = ""
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
@@ -3548,7 +3788,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       }
       else {
         plot_title <- "This node has no observations"
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3567,26 +3807,23 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         gl
       }
     }
   })
-  
-  
-  
+
+
+
   #####################################################  GRAPHICAL DATA DARKSKY COMPARISON    #####################################################
-  
+
   # Darksky Second plot for comparison
   output$graphical_data_last_ds <- renderPlot({
     autoInvalidate50()
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
-    
+
     vsn <- isolate(v$lastvsn)
-    print("VSN for darksky previous")
-    print(vsn)
-    
     # vsn <- input$map_marker_click
     #COMMENTED THIS BECAUSE IT MAKES NO SENSE FOR COMPARISON GRAPH
     # if(!is.null(input$map_marker_click)){
@@ -3599,9 +3836,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     #   vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
-      
+
       plot_title <- "No node selected for previous output"
-      
+
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3620,7 +3857,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-      
+
       gl
     }
     else {
@@ -3636,12 +3873,12 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       else
       {
         #active <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
-        lat <- subset(nodes,address==vsn)$latitude[1]
-        lng <- subset(nodes,address==vsn)$longitude[1]
+        lat <- subset(nodes,vsn==vsn)$latitude[[1]]
+        lng <- subset(nodes,vsn==vsn)$longitude[[1]]
         active <- "active"
       }
       if(!(vsn == "Inactive")){
-        
+
         flag <- -1
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
@@ -3670,8 +3907,12 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
           flag <- 1
         }
-        
+
         #This is darksky preprocessing
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_ds(lng,lat)
+          df <- as.data.frame(lapply(df, unlist))
+        }
         if(time_range == TIME_RANGE_24HOURS){
           df <- get_and_preprocess_observations_24h_ds(lng,lat)
         } else if(time_range == TIME_RANGE_7DAYS){
@@ -3685,7 +3926,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else {
           plot_title <- paste("Last 7 days data for node:",as.character(vsn))
         }
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3704,7 +3945,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         labs <-c()
         vals <-c()
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
@@ -3713,9 +3954,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#a6cee3")
-          
+
         }
-        
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -3725,8 +3966,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
             vals <-c(vals,"intensity(AOT)" = "#a3d659")
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             # y = subset(df, measure == "humidity")$value
@@ -3735,7 +3976,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity(AOT)" = "#194649")
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -3753,14 +3994,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             }
           }
         }
-        
+
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
           suffx_windSpeed = ""
           gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
             geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
           labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
           vals <-c(vals,"windSpeed" = "#1f78b4")
-          
+
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
           suffx_windBearing = ""
@@ -3768,7 +4009,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
           labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
           vals <-c(vals,"windBearing" = "#b2df8a")
-          
+
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
           suffx_cloudCover = ""
@@ -3776,7 +4017,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
           vals <-c(vals,"cloudCover" = "#33a02c")
-          
+
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
           suffx_visibility =""
@@ -3784,7 +4025,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
           labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
           vals <-c(vals,"visibility" = "#fb9a99")
-          
+
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
           suffx_pressure = ""
@@ -3792,7 +4033,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
           labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
           vals <-c(vals,"pressure" = "#e31a1c")
-          
+
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
           suffx_ozone  = ""
@@ -3800,7 +4041,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
           vals <-c(vals,"ozone" = "#fdbf6f")
-          
+
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
         #   suffx_summary  = ""
@@ -3822,7 +4063,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # s_county$data_conv <-s_county$"Temperature"
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-            
+
             temp_suffx  = ""
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
@@ -3835,7 +4076,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         gl
       } else {
         plot_title <- "This node has no observations"
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3854,20 +4095,20 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         gl
       }
     }
   })
-  
-  
+
+
   # AoT sensor nodes table
   output$nodes_table <- DT::renderDataTable(
     DT::datatable({
       tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-      
+
       # nodes[nodes_with_no_data,nodes$status] <-"inactive"
-      
+
       cols <- c("vsn","address","status")
     nodes_main <-nodes_table %>% dplyr::select(cols)
       #show only the selected measures infomration
@@ -3884,14 +4125,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       caption = 'Nodes infomration for the various sensors availability',selection = "single"
     )
   )
-  
+
   # AoT sensor nodes table
   output$tab1_table <- DT::renderDataTable(
     DT::datatable({
       tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
-      
+
       # nodes[nodes_with_no_data,nodes$status] <-"inactive"
-      
+
       cols <- c("vsn","address","status")
       nodes_main <-nodes_table %>% select(cols)
       #show only the selected measures infomration
@@ -3908,12 +4149,12 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     caption = 'Nodes information for the various sensors availability',selection = "single"
     )
   )
-  
-  
+
+
   # About HTML
   output$about_out <- renderUI({
     author <- "<h1>Mirko Mantovani - Ashwani Khemani - Abhishek Vasudevan</h1>
-    
+
     <a href='https://mirkomantovani.com/projects/ChicagoRealTimeAQ'>Project webpage</a>
     <br/>
     <a href='https://github.com/mirkomantovani/Chicago-RealTime-AQ'>Github repository</a><br>"
