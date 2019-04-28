@@ -1887,6 +1887,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       #get input type either map or table
       
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
+      # print(type)
       
       # if map input, get the vsn and the active status
       if(type=="map"){
@@ -1911,6 +1912,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
+        # print(row_id)
+        # print(vsn)
         
         #get the last two clicks
         
@@ -2524,147 +2527,6 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
   })
   
-  # Darksky table for current time
-  output$table_ds <- DT::renderDataTable(
-    if(is.null(input$map_marker_click$lat) && is.null(input$map_marker_click$long)){
-      DT::datatable({
-        empty <- data.frame()
-        empty
-      })
-    }
-    else{
-      DT::datatable({
-        current_forecast = get_current_forecast(input$map_marker_click$lat, input$map_marker_click$lng,exclude="minutely,hourly,daily")
-        curr = data.frame(current_forecast['currently'])
-        names(curr) <- substring(names(curr),11,nchar((names(curr))))
-        darksky_tracked_measures <- c("temperature", "humidity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
-        df <- data.frame(t(subset(curr,select = darksky_tracked_measures)))
-        names(df) <- c("value")
-        measures <-darksky_tracked_measures
-        curr_data <- data.frame(measures = darksky_tracked_measures,
-                                value = df)
-      },
-      options = list(searching = FALSE, pageLength = 4, lengthChange = FALSE, order = list(list(1, 'desc'))
-      ), rownames = FALSE,
-      caption = 'Current Time measures from Datasky'
-      
-      )
-    }
-  )
-  # get current data for darksky
-  
-  get_and_preprocess_observations_ds <- function(lng,lat) {
-    now <-Sys.time()
-    curr <-ymd_hms(now) - lubridate::minutes(10)
-    curr<-force_tz(yes, "America/Chicago")
-    ds <-seq(yes, now,by="min")[1:10]
-    ds <-ymd_hms(ds)
-    force_tz(ds, "America/Chicago")%>%
-      map(~get_forecast_for(lng, lat,.x))%>%
-      map_df("currently")%>%
-      {. ->> response}
-    
-    response$time<-ymd_hms(response$time)
-    response$time<-force_tz(response$time, "America/Chicago")
-    
-    return (response)
-  }
-  
-  
-  # get current data for all the nodes for darksky
-  
-  get_and_preprocess_observations_all_nodes_ds <- function(){
-    #get all active nodes from AoT and their coordinates and then query them
-    
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-    
-    lng <- c(active_nodes$longitude)
-    lat <- c(active_nodes$latitude)
-    
-    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_ds)) %>% unnest()%>% 
-    {. ->> current_result}
-
-    res<- extract_date_fields(res)
-    
-    res <- res %>% unnest()
-    
-    save_df_as_fst(res,"fst/all_nodes_current.fst")
-    
-    return(res)
-  }
-
-  
-  #preprocess darksky data for last 24 hours  
-  get_and_preprocess_observations_24h_ds <- function(lng,lat){
-
-    # print("in preprocess")
-    now <-Sys.time()
-    yes <-ymd_hms(now) - lubridate::hours(24)
-    yes<-force_tz(yes, "America/Chicago")
-    ds <-seq(yes, now,by="hour")[1:25]
-    ds <-ymd_hms(ds)
-    force_tz(ds, "America/Chicago")%>%
-      map(~get_forecast_for(lng, lat,.x))%>%
-      map_df("hourly")%>%
-      distinct()%>%
-      {. ->> response}
-    response$time<-ymd_hms(response$time)
-    response$time<-force_tz(response$time, "America/Chicago")
-    res <-tail(filter(response,(day(response$time)<day(now) | (day(response$time)==day(now) & hour(response$time)<=hour(now)))),24)
-    res <- extract_date_fields_h(res)
-    return (res)
-  }
-
-  #preprocess darksky data for last 24 hours for all nodes
-  
-  get_and_preprocess_observations_24h_all_nodes_ds <- function(lng,lat){
-    
-    #get all active nodes from AoT and their coordinates and then query them
-    
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-    
-    lng <- c(active_nodes$longitude)
-    lat <- c(active_nodes$latitude)
-    
-    res <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_24h_ds)) %>% unnest()
-    
-    save_df_as_fst(res,"fst/all_nodes_24hours.fst")
-    
-    # print(head(res))
-    
-    
-    return (res)
-  }
-  
-  #preprocess darksky data for last 7 days
-  get_and_preprocess_observations_7d_ds <- function(lng,lat){
-    
-    seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
-    map(~get_forecast_for(lng, lat, .x)) %>%
-    map_df("daily") %>%
-    {. ->> last_7 }
-    last_7 <- extract_date_fields_d(last_7)
-    return (last_7)
-  }
-
-  #preprocess darksky data for last 7 days for all nodes
-  get_and_preprocess_observations_7d_all_nodes_ds <- function(lng,lat){
-    
-    #get all active nodes from AoT and their coordinates and then query them
-
-    active_nodes <- nodes_table[nodes_table$status=="Active",][,c("vsn","longitude","latitude")]
-
-    lng <- c(active_nodes$longitude)
-    lat <- c(active_nodes$latitude)
-
-    df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
-    
-    save_df_as_fst(df,"fst/all_nodes_7days.fst")
-    
-    return (df)
-  }
-
-    
   #Darksky graphical data
   #This takes the input from AoT table and maps markets
   
@@ -3258,8 +3120,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   get_and_preprocess_observations_ds <- function(lng,lat) {
     now <-Sys.time()
     curr <-ymd_hms(now) - lubridate::minutes(10)
-    curr<-force_tz(yes, "America/Chicago")
-    ds <-seq(yes, now,by="min")[1:10]
+    curr<-force_tz(curr, "America/Chicago")
+    ds <-seq(curr, now,by="min")[1:10]
     ds <-ymd_hms(ds)
     force_tz(ds, "America/Chicago")%>%
       map(~get_forecast_for(lng, lat,.x))%>%
