@@ -1312,6 +1312,7 @@ server <- function(input, output, session) {
                       marker_text_size = '12px',
                       select_input_width = '100%',
                       lastvsn = NULL,
+                      prev_selected = NULL,
                       lastvsn_dark = NULL,
                       map_inputs = list(),
                       table_inputs = list(),
@@ -1881,6 +1882,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   
   #####################################################  GRAPHICAL DATA    #####################################################
   output$graphical_data <- renderPlot({
+    # print("Graphical")
+    
     autoInvalidate45()
     vsn_ <- v$vsn
     if(!is.null(vsn_)){
@@ -2020,6 +2023,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         
         df <- as.data.frame(lapply(df, unlist))
         
+        save_df_as_fst(df,"fst/previous.fst")
         
         # gl <- ggplot(data = df, aes(x = df$hms)) +
         gl <- ggplot() +
@@ -2258,15 +2262,21 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
-    autoInvalidate50()
+    # autoInvalidate50()
     
-    time_range <- input$time_range
+    time_range <- input$time_range # to delete dependency (maybe isolate) TODO
     irrelevant_variable <- input$map_marker_click
     
-    vsn <- isolate(v$lastvsn)
+    # print("Graphical comparison")
+    
+    vsn <- "isolate(v$lastvsn)"
+    
+    # print(isolate(v$prev_selected))
+    # print(input$map_marker_click)
     # || input$switch_compare
-    if(is.null(vsn)){
-      
+    if(is.null(isolate(v$prev_selected))){
+      v$prev_selected <- input$map_marker_click
+      # print("prev sel changed")
       plot_title <- "No node selected for previous output"
       
       gl <- ggplot() +
@@ -2291,38 +2301,45 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       gl
     }
     else {
+      print("else")
       if(!(vsn == "Inactive")){
         
-        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
-        {
-          #openaq
-          # df <- get_and_preprocess_observations(vsn)
-          if(time_range == TIME_RANGE_CURRENT){
-            df <- get_and_preprocess_observations_openaq(vsn)
-          } else if(time_range == TIME_RANGE_24HOURS){
-            df <- get_and_preprocess_observations_24h_openaq(vsn)
-          } else if(time_range == TIME_RANGE_7DAYS){
-            df <- get_and_preprocess_observations_7d_openaq(vsn)
-          }
-        }
-        else
-        {
-          # df <- get_and_preprocess_observations(vsn)
-          if(time_range == TIME_RANGE_CURRENT){
-            df <- get_and_preprocess_observations(vsn)
-          } else if(time_range == TIME_RANGE_24HOURS){
-            df <- get_and_preprocess_observations_24h(vsn)
-          } else if(time_range == TIME_RANGE_7DAYS){
-            df <- get_and_preprocess_observations_7d(vsn)
-          }
-        }
+        # if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        # {
+        #   #openaq
+        #   # df <- get_and_preprocess_observations(vsn)
+        #   if(time_range == TIME_RANGE_CURRENT){
+        #     df <- get_and_preprocess_observations_openaq(vsn)
+        #   } else if(time_range == TIME_RANGE_24HOURS){
+        #     df <- get_and_preprocess_observations_24h_openaq(vsn)
+        #   } else if(time_range == TIME_RANGE_7DAYS){
+        #     df <- get_and_preprocess_observations_7d_openaq(vsn)
+        #   }
+        # }
+        # else
+        # {
+        #   # df <- get_and_preprocess_observations(vsn)
+        #   if(time_range == TIME_RANGE_CURRENT){
+        #     df <- get_and_preprocess_observations(vsn)
+        #   } else if(time_range == TIME_RANGE_24HOURS){
+        #     df <- get_and_preprocess_observations_24h(vsn)
+        #   } else if(time_range == TIME_RANGE_7DAYS){
+        #     df <- get_and_preprocess_observations_7d(vsn)
+        #   }
+        # }
         
-        if(time_range == TIME_RANGE_CURRENT){
-          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
-        } else if(time_range == TIME_RANGE_24HOURS){
+        df <- read_fst("fst/previous.fst")
+        
+        print(df$hms[1])
+        t_range <- df$hms[1]
+        t_range <- as.character(t_range)
+        
+        if(startsWith(t_range, 'd')){
           plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
-        } else {
+        } else if(grepl("/",t_range)){
           plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+        } else {
+          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
         }
         
         # df <- subset(df, measure == "co")
