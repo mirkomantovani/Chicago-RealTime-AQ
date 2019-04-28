@@ -13,9 +13,6 @@ library(ggthemes)
 library(shinyalert)
 library(leaflet)
 library(rgdal)
-library(geojson)
-library(geojsonio)
-library(colourpicker)
 library(shinyWidgets)
 library(viridis) # Color palette
 library(cdlTools) # convert FIPS codes into names
@@ -23,7 +20,6 @@ library(htmltools) # to use htmlEscape function
 library(RColorBrewer)
 library(reshape2)
 library(fst)
-library(future)
 library(data.table)
 library(dplyr)
 library(tidyr)
@@ -4184,24 +4180,21 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     <a href='https://github.com/mirkomantovani/Chicago-RealTime-AQ'>Github repository</a><br>"
     libraries <- "<b>Used R libraries: </b> <br>
     <ul>
-    <li>shiny</li>
-    <li>shinydashboard, dashboardthemes, shinythemes, ggthemes</li>
-    <li>ggplot2, plotly, ggvis, leaflet</li>
-    <li>colourpicker, viridis, RColorBrewer</li>
-    <li>geojson, geojsonio</li>
+    <li>shiny, shinydashboard, dashboardthemes, shinythemes, ggthemes, shinyWidgets, shinyalert</li>
+    <li>ggplot2, leaflet</li>
+    <li>colourpicker, viridis, RColorBrewer, scales</li>
     <li>cdlTools, htmltools</li>
-    <li>scales</li>
-    <li>shinyalert</li>
-    <li>rgdal</li>
-    <li>reshape2</li>
-    <li>future</li>
-    <li>dplyr</li>
-    <li>tidyr</li>
+    <li>reshape2, data.table</li>
+    <li>dplyr, tidyr, lubridate, tidyverse</li>
     <li>fst</li>
-    <li>rvest</li>
+    <li>rvest, rgdal</li>
+    <li>ropenaq, darksky, RSocrata</li>
+    <li>base, sp, raster, gstat</li>
     </ul>"
-    data <- "<b>Dataset Source:</b></br> <a href='https://aqs.epa.gov/aqsweb/airdata/download_files.html'>United States Environmental Protection Agency</a><br>
-    <a href='http://eric.clst.org/tech/usgeojson/e'>United States Counties shape in GeoJSON</a>"
+    data <- "<b>Dataset Sources:</b></br> <a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf'>Chicago Traffic Tracker</a><br>
+    <a href='https://arrayofthings.github.io/' target='_blank'>Array of Things</a><br>
+    <a href='https://openaq.org/' target='_blank'>Open Air Quality</a><br>
+    <a href='https://darksky.net/' target='_blank'>Dark Sky</a>"
     HTML(paste(author, libraries, data))
   })
   # End of server
