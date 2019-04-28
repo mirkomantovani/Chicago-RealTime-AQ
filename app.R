@@ -1074,7 +1074,7 @@ server <- function(input, output, session) {
 
   #####################################################  OpenAQ utils    #####################################################
   ls.observations_openaq <- function (vsn, time) {
-    print(vsn)
+    # print(vsn)
     if(vsn=="Kingery")
     {
       vsn <- "Kingery Near-road+#1"
@@ -2031,7 +2031,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
         df <- as.data.frame(lapply(df, unlist))
  
-        save_df_as_fst(df,"fst/previous.fst")
+        # save_df_as_fst(df,"fst/previous.fst")
 
         # gl <- ggplot(data = df, aes(x = df$hms)) +
         gl <- ggplot() +
@@ -2270,20 +2270,19 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
-    # autoInvalidate50()
+    autoInvalidate50()
     
     time_range <- input$time_range # to delete dependency (maybe isolate) TODO
     irrelevant_variable <- input$map_marker_click
     
     # print("Graphical comparison")
     
-    vsn <- "isolate(v$lastvsn)"
+    vsn <- (v$lastvsn)
     
     # print(isolate(v$prev_selected))
     # print(input$map_marker_click)
     # || input$switch_compare
-    if(is.null(isolate(v$prev_selected))){
-      v$prev_selected <- input$map_marker_click
+    if(is.null(vsn)){
       # print("prev sel changed")
 
       plot_title <- "No node selected for previous output"
@@ -2310,47 +2309,54 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
       gl
     }
     else {
-      print("else")
+      # print("else")
       if(!(vsn == "Inactive")){
-        # if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
-        # {
-        #   #openaq
-        #   # df <- get_and_preprocess_observations(vsn)
-        #   if(time_range == TIME_RANGE_CURRENT){
-        #     df <- get_and_preprocess_observations_openaq(vsn)
-        #   } else if(time_range == TIME_RANGE_24HOURS){
-        #     df <- get_and_preprocess_observations_24h_openaq(vsn)
-        #   } else if(time_range == TIME_RANGE_7DAYS){
-        #     df <- get_and_preprocess_observations_7d_openaq(vsn)
-        #   }
-        # }
-        # else
-        # {
-        #   # df <- get_and_preprocess_observations(vsn)
-        #   if(time_range == TIME_RANGE_CURRENT){
-        #     df <- get_and_preprocess_observations(vsn)
-        #   } else if(time_range == TIME_RANGE_24HOURS){
-        #     df <- get_and_preprocess_observations_24h(vsn)
-        #   } else if(time_range == TIME_RANGE_7DAYS){
-        #     df <- get_and_preprocess_observations_7d(vsn)
-        #   }
-        # }
-        
-        df <- read_fst("fst/previous.fst")
-        
-        print(df$hms[1])
-        t_range <- df$hms[1]
-        t_range <- as.character(t_range)
-        
-        if(startsWith(t_range, 'd')){
-
-          plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
-        } else if(grepl("/",t_range)){
-          plot_title <- paste("Last 7 days data for node:",df$vsn[1])
-        } else {
-          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations_openaq(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h_openaq(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d_openaq(vsn)
+          }
         }
+        else
+        {
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d(vsn)
+          }
+        }
+        
+        
+        # print(df$hms[1])
+        # t_range <- df$hms[1]
+        # t_range <- as.character(t_range)
+        # 
+        # if(startsWith(t_range, 'd')){
+        # 
+        #   plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+        # } else if(grepl("/",t_range)){
+        #   plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+        # } else {
+        #   plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+        # }
 
+        if(time_range == TIME_RANGE_CURRENT){
+          plot_title <- paste("Current (or most recent) data for node:",df$vsn[1])
+        } else if(time_range == TIME_RANGE_24HOURS){
+          plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
+        } else {
+          plot_title <- paste("Last 7 days data for node:",df$vsn[1])
+        }
+        
         # df <- subset(df, measure == "co")
         df <- as.data.frame(lapply(df, unlist))
 
@@ -2556,7 +2562,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   output$graphical_data_ds <- renderPlot({
     autoInvalidate45()
     vsn_ <- v$vsn
-    print(vsn_)
+    # print(vsn_)
     if(!is.null(vsn_)){
       #get input type either map or table
 
@@ -2672,11 +2678,11 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         df <- as.data.frame(lapply(df, unlist))
         retrieved_measures <- unique(df$measure)
 
-        print(retrieved_measures)
+        # print(retrieved_measures)
         labs <- names(df)
         labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
         labs2 <- list()
-        print(labs)
+        # print(labs)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
 
@@ -2758,10 +2764,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #
         #final dataframe which is to be shown as table is df
 
-        print(df)
+        # print(df)
         drops <- c("vsn","year","month","day","uom")
         df <- df[ , !(names(df) %in% drops)]
-        print(df)
+        # print(df)
         '%ni%' <- Negate('%in%')
         df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
         df <- spread(df, measure, value)
@@ -2793,7 +2799,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
   output$table_data <- DT::renderDataTable({
     autoInvalidate45()
     vsn_ <- v$vsn
-    print(vsn_)
+    # print(vsn_)
     if(!is.null(vsn_)){
       #get input type either map or table
 
@@ -2909,11 +2915,11 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         df <- as.data.frame(lapply(df, unlist))
         retrieved_measures <- unique(df$measure)
 
-        print(retrieved_measures)
+        # print(retrieved_measures)
         labs <- names(df)
         labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
         labs2 <- list()
-        print(labs)
+        # print(labs)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
 
@@ -2995,10 +3001,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #
         #final dataframe which is to be shown as table is df
 
-        print(df)
+        # print(df)
         drops <- c("vsn","year","month","day","uom")
         df <- df[ , !(names(df) %in% drops)]
-        print(df)
+        # print(df)
         '%ni%' <- Negate('%in%')
         df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
         df <- spread(df, measure, value)
@@ -3140,7 +3146,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         else
         {
           print("vsn:")
-          print(vsn)
+          # print(vsn)
           # df <- get_and_preprocess_observations(vsn)
           if(time_range == TIME_RANGE_CURRENT){
             df_aot <- get_and_preprocess_observations(vsn)
@@ -3152,7 +3158,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           df_aot <- as.data.frame(lapply(df_aot, unlist))
           retrieved_measures <- unique(df_aot$measure)
           print("RETRIEVED MEASURES:")
-          print(retrieved_measures)
+          # print(retrieved_measures)
           levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
@@ -3179,7 +3185,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
 
         df <- df[, (colnames(df) %in% keep)]
-        print(df)
+        # print(df)
 
         #labs and labs2 are the required variables for AoT
         #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
@@ -3188,7 +3194,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         labs4 <- list()
         labs1 <- names(df)
         labs3 <- list()
-        print(labs3)
+        # print(labs3)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
 
@@ -3315,10 +3321,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         labs2 <- unlist(labs2)
         labs3 <- unlist(labs3)
         labs4 <- unlist(labs4)
-        print(labs)
-        print(labs2)
-        print(labs3)
-        print(labs4)
+        # print(labs)
+        # print(labs2)
+        # print(labs3)
+        # print(labs4)
         #replace names of variables with variables+unit
         #darksky
         for(i in 1:length(labs3))
@@ -3619,7 +3625,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         else
         {
           print("vsn:")
-          print(vsn)
+          # print(vsn)
           # df <- get_and_preprocess_observations(vsn)
           if(time_range == TIME_RANGE_CURRENT){
             df_aot <- get_and_preprocess_observations(vsn)
@@ -3799,7 +3805,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             vals <-c(vals,"temperature" = "#ff7f00")
           }
         }
-        print(vals)
+        # print(vals)
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                       values = vals)
         gl
@@ -3907,7 +3913,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         else
         {
           print("vsn:")
-          print(vsn)
+          # print(vsn)
           # df <- get_and_preprocess_observations(vsn)
           if(time_range == TIME_RANGE_CURRENT){
             df_aot <- get_and_preprocess_observations(vsn)
@@ -3919,7 +3925,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           df_aot <- as.data.frame(lapply(df_aot, unlist))
           retrieved_measures <- unique(df_aot$measure)
           print("RETRIEVED MEASURES:")
-          print(retrieved_measures)
+          # print(retrieved_measures)
           levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
