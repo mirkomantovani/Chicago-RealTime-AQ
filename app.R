@@ -1234,9 +1234,9 @@ server <- function(input, output, session) {
     return(df)
   }
   ############################################### Unit conversion functions ###########################################
-  
-  
-  
+
+
+
   ############################################### Extract sensors info ################################################
 
 
@@ -1698,7 +1698,7 @@ server <- function(input, output, session) {
 
     #get the specific value aggregation
     if(source=="AoT" || source=="OpenAQ"){
-      
+
       if(sel_value_type=="average"){
         df[df$measure==selected,]%>%
           group_by(vsn) %>%
@@ -1723,7 +1723,7 @@ server <- function(input, output, session) {
         df1 <- data.frame(df$vsn)
         names(df1) <- c("vsn")
         df1$measure <- df[[selected]]
-        
+
         df1 %>%
           group_by(vsn) %>%
           summarize(req_measure = mean(measure))%>%
@@ -1733,7 +1733,7 @@ server <- function(input, output, session) {
         df1 <- data.frame(df$vsn)
         names(df1) <- c("vsn")
         df1$measure <- df[[selected]]
-        
+
         df1 %>%
           group_by(vsn) %>%
           summarize(req_measure = min(measure))%>%
@@ -1743,7 +1743,7 @@ server <- function(input, output, session) {
         df1 <- data.frame(df$vsn)
         names(df1) <- c("vsn")
         df1$measure <- df[[selected]]
-        
+
         df1 %>%
           group_by(vsn) %>%
           summarize(req_measure = max(measure))%>%
@@ -1804,14 +1804,14 @@ server <- function(input, output, session) {
       }
 
       assign("last.warning", NULL, envir = baseenv()) # clear the previous warning
-      
+
       fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph")))
 
       if(length(warnings())>0){ # or !is.null(warnings())
         shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
         return (NULL);
       }
-      
+
       chi.grid <- pt2grid((chiCA),30)
 
       chi.grid <- pt2grid((chiCA),100)
@@ -1864,10 +1864,10 @@ server <- function(input, output, session) {
             <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
             <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
             "
-        
+
         proxy %>% clearControls() %>% clearImages() %>% addControl(html = html_legend, position = "bottomright")
 
-          
+
       }
     })
 
@@ -1876,7 +1876,7 @@ server <- function(input, output, session) {
   #####################################################  GRAPHICAL DATA    #####################################################
   output$graphical_data <- renderPlot({
     # print("Graphical")
-    
+
     autoInvalidate45()
     vsn_ <- v$vsn
     if(!is.null(vsn_)){
@@ -2018,7 +2018,7 @@ server <- function(input, output, session) {
         }
 
         df <- as.data.frame(lapply(df, unlist))
- 
+
         # save_df_as_fst(df,"fst/previous.fst")
 
         # gl <- ggplot(data = df, aes(x = df$hms)) +
@@ -2064,24 +2064,24 @@ server <- function(input, output, session) {
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
-          vals <-c(vals,"co" = "#c6c60f")
+          vals <-c(vals,"co" = "#a6cee3")
           gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
             geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
         }
         if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
           suffx_no2 = unique(subset(df, measure == "no2")$uom)
           labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
-          vals <-c(vals,"no2" = "#13c649")
+          vals <-c(vals,"no2" = "#1f78b4")
           gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
             suffx_bc = "(e-12 oz/ft3)"
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            vals <-c(vals,"bc" = "#c6c60f")
+            vals <-c(vals,"bc" = "#b2df8a")
             gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
               geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
           }
@@ -2089,7 +2089,7 @@ server <- function(input, output, session) {
           {
             suffx_bc = unique(subset(df, measure == "bc")$uom)
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            vals <-c(vals,"bc" = "#c6c60f")
+            vals <-c(vals,"bc" = "#b2df8a")
             gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
               geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
           }
@@ -2118,21 +2118,21 @@ server <- function(input, output, session) {
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = "ppm"#unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
-          vals <-c(vals,"o3" = "#0fa2af")
+          vals <-c(vals,"o3" = "#ff7f00")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
         }
         if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
           suffx_so2 =  unique(subset(df, measure == "so2")$uom)
           labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
-          vals <-c(vals,"so2" = "#B899E7")
+          vals <-c(vals,"so2" = "#33a02c")
           gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
         if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
-          vals <-c(vals,"h2s" = "#A877E0")
+          vals <-c(vals,"h2s" = "#fb9a99")
           gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
@@ -2152,7 +2152,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
-            vals <-c(vals,"pm2.5" = "#cc8112")
+            vals <-c(vals,"pm2.5" = "#e31a1c")
             }
           else{
 
@@ -2160,7 +2160,7 @@ server <- function(input, output, session) {
               geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
-            vals <-c(vals,"pm2.5" = "#cc8112")
+            vals <-c(vals,"pm2.5" = "#e31a1c")
 
           }
         }
@@ -2178,7 +2178,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
-            vals <-c(vals,"pm10" = "#ba1010")
+            vals <-c(vals,"pm10" = "#fdbf6f")
             }
           else{
 
@@ -2186,7 +2186,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
-            vals <-c(vals,"pm10" = "#ba1010")
+            vals <-c(vals,"pm10" = "#fdbf6f")
 
           }
         }
@@ -2211,11 +2211,11 @@ server <- function(input, output, session) {
         #       vals <-c(vals,"temperature" = "#6B1F13")
         #   }
         # }
-        
+
         if(length(labs)==0)
         {
           plot_title <- paste("No observations found for ",vsn)
-          
+
           gl <- ggplot() +
             theme(
               axis.text.x = element_text(angle = 45, hjust = 1),
@@ -2234,7 +2234,7 @@ server <- function(input, output, session) {
               axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
               legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
             )+labs(title=plot_title,x = "Time", y = "Measurement")
-          
+
           gl
         }
         else
@@ -2306,14 +2306,14 @@ server <- function(input, output, session) {
   # Second plot for comparison
   output$graphical_data_last <- renderPlot({
     autoInvalidate50()
-    
+
     time_range <- input$time_range # to delete dependency (maybe isolate) TODO
     irrelevant_variable <- input$map_marker_click
-    
+
     # print("Graphical comparison")
-    
+
     vsn <- (v$lastvsn)
-    
+
     # print(isolate(v$prev_selected))
     # print(input$map_marker_click)
     # || input$switch_compare
@@ -2369,14 +2369,14 @@ server <- function(input, output, session) {
             df <- get_and_preprocess_observations_7d(vsn)
           }
         }
-        
-        
+
+
         # print(df$hms[1])
         # t_range <- df$hms[1]
         # t_range <- as.character(t_range)
-        # 
+        #
         # if(startsWith(t_range, 'd')){
-        # 
+        #
         #   plot_title <- paste("Last 24 hours data for node:",df$vsn[1])
         # } else if(grepl("/",t_range)){
         #   plot_title <- paste("Last 7 days data for node:",df$vsn[1])
@@ -2391,7 +2391,7 @@ server <- function(input, output, session) {
         } else {
           plot_title <- paste("Last 7 days data for node:",df$vsn[1])
         }
-        
+
         # df <- subset(df, measure == "co")
         df <- as.data.frame(lapply(df, unlist))
 
@@ -2438,14 +2438,14 @@ server <- function(input, output, session) {
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
-          vals <-c(vals,"co" = "#c6c60f")
+          vals <-c(vals,"co" = "#a6cee3")
           gl <- gl + geom_line(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms, color = "co"), size = line_size(), group = 1) +
             geom_point(aes(y = subset(df, measure == "co")$value, x = subset(df, measure == "co")$hms , color = "co"), size = line_size()*3)
         }
         if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
           suffx_no2 = unique(subset(df, measure == "no2")$uom)
           labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
-          vals <-c(vals,"no2" = "#13c649")
+          vals <-c(vals,"no2" = "#1f78b4")
           gl <- gl + geom_line(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms, color = "no2"), size = line_size(), group = 2) +
             geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
         }
@@ -2469,24 +2469,24 @@ server <- function(input, output, session) {
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
-          vals <-c(vals,"o3" = "#0fa2af")
+          vals <-c(vals,"o3" = "#ff7f00")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
         }
         if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
           suffx_so2 =  unique(subset(df, measure == "so2")$uom)
           labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
-          vals <-c(vals,"so2" = "#B899E7")
+          vals <-c(vals,"so2" = "#33a02c")
           gl <- gl + geom_line(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms, color = "so2"), size = line_size(), group = 6) +
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
             suffx_bc = "(e-12 oz/ft3)"
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            vals <-c(vals,"bc" = "#c6c60f")
+            vals <-c(vals,"bc" = "#b2df8a")
             gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
               geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
           }
@@ -2494,7 +2494,7 @@ server <- function(input, output, session) {
           {
             suffx_bc = unique(subset(df, measure == "bc")$uom)
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            vals <-c(vals,"bc" = "#c6c60f")
+            vals <-c(vals,"bc" = "#b2df8a")
             gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
               geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
           }
@@ -2502,7 +2502,7 @@ server <- function(input, output, session) {
         if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
-          vals <-c(vals,"h2s" = "#A877E0")
+          vals <-c(vals,"h2s" = "#fb9a99")
           gl <- gl + geom_line(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms, color = "h2s"), size = line_size(), group = 7) +
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
@@ -2521,7 +2521,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
-            vals <-c(vals,"pm2.5" = "#cc8112")
+            vals <-c(vals,"pm2.5" = "#e31a1c")
           }
           else{
 
@@ -2529,11 +2529,11 @@ server <- function(input, output, session) {
               geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
-            vals <-c(vals,"pm2.5" = "#cc8112")
+            vals <-c(vals,"pm2.5" = "#e31a1c")
 
           }
         }
-        
+
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
         if(input$switch_units){
           # df$data_conv <-df$"pm10"
@@ -2544,7 +2544,7 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
             geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
           labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
-          vals <-c(vals,"pm10" = "#ba1010")
+          vals <-c(vals,"pm10" = "#fdbf6f")
         }
           else{
 
@@ -2552,7 +2552,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
-            vals <-c(vals,"pm10" = "#ba1010")
+            vals <-c(vals,"pm10" = "#fdbf6f")
 
           }
         }
@@ -2562,25 +2562,25 @@ server <- function(input, output, session) {
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
 
-        if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
-          if(input$switch_units){
-            temp_suffx = "(Degrees Fahrenheit)"
-            gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-              geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
-          }
-          else{
-            temp_suffx = "(Degrees Celsius)"
-            gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
-              geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
-            labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#6B1F13")
-          }
-        }
-        
+        # if ("temperature" %in% c(input$measures1,input$measures2) && "temperature" %in% retrieved_measures){
+        #   if(input$switch_units){
+        #     temp_suffx = "(Degrees Fahrenheit)"
+        #     gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+        #       geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+        #   }
+        #   else{
+        #     temp_suffx = "(Degrees Celsius)"
+        #     gl <- gl + geom_line(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms, color = "temperature"), size = line_size(), group = 2) +
+        #       geom_point(aes(y = subset(df, measure == "temperature")$value, x = subset(df, measure == "temperature")$hms , color = "temperature"), size = line_size()*3)
+        #     labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
+        #     vals <-c(vals,"temperature" = "#6B1F13")
+        #   }
+        # }
+
         if(length(labs)==0)
         {
           plot_title <- paste("No observations found for ",vsn)
-          
+
           gl <- ggplot() +
             theme(
               axis.text.x = element_text(angle = 45, hjust = 1),
@@ -2599,13 +2599,13 @@ server <- function(input, output, session) {
               axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
               legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
             )+labs(title=plot_title,x = "Time", y = "Measurement")
-          
+
           gl
         }
         else
         {
-        
-        
+
+
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                       values = vals)
         gl}
@@ -2787,12 +2787,12 @@ server <- function(input, output, session) {
           labs2 = c(labs2,"so2")
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
             suffx_bc = "(e-12 oz/ft3)"
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            labs2 = c(labs2,"bc")     
+            labs2 = c(labs2,"bc")
           }
           else
           {
@@ -2874,7 +2874,7 @@ server <- function(input, output, session) {
         else
         {
           names(df) = unlist(c("hms",labs))
-          DT::datatable({df},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(list(1, 'desc'))
+          DT::datatable({df},options = list(searching = FALSE, pageLength =6, lengthChange = FALSE, order = list(list(0, 'asc'))
           ), rownames = FALSE,
           caption = paste('Pollutant measures for ',vsn)
           )
@@ -2889,25 +2889,25 @@ server <- function(input, output, session) {
     autoInvalidate50()
     time_range <- input$time_range # to delete dependency (maybe isolate) TODO
     irrelevant_variable <- input$map_marker_click
-    
+
     # print("Graphical comparison")
-    
+
     vsn <- (v$lastvsn)
     if(is.null(vsn)){
       DT::datatable({
         empty <- data.frame()
         empty
       })
-      
+
     }
-    
+
     else {
       #some node is selected
       if(!(vsn == "Inactive")){
         #TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
+
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
           #openaq
@@ -2931,10 +2931,10 @@ server <- function(input, output, session) {
             df <- get_and_preprocess_observations_7d(vsn)
           }
         }
-        
+
         df <- as.data.frame(lapply(df, unlist))
         retrieved_measures <- unique(df$measure)
-        
+
         # print(retrieved_measures)
         labs <- names(df)
         labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
@@ -2942,7 +2942,7 @@ server <- function(input, output, session) {
         # print(labs)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-        
+
         if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
           suffx_co = unique(subset(df, measure == "co")$uom)
           labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
@@ -2953,7 +2953,7 @@ server <- function(input, output, session) {
           labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
           labs2 = c(labs2,"no2")
         }
-        
+
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
@@ -2965,12 +2965,12 @@ server <- function(input, output, session) {
           labs2 = c(labs2,"so2")
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
             suffx_bc = "(e-12 oz/ft3)"
             labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
-            labs2 = c(labs2,"bc")     
+            labs2 = c(labs2,"bc")
           }
           else
           {
@@ -2984,7 +2984,7 @@ server <- function(input, output, session) {
           labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
           labs2 = c(labs2,"h2s")
         }
-        
+
         # currently the same values is shown for both imperial and metric
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
@@ -2998,7 +2998,7 @@ server <- function(input, output, session) {
             labs2 = c(labs2,c("pm2.5"))
           }
           else{
-            
+
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             labs2 = c(labs2,c("pm2.5"))
@@ -3008,7 +3008,7 @@ server <- function(input, output, session) {
         # to be changed accordingly based on the units in the dataset
         #
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
-          
+
           if(input$switch_units){
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
@@ -3019,7 +3019,7 @@ server <- function(input, output, session) {
             labs2 = c(labs2,c("pm10"))
           }
           else{
-            
+
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
             labs2 = c(labs2,"pm10")
@@ -3030,7 +3030,7 @@ server <- function(input, output, session) {
         }
         #
         #final dataframe which is to be shown as table is df
-        
+
         # print(df)
         drops <- c("vsn","year","month","day","uom")
         df <- df[ , !(names(df) %in% drops)]
@@ -3038,7 +3038,7 @@ server <- function(input, output, session) {
         '%ni%' <- Negate('%in%')
         df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
         df <- spread(df, measure, value)
-        
+
         # print(df)
         keep <- c("hms",labs2)
         df <- df[unlist(keep)]
@@ -3052,26 +3052,26 @@ server <- function(input, output, session) {
         else
         {
           names(df) = unlist(c("hms",labs))
-          DT::datatable({df},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(list(1, 'desc'))
+          DT::datatable({df},options = list(searching = FALSE, pageLength =6, lengthChange = FALSE, order = list(list(0, 'asc'))
           ), rownames = FALSE,
           caption = paste('Pollutant measures for ',vsn)
           )
         }
       }
     }
-    
+
   })
-  
+
   # TAB 2 table
   output$table_data_ds <- DT::renderDataTable({
     autoInvalidate45()
     vsn_ <- v$vsn
-    
+
     if(!is.null(vsn_)){
       #get input type either map or table
-      
+
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-      
+
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -3108,13 +3108,13 @@ server <- function(input, output, session) {
         lat <- subset(nodes_oaq,vsn==vsn)$latitude[1]
         lng <- subset(nodes_oaq,vsn==vsn)$longitude[1]
         #get the last two clicks
-        
+
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-          
+
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -3122,30 +3122,30 @@ server <- function(input, output, session) {
     }
     else
       vsn <-NULL
-    
+
     if(is.null(vsn)){
-      
+
       DT::datatable({
         empty <- data.frame()
         empty
       })
-      
+
     }
     else {
       #some node is selected
       time_range <- input$time_range
-      
+
       if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
-        
+
+
         #set the previous click
         if(!is.null(prev_input)){
           #get input type either map or table
-          
+
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-          
+
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -3154,13 +3154,13 @@ server <- function(input, output, session) {
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-            
+
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-            
+
           }
         }
         else{
@@ -3197,7 +3197,7 @@ server <- function(input, output, session) {
           labs <- names(df_aot)
           labs <- labs[ - which(names(labs) == c("vsn","year","month","day","uom"))]
         }
-        
+
         if(time_range == TIME_RANGE_CURRENT){
           df <- get_and_preprocess_observations_ds(lng,lat)
           df <- extract_date_fields(df)
@@ -3208,15 +3208,15 @@ server <- function(input, output, session) {
         } else if(time_range == TIME_RANGE_7DAYS){
           df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
-        
+
         retrieved_measures_darksky <- names(df)
         #print(retrieved_measures)
-        
+
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
-        
+
         df <- df[, (colnames(df) %in% keep)]
         # print(df)
-        
+
         #labs and labs2 are the required variables for AoT
         #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
         labs <- list()
@@ -3227,8 +3227,8 @@ server <- function(input, output, session) {
         # print(labs3)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-        
-        
+
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -3236,14 +3236,14 @@ server <- function(input, output, session) {
             labs <-c(labs,"intensity(AOT)"=paste("intensity(AOT)",suffx_intensity, sep=" "))
             labs2 = c(labs2,c("intensity(AOT)"))
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             labs <-c(labs,"humidity(AOT)"=paste("humidity(AOT)",suffx_humidity, sep=" "))
             labs2 = c(labs2,c("humidity(AOT)"))
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -3258,14 +3258,14 @@ server <- function(input, output, session) {
             }
           }
         }
-        
+
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
           suffx_humidity = "(RH)"
           labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           labs4 <- c(labs4,"humidity")
         }
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units)
           {
             suffx_windSpeed = "(knots)"
@@ -3314,7 +3314,7 @@ server <- function(input, output, session) {
           }
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_pressure = "psi"
             df$pressure <- df$pressure/68.948
@@ -3358,9 +3358,9 @@ server <- function(input, output, session) {
         #
         #final dataframe which is to be shown as table is df
         #keep only variables in lab3 and discard others
-        
+
         df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
-        
+
         if(flag == 1)
         {
           drops <- c("vsn","year","month","day","uom")
@@ -3371,7 +3371,7 @@ server <- function(input, output, session) {
           keep <- c("hms",labs2)
           df_aot <- df_aot[unlist(keep)]
           names(df_aot) <- unlist(c("hms",labs))
-          
+
           df_combined <- merge(df_aot, df, by="hms", all =TRUE)
           df_combined <- df_combined %>% dplyr::select(hms, everything())
         }
@@ -3387,7 +3387,7 @@ server <- function(input, output, session) {
             df_combined <- df
           }
         }
-        
+
         # print(df_combined)
         labs <- unlist(labs)
         labs2 <- unlist(labs2)
@@ -3419,43 +3419,43 @@ server <- function(input, output, session) {
         }
         else
         {
-          
-          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(1, 'desc')
+
+          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =6, lengthChange = FALSE, order = list(1, 'desc')
           ), rownames = FALSE,
           caption = paste('Measures table for',vsn)
           )
         }
       }
     }
-    
+
   })
-  
-  
+
+
   # TAB 2 table previous node
   output$table_data_last_ds <- DT::renderDataTable({
     autoInvalidate50()
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
     vsn <- v$lastvsn
-    
+
     lat <- subset(nodes,vsn==vsn)$latitude[[1]]
     lng <- subset(nodes,vsn==vsn)$longitude[[1]]
     if(is.null(vsn)){
-      
+
       DT::datatable({
         empty <- data.frame()
         empty
       })
-      
+
     }
     else {
       #some node is selected
       time_range <- input$time_range
-      
+
       if(!(vsn == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-        
+
         flag <- -1
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
@@ -3487,7 +3487,7 @@ server <- function(input, output, session) {
           labs <- names(df_aot)
           labs <- labs[ - which(names(labs) == c("vsn","year","month","day","uom"))]
         }
-        
+
         if(time_range == TIME_RANGE_CURRENT){
           df <- get_and_preprocess_observations_ds(lng,lat)
           df <- extract_date_fields(df)
@@ -3498,15 +3498,15 @@ server <- function(input, output, session) {
         } else if(time_range == TIME_RANGE_7DAYS){
           df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
-        
+
         retrieved_measures_darksky <- names(df)
         #print(retrieved_measures)
-        
+
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
-        
+
         df <- df[, (colnames(df) %in% keep)]
         # print(df)
-        
+
         #labs and labs2 are the required variables for AoT
         #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
         labs <- list()
@@ -3517,8 +3517,8 @@ server <- function(input, output, session) {
         # print(labs3)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-        
-        
+
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -3526,14 +3526,14 @@ server <- function(input, output, session) {
             labs <-c(labs,"intensity(AOT)"=paste("intensity(AOT)",suffx_intensity, sep=" "))
             labs2 = c(labs2,c("intensity(AOT)"))
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             labs <-c(labs,"humidity(AOT)"=paste("humidity(AOT)",suffx_humidity, sep=" "))
             labs2 = c(labs2,c("humidity(AOT)"))
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -3548,14 +3548,14 @@ server <- function(input, output, session) {
             }
           }
         }
-        
+
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
           suffx_humidity = "(RH)"
           labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           labs4 <- c(labs4,"humidity")
         }
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units)
           {
             suffx_windSpeed = "(knots)"
@@ -3604,7 +3604,7 @@ server <- function(input, output, session) {
           }
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_pressure = "psi"
             df$pressure <- df$pressure/68.948
@@ -3635,7 +3635,7 @@ server <- function(input, output, session) {
             labs3 <-c(labs3,"temperature" = paste("temperature",temp_suffx, sep=" "))
             labs4 <- c(labs4,"temperature")
           }
-          
+
           else{
             temp_suffx  = "(Degrees Celsius)"
             labs3 <-c(labs3,"temperature"= paste("temperature",temp_suffx, sep=" "))
@@ -3648,9 +3648,9 @@ server <- function(input, output, session) {
         #
         #final dataframe which is to be shown as table is df
         #keep only variables in lab3 and discard others
-        
+
         df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
-        
+
         if(flag == 1)
         {
           drops <- c("vsn","year","month","day","uom")
@@ -3661,7 +3661,7 @@ server <- function(input, output, session) {
           keep <- c("hms",labs2)
           df_aot <- df_aot[unlist(keep)]
           names(df_aot) <- unlist(c("hms",labs))
-          
+
           df_combined <- merge(df_aot, df, by="hms", all =TRUE)
           df_combined <- df_combined %>% dplyr::select(hms, everything())
         }
@@ -3677,7 +3677,7 @@ server <- function(input, output, session) {
             df_combined <- df
           }
         }
-        
+
         # print(df_combined)
         labs <- unlist(labs)
         labs2 <- unlist(labs2)
@@ -3709,8 +3709,8 @@ server <- function(input, output, session) {
         }
         else
         {
-          
-          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(1, 'desc')
+
+          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =6, lengthChange = FALSE, order = list(1, 'desc')
           ), rownames = FALSE,
           caption = paste('Measures table for',vsn)
           )
@@ -3739,7 +3739,7 @@ server <- function(input, output, session) {
         curr_data <- data.frame(measures = darksky_tracked_measures,
                                 value = df)
       },
-      options = list(searching = FALSE, pageLength = 4, lengthChange = FALSE, order = list(list(1, 'desc'))
+      options = list(searching = FALSE, pageLength = 4, lengthChange = FALSE, order = list(list(0, 'asc'))
       ), rownames = FALSE,
       caption = 'Current Time measures from Datasky'
 
@@ -3853,7 +3853,7 @@ server <- function(input, output, session) {
     df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
 
     df["temperature"] <- (df["temperatureMin"]+df["temperatureMax"])/2
-    
+
     save_df_as_fst(df,"fst/all_nodes_7days.fst")
 
     return (df)
@@ -3987,13 +3987,13 @@ server <- function(input, output, session) {
         }
         else
         {
-          print("vsn:")
           # print(vsn)
           # df <- get_and_preprocess_observations(vsn)
           if(time_range == TIME_RANGE_CURRENT){
             df_aot <- get_and_preprocess_observations(vsn)
           } else if(time_range == TIME_RANGE_24HOURS){
             df_aot <- get_and_preprocess_observations_24h(vsn)
+            print(unique(df_aot$hms))
           } else if(time_range == TIME_RANGE_7DAYS){
             df_aot <- get_and_preprocess_observations_7d(vsn)
           }
@@ -4064,7 +4064,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
               geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms , color = "intensity(AOT)"), size = line_size()*3)
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
-            vals <-c(vals,"intensity(AOT)" = "#a3d659")
+            vals <-c(vals,"intensity(AOT)" = "#1f78b4")
           }
 
 
@@ -4074,7 +4074,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms, color = "humidity(AOT)"), size = line_size(), group = 3) +
               geom_point(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms , color = "humidity(AOT)"), size = line_size()*3)
             labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
-            vals <-c(vals,"humidity(AOT)" = "#194649")
+            vals <-c(vals,"humidity(AOT)" = "#b2df8a")
           }
 
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
@@ -4084,20 +4084,20 @@ server <- function(input, output, session) {
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
               labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",temp_suffx, sep=" "))
-              vals <-c(vals,"temperature(AOT)" = "#6B1F13")
+              vals <-c(vals,"temperature(AOT)" = "#33a02c")
             }
             else{
               temp_suffx = "(Degrees Celsius)"
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
               labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
-              vals <-c(vals,"temperature(AOT)" = "#6B1F13")
+              vals <-c(vals,"temperature(AOT)" = "#33a02c")
             }
           }
         }
 
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units)
           {
             suffx_windSpeed = "knots"
@@ -4105,7 +4105,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
               geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
             labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-            vals <-c(vals,"windSpeed" = "#1f78b4")
+            vals <-c(vals,"windSpeed" = "#fb9a99")
           }
           else
           {
@@ -4113,19 +4113,19 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
             geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
           labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-          vals <-c(vals,"windSpeed" = "#1f78b4")
+          vals <-c(vals,"windSpeed" = "#fb9a99")
           }
 
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_windBearing = "knots"
             df$windBearing <- df$windBearing * 0.51
             gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
               geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
             labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-            vals <-c(vals,"windBearing" = "#b2df8a")
+            vals <-c(vals,"windBearing" = "#e31a1c")
           }
           else
           {
@@ -4133,7 +4133,7 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
             geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
           labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-          vals <-c(vals,"windBearing" = "#b2df8a")
+          vals <-c(vals,"windBearing" = "#e31a1c")
           }
 
         }
@@ -4142,18 +4142,18 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
-          vals <-c(vals,"cloudCover" = "#33a02c")
+          vals <-c(vals,"cloudCover" = "#fdbf6f")
 
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_visibility ="miles"
             df$visibility <- df$visibility/1.609
             gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
               geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
             labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-            vals <-c(vals,"visibility" = "#fb9a99")
+            vals <-c(vals,"visibility" = "#ff7f00")
           }
           else
           {
@@ -4161,19 +4161,19 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
             geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
           labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-          vals <-c(vals,"visibility" = "#fb9a99")
+          vals <-c(vals,"visibility" = "#ff7f00")
           }
 
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_pressure = "psi"
             df$pressure <- df$pressure/68.948
             gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
               geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
             labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-            vals <-c(vals,"pressure" = "#e31a1c")          
+            vals <-c(vals,"pressure" = "#cab2d6")
             }
           else
           {
@@ -4181,7 +4181,7 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
             geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
           labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-          vals <-c(vals,"pressure" = "#e31a1c")
+          vals <-c(vals,"pressure" = "#cab2d6")
           }
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
@@ -4189,7 +4189,7 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
-          vals <-c(vals,"ozone" = "#fdbf6f")
+          vals <-c(vals,"ozone" = "#6a3d9a")
 
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
@@ -4207,7 +4207,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#ff7f00")
+            vals <-c(vals,"temperature" = "#ffff99")
           }
           else{
             # s_county$data_conv <-s_county$"Temperature"
@@ -4218,7 +4218,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#ff7f00")
+            vals <-c(vals,"temperature" = "#ffff99")
           }
         }
         # print(vals)
@@ -4262,7 +4262,7 @@ server <- function(input, output, session) {
     autoInvalidate50()
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
-    
+
     vsn <- v$lastvsn
     # vsn <- input$map_marker_click
     #COMMENTED THIS BECAUSE IT MAKES NO SENSE FOR COMPARISON GRAPH
@@ -4276,9 +4276,9 @@ server <- function(input, output, session) {
     #   vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
-      
+
       plot_title <- "No node selected for previous output"
-      
+
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -4297,7 +4297,7 @@ server <- function(input, output, session) {
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-      
+
       gl
     }
     else {
@@ -4319,7 +4319,7 @@ server <- function(input, output, session) {
         active <- "active"
       }
       if(!(vsn == "Inactive")){
-        
+
         flag <- -1
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
@@ -4350,7 +4350,7 @@ server <- function(input, output, session) {
           df_aot <- subset(df_aot, uom %ni% c("dB","lux"))
           flag <- 1
         }
-        
+
         #This is darksky preprocessing
         if(time_range == TIME_RANGE_CURRENT){
           df <- get_and_preprocess_observations_ds(lng,lat)
@@ -4370,7 +4370,7 @@ server <- function(input, output, session) {
         } else {
           plot_title <- paste("Last 7 days data for node:",as.character(vsn))
         }
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -4389,7 +4389,7 @@ server <- function(input, output, session) {
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         labs <-c()
         vals <-c()
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
@@ -4398,9 +4398,9 @@ server <- function(input, output, session) {
             geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#a6cee3")
-          
+
         }
-        
+
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
@@ -4408,19 +4408,19 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
               geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms , color = "intensity(AOT)"), size = line_size()*3)
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
-            vals <-c(vals,"intensity(AOT)" = "#a3d659")
+            vals <-c(vals,"intensity(AOT)" = "#1f78b4")
           }
-          
-          
+
+
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             # y = subset(df, measure == "humidity")$value
             gl <- gl + geom_line(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms, color = "humidity(AOT)"), size = line_size(), group = 3) +
               geom_point(aes(y = subset(df_aot, measure == "humidity(AOT)")$value, x = subset(df_aot, measure == "humidity(AOT)")$hms , color = "humidity(AOT)"), size = line_size()*3)
             labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
-            vals <-c(vals,"humidity(AOT)" = "#194649")
+            vals <-c(vals,"humidity(AOT)" = "#b2df8a")
           }
-          
+
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
@@ -4428,20 +4428,20 @@ server <- function(input, output, session) {
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
               labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",temp_suffx, sep=" "))
-              vals <-c(vals,"temperature(AOT)" = "#6B1F13")
+              vals <-c(vals,"temperature(AOT)" = "#33a02c")
             }
             else{
               temp_suffx = "(Degrees Celsius)"
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
               labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
-              vals <-c(vals,"temperature(AOT)" = "#6B1F13")
+              vals <-c(vals,"temperature(AOT)" = "#33a02c")
             }
           }
         }
-        
+
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units)
           {
             suffx_windSpeed = "knots"
@@ -4449,7 +4449,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
               geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
             labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-            vals <-c(vals,"windSpeed" = "#1f78b4")
+            vals <-c(vals,"windSpeed" = "#fb9a99")
           }
           else
           {
@@ -4457,19 +4457,19 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
               geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
             labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-            vals <-c(vals,"windSpeed" = "#1f78b4")
+            vals <-c(vals,"windSpeed" = "#fb9a99")
           }
-          
+
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_windBearing = "knots"
             df$windBearing <- df$windBearing * 0.51
             gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
               geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
             labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-            vals <-c(vals,"windBearing" = "#b2df8a")
+            vals <-c(vals,"windBearing" = "#e31a1c")
           }
           else
           {
@@ -4477,27 +4477,27 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
               geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
             labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-            vals <-c(vals,"windBearing" = "#b2df8a")
+            vals <-c(vals,"windBearing" = "#e31a1c")
           }
-          
+
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
           suffx_cloudCover = "%"
           gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
-          vals <-c(vals,"cloudCover" = "#33a02c")
-          
+          vals <-c(vals,"cloudCover" = "#fdbf6f")
+
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_visibility ="miles"
             df$visibility <- df$visibility/1.609
             gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
               geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
             labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-            vals <-c(vals,"visibility" = "#fb9a99")
+            vals <-c(vals,"visibility" = "#ff7f00")
           }
           else
           {
@@ -4505,19 +4505,19 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
               geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
             labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-            vals <-c(vals,"visibility" = "#fb9a99")
+            vals <-c(vals,"visibility" = "#ff7f00")
           }
-          
+
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          
+
           if(input$switch_units){
             suffx_pressure = "psi"
             df$pressure <- df$pressure/68.948
             gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
               geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
             labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-            vals <-c(vals,"pressure" = "#e31a1c")          
+            vals <-c(vals,"pressure" = "#cab2d6")
           }
           else
           {
@@ -4525,7 +4525,7 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
               geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
             labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-            vals <-c(vals,"pressure" = "#e31a1c")
+            vals <-c(vals,"pressure" = "#cab2d6")
           }
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
@@ -4533,8 +4533,8 @@ server <- function(input, output, session) {
           gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
-          vals <-c(vals,"ozone" = "#fdbf6f")
-          
+          vals <-c(vals,"ozone" = "#6a3d9a")
+
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
         #   suffx_summary  = ""
@@ -4551,18 +4551,18 @@ server <- function(input, output, session) {
             gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#ff7f00")
+            vals <-c(vals,"temperature" = "#ffff99")
           }
           else{
             # s_county$data_conv <-s_county$"Temperature"
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-            
+
             temp_suffx  = "(Degrees Celsius)"
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
-            vals <-c(vals,"temperature" = "#ff7f00")
+            vals <-c(vals,"temperature" = "#ffff99")
           }
         }
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
@@ -4570,7 +4570,7 @@ server <- function(input, output, session) {
         gl
       } else {
         plot_title <- "This node has no observations"
-        
+
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -4589,7 +4589,7 @@ server <- function(input, output, session) {
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-        
+
         gl
       }
     }
@@ -4638,7 +4638,7 @@ server <- function(input, output, session) {
       nodes_main
     }
     ,
-    options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(1, 'desc'))
+    options = list(searching = FALSE, pageLength = 10, lengthChange = FALSE, order = list(list(0, 'asc'))
     ), rownames = FALSE,
     caption = 'Nodes information for the various sensors availability',selection = "single"
     )
