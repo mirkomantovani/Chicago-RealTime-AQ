@@ -1856,7 +1856,19 @@ server <- function(input, output, session) {
 
             addRasterImage(raster(response$map), colors= mypal,opacity = 0.8)%>% addLegend("bottomright", pal = mypal, response$avg,title = input$heatmap_measure,opacity = 1)
           }
-        }
+      }
+      else{
+        html_legend <- "
+      <b>Nodes</b><br>
+            <div class='circle' id='aotactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> active
+            <div class='circle' id='aotinactive'></div><a href='https://arrayofthings.github.io/' target='_blank'>AoT</a> inactive
+            <div class='circle' id='oaq'></div><a href='https://openaq.org/' target='_blank'>OpenAQ</a>
+            "
+        
+        proxy %>% clearControls() %>% clearImages() %>% addControl(html = html_legend, position = "bottomright")
+
+          
+      }
     })
 
 
