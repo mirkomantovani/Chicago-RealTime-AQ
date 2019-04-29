@@ -1568,7 +1568,6 @@ server <- function(input, output, session) {
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
-      setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
 
       for(i in 1:nrow(congestion_df)){
         map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
@@ -1965,10 +1964,17 @@ server <- function(input, output, session) {
           #get input type either map or table
 
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-
+          
+          status <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][3]
+          
           # if map input, get the vsn and the active status
           if(type=="map"){
-            v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+            if(status!="Inactive")
+              v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
+            else{
+              # if the status of the previous nodes was inactive set previous to inactive
+              v$lastvsn <- "Inactive"
+            }
           }
           # if table input, get the vsn and the active status
           else{
@@ -2137,7 +2143,6 @@ server <- function(input, output, session) {
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
         convert_to_imperial <- function(values){
-          print(values)
           return(values*1000000000000* 0.000000035274/35315)
         }
 
@@ -2313,7 +2318,6 @@ server <- function(input, output, session) {
     # print("Graphical comparison")
     
     vsn <- (v$lastvsn)
-    
     # print(isolate(v$prev_selected))
     # print(input$map_marker_click)
     # || input$switch_compare
