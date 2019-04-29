@@ -1570,21 +1570,21 @@ server <- function(input, output, session) {
       addControl(html = html_legend, position = "bottomright") %>%
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
 
-      # for(i in 1:nrow(congestion_df)){
-      #   map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
-      #                      lng = as.numeric(congestion_df[i, c(12, 7)]),
-      #                      color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
-      #                      opacity = 0.8,
-      #                      fillOpacity = 0.5,
-      #                      group = "Traffic",
-      #                      popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
-      #                      highlightOptions = highlightOptions(
-      #                        # color = "white",
-      #                        weight = 9, bringToFront = F, opacity = 1)
-      # 
-      #                      )
-      # 
-      #  }
+      for(i in 1:nrow(congestion_df)){
+        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
+                           lng = as.numeric(congestion_df[i, c(12, 7)]),
+                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+                           opacity = 0.8,
+                           fillOpacity = 0.5,
+                           group = "Traffic",
+                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+                           highlightOptions = highlightOptions(
+                             # color = "white",
+                             weight = 9, bringToFront = F, opacity = 1)
+
+                           )
+
+       }
 
     map
   })
