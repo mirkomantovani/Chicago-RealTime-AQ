@@ -75,7 +75,7 @@ all_measures <-all_measures[-which(all_measures=="Darksky-summary")]
 value_types <- c("min","max","average")
 
 tab1_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","bc")
-tab2_measures <- c("temperature", "humidity","intensity", "wind speed", "wind bearing", "cloud cover", "visibility", "pressure", "ozone", "summary")
+tab2_measures <- c("temperature", "humidity","intensity", "windSpeed", "windBearing", "cloudCover", "visibility", "pressure", "ozone", "summary")
 
 
 last <- NULL
@@ -1225,7 +1225,10 @@ server <- function(input, output, session) {
     #print(df)
     return(df)
   }
-
+  ############################################### Unit conversion functions ###########################################
+  
+  
+  
   ############################################### Extract sensors info ################################################
 
 
@@ -2084,11 +2087,23 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y = subset(df, measure == "no2")$value, x = subset(df, measure == "no2")$hms , color = "no2"), size = line_size()*3)
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          suffx_co = unique(subset(df, measure == "bc")$uom)
-          labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
-          vals <-c(vals,"bc" = "#c6c60f")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
-            geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          
+          if(input$switch_units){
+            df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
+            suffx_bc = "(e-12 oz/ft3)"
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            vals <-c(vals,"bc" = "#c6c60f")
+            gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+              geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          }
+          else
+          {
+            suffx_bc = unique(subset(df, measure == "bc")$uom)
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            vals <-c(vals,"bc" = "#c6c60f")
+            gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+              geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          }
         }
 
 
@@ -2112,7 +2127,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # }
 
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
-          suffx_o3 = unique(subset(df, measure == "o3")$uom)
+          suffx_o3 = "ppm"#unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#0fa2af")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
@@ -2133,6 +2148,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y = subset(df, measure == "h2s")$value, x = subset(df, measure == "h2s")$hms , color = "h2s"), size = line_size()*3)
         }
         convert_to_imperial <- function(values){
+          print(values)
           return(values*1000000000000* 0.000000035274/35315)
         }
 
@@ -2140,13 +2156,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
           if(input$switch_units){
-            # df$data_conv <-df$"pm2.5"
+            # df$data_conv <-df$`pm2.5`
             # df$data_conv <- convert_to_imperial(df$data_conv)
-            # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
-            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            df$value[df$measure == "pm2.5"] <- df$value[df$measure == "pm2.5"]*1000000000000* 0.000000035274/35315
+            suffx_pm2.5 = "(e-12 oz/ft3)"
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
-          }
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            vals <-c(vals,"pm2.5" = "#cc8112")
+            }
           else{
 
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
@@ -2166,10 +2184,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
-            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
+            df$value[df$measure == "pm10"] <- df$value[df$measure == "pm10"]*1000000000000* 0.000000035274/35315
+            suffx_pm10 = "(e-12 oz/ft3)"
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
               geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
-          }
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            vals <-c(vals,"pm10" = "#ba1010")
+            }
           else{
 
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
@@ -2442,11 +2463,23 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             geom_point(aes(y = subset(df, measure == "so2")$value, x = subset(df, measure == "so2")$hms , color = "so2"), size = line_size()*3)
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          suffx_co = unique(subset(df, measure == "bc")$uom)
-          labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
-          vals <-c(vals,"bc" = "#c6c60f")
-          gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
-            geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          
+          if(input$switch_units){
+            df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
+            suffx_bc = "(e-12 oz/ft3)"
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            vals <-c(vals,"bc" = "#c6c60f")
+            gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+              geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          }
+          else
+          {
+            suffx_bc = unique(subset(df, measure == "bc")$uom)
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            vals <-c(vals,"bc" = "#c6c60f")
+            gl <- gl + geom_line(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms, color = "bc"), size = line_size(), group = 1) +
+              geom_point(aes(y = subset(df, measure == "bc")$value, x = subset(df, measure == "bc")$hms , color = "bc"), size = line_size()*3)
+          }
         }
         if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
@@ -2463,12 +2496,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # to be changed accordingly based on the units in the dataset
         if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
           if(input$switch_units){
-            # df$data_conv <-df$"pm2.5"
+            # df$data_conv <-df$`pm2.5`
             # df$data_conv <- convert_to_imperial(df$data_conv)
-            # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
-            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            df$value[df$measure == "pm2.5"] <- df$value[df$measure == "pm2.5"]*1000000000000* 0.000000035274/35315
+            suffx_pm2.5 = "(e-12 oz/ft3)"
             gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
               geom_point(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            vals <-c(vals,"pm2.5" = "#cc8112")
           }
           else{
 
@@ -2480,18 +2515,19 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
           }
         }
-        # currently the same values is shown for both imperial and metric
-        # to be changed accordingly based on the units in the dataset
-
+        
         if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
-          if(input$switch_units){
-            # df$data_conv <-df$"pm10"
-            # df$data_conv <- convert_to_imperial(df$data_conv)
-            # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
-            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
-              geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
-          }
+        if(input$switch_units){
+          # df$data_conv <-df$"pm10"
+          # df$data_conv <- convert_to_imperial(df$data_conv)
+          # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
+          df$value[df$measure == "pm10"] <- df$value[df$measure == "pm10"]*1000000000000* 0.000000035274/35315
+          suffx_pm10 = "(e-12 oz/ft3)"
+          gl <- gl + geom_line(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms, color = "pm10"), size = line_size(), group = 9) +
+            geom_point(aes(y = subset(df, measure == "pm10")$value, x = subset(df, measure == "pm10")$hms , color = "pm10"), size = line_size()*3)
+          labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+          vals <-c(vals,"pm10" = "#ba1010")
+        }
           else{
 
             suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
@@ -2703,9 +2739,19 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           labs2 = c(labs2,"so2")
         }
         if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
-          suffx_co = unique(subset(df, measure == "bc")$uom)
-          labs <-c(labs,"bc" = paste("bc",suffx_co, sep=" "))
+          
+          if(input$switch_units){
+            df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
+            suffx_bc = "(e-12 oz/ft3)"
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            labs2 = c(labs2,"bc")     
+          }
+          else
+          {
+          suffx_bc = unique(subset(df, measure == "bc")$uom)
+          labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
           labs2 = c(labs2,"bc")
+          }
         }
         if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
           suffx_h2s = unique(subset(df, measure == "h2s")$uom)
@@ -2720,14 +2766,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # df$data_conv <-df$"pm2.5"
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
-            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            df$value[df$measure == "pm2.5"] <- df$value[df$measure == "pm2.5"]*1000000000000* 0.000000035274/35315
+            suffx_pm2.5 = "(e-12 oz/ft3)"
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             labs2 = c(labs2,c("pm2.5"))
           }
           else{
 
-            gl <- gl + geom_line(aes(y = subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms, color = "pm2.5"), size = line_size(), group = 8) +
-              geom_point(aes(y= subset(df, measure == "pm2.5")$value, x = subset(df, measure == "pm2.5")$hms , color = "pm2.5"), size = line_size()*3)
             suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
             labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
             labs2 = c(labs2,c("pm2.5"))
@@ -2742,7 +2787,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # df$data_conv <-df$"pm10"
             # df$data_conv <- convert_to_imperial(df$data_conv)
             # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
-            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
+            df$value[df$measure == "pm10"] <- df$value[df$measure == "pm10"]*1000000000000* 0.000000035274/35315
+            suffx_pm10 = "(e-12 oz/ft3)"
             labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
             labs2 = c(labs2,c("pm10"))
           }
@@ -2779,6 +2825,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         else
         {
+          print(names(df))
+          print(labs)
+          Sys.sleep(100)
           names(df) = unlist(c("hms",labs))
           DT::datatable({df},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(list(1, 'desc'))
           ), rownames = FALSE,
@@ -2790,17 +2839,16 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
   })
 
-  #TABLE 2:
   # TAB 2 table
   output$table_data_ds <- DT::renderDataTable({
     autoInvalidate45()
     vsn_ <- v$vsn
-
+    
     if(!is.null(vsn_)){
       #get input type either map or table
-
+      
       type <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-
+      
       # if map input, get the vsn and the active status
       if(type=="map"){
         vsn <- strsplit(vsn_, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -2834,15 +2882,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-
+        
         #get the last two clicks
-
+        
         #check the size of the map_inputs if it is less than 2.
         if(length(v$table_inputs)<2)
           prev_input <-NULL
         else{
           last_two <- tail(v$table_inputs,2)
-
+          
           prev <- last_two[[1]]
           prev_input <- prev[1]
         }
@@ -2850,30 +2898,30 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     }
     else
       vsn <-NULL
-
+    
     if(is.null(vsn)){
-
+      
       DT::datatable({
         empty <- data.frame()
         empty
       })
-
+      
     }
     else {
       #some node is selected
       time_range <- input$time_range
-
+      
       if(!(active == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
         # TODO check if AoT node or openAQ and get corresponding dataset
         # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
-
-
+        
+        
         #set the previous click
         if(!is.null(prev_input)){
           #get input type either map or table
-
+          
           type <- strsplit(prev_input, " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][1]
-
+          
           # if map input, get the vsn and the active status
           if(type=="map"){
             v$lastvsn <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
@@ -2882,13 +2930,13 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           else{
             prev_row_id <- strsplit(prev_input , " ", fixed = TRUE, perl = FALSE, useBytes = FALSE)[[1]][2]
             prev_row <- nodes_table[prev_row_id,]
-
+            
             #if the previous table node was inactive, set vsn as inactive
             if(prev_row$status=="Active")
               v$lastvsn <- prev_row$vsn
             else
               v$lastvsn <- "Inactive"
-
+            
           }
         }
         else{
@@ -2903,7 +2951,6 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         else
         {
-          print("vsn:")
           # print(vsn)
           # df <- get_and_preprocess_observations(vsn)
           if(time_range == TIME_RANGE_CURRENT){
@@ -2921,12 +2968,12 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
           '%ni%' <- Negate('%in%')
-          df_aot <- subset(df_aot, uom %ni% c("dB","uW/cm^2"))
+          df_aot <- subset(df_aot, uom %ni% c("dB","lux"))
           flag <- 1
           labs <- names(df_aot)
           labs <- labs[ - which(names(labs) == c("vsn","year","month","day","uom"))]
         }
-
+        
         if(time_range == TIME_RANGE_CURRENT){
           df <- get_and_preprocess_observations_ds(lng,lat)
           df <- extract_date_fields(df)
@@ -2937,15 +2984,15 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else if(time_range == TIME_RANGE_7DAYS){
           df <- get_and_preprocess_observations_7d_ds(lng,lat)
         }
-
-
+        
+        retrieved_measures_darksky <- names(df)
         #print(retrieved_measures)
-
+        
         keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
-
+        
         df <- df[, (colnames(df) %in% keep)]
         # print(df)
-
+        
         #labs and labs2 are the required variables for AoT
         #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
         labs <- list()
@@ -2956,26 +3003,27 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # print(labs3)
         #add check conditions:
         #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
-
-
+        
+        
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
-            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$uom)
+            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$uom)
             labs <-c(labs,"intensity(AOT)"=paste("intensity(AOT)",suffx_intensity, sep=" "))
             labs2 = c(labs2,c("intensity(AOT)"))
           }
-
-
+          
+          
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             labs <-c(labs,"humidity(AOT)"=paste("humidity(AOT)",suffx_humidity, sep=" "))
             labs2 = c(labs2,c("humidity(AOT)"))
           }
-
+          
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
+              df_aot$value[df$measure=="temperature(AOT)"] <- (df_aot$value-32)/1.8
               labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
               labs2 = c(labs2,c("temperature(AOT)"))
             }
@@ -2986,39 +3034,78 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             }
           }
         }
-
-        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_humidity = ""
+        
+        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
+          suffx_humidity = "(RH)"
           labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           labs4 <- c(labs4,"humidity")
         }
-        if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_windSpeed = ""
-          labs3 <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-          labs4 <- c(labs4,"windSpeed")
+        if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
+          
+          if(input$switch_units)
+          {
+            suffx_windSpeed = "(knots)"
+            df$windSpeed <- df$windBearing * 0.51
+            labs3 <-c(labs3,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            labs4 <- c(labs4,"windSpeed")
+          }
+          else
+          {
+            suffx_windSpeed = "(m/s)"
+            labs3 <-c(labs3,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            labs4 <- c(labs4,"windSpeed")
+          }
         }
-        if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_windBearing = ""
-          labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-          labs4 <- c(labs4,"windBearing")
+        if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
+          if(input$switch_units){
+            suffx_windBearing = "(knots)"
+            df$windBearing <- df$windBearing * 0.51
+            labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            labs4 <- c(labs4,"windBearing")
+          }
+          else
+          {
+            suffx_windBearing = "(m/s)"
+            labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            labs4 <- c(labs4,"windBearing")
+          }
         }
-        if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_cloudCover = ""
+        if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
+          suffx_cloudCover = "%"
           labs3 <-c(labs3,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
           labs4 <- c(labs4,"cloudCover")
         }
-        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_visibility =""
-          labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-          labs4 <- c(labs4,"visibility")
+        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
+          if(input$switch_units){
+            suffx_visibility ="(miles)"
+            df$visibility <- df$visibility/1.609
+            labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            labs4 <- c(labs4,"visibility")
+          }
+          else
+          {
+            suffx_visibility ="(km)"
+            labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            labs4 <- c(labs4,"visibility")
+          }
         }
-        if ("pressure" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_pressure = ""
-          labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-          labs4 <- c(labs4,"pressure")
+        if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
+          
+          if(input$switch_units){
+            suffx_pressure = "psi"
+            df$pressure <- df$pressure/68.948
+            labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            labs4 <- c(labs4,"pressure")
+          }
+          else
+          {
+            suffx_pressure = "(hPa)"
+            labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            labs4 <- c(labs4,"pressure")
+          }
         }
-        if ("ozone" %in% c(input$measures1_ds,input$measures2_ds)){
-          suffx_ozone  = ""
+        if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
+          suffx_ozone  = "(ppm)"
           labs3 <-c(labs3,"ozone" = paste("ozone",suffx_ozone, sep=" "))
           labs4 <- c(labs4,"ozone")
         }
@@ -3027,28 +3114,29 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         #     labs3 <-c(labs3,"summary" = paste("summary",suffx_summary, sep=" "))
         #
         # }
-        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds)){
+        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures_darksky){
           if(input$switch_units){
-            temp_suffx= df$""
-            labs3 <-c(labs3,"temperature" = paste("temperature",suffx_summary, sep=" "))
+            temp_suffx= "(Degrees Fahrenheit)"
+            df$temperature <- (df$temperature-32)/1.8
+            labs3 <-c(labs3,"temperature" = paste("temperature",temp_suffx, sep=" "))
             labs4 <- c(labs4,"temperature")
           }
-        }
+
         else{
-          temp_suffx  = ""
+          temp_suffx  = "(Degrees Celsius)"
           labs3 <-c(labs3,"temperature"= paste("temperature",temp_suffx, sep=" "))
           labs4 <- c(labs4,"temperature")
         }
-
+        }
         convert_temp_to_metric <- function(values){
           return((values-32)/1.8)
         }
         #
         #final dataframe which is to be shown as table is df
         #keep only variables in lab3 and discard others
-
+        
         df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
-
+        
         if(flag == 1)
         {
           drops <- c("vsn","year","month","day","uom")
@@ -3059,7 +3147,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           keep <- c("hms",labs2)
           df_aot <- df_aot[unlist(keep)]
           names(df_aot) <- unlist(c("hms",labs))
-
+          
           df_combined <- merge(df_aot, df, by="hms", all =TRUE)
           df_combined <- df_combined %>% dplyr::select(hms, everything())
         }
@@ -3075,20 +3163,23 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             df_combined <- df
           }
         }
-
+        
+        # print(df_combined)
         labs <- unlist(labs)
         labs2 <- unlist(labs2)
         labs3 <- unlist(labs3)
         labs4 <- unlist(labs4)
+        # print("AoT")
         # print(labs)
         # print(labs2)
+        # print("Darksky")
         # print(labs3)
         # print(labs4)
         #replace names of variables with variables+unit
         #darksky
         for(i in 1:length(labs3))
         {
-          names(df_combined)[names(df_combined)==labs4[i]] <- labs3[i]
+          names(df_combined)[names(df_combined)==labs4[i]] <- labs3[labs4[i]]
         }
         #aot
         for(i in 1:length(labs))
@@ -3104,7 +3195,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
         else
         {
-
+          
           DT::datatable({df_combined},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(1, 'desc')
           ), rownames = FALSE,
           caption = paste('Measures table for',vsn)
@@ -3112,7 +3203,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
       }
     }
-
+    
   })
 
   # Darksky table for current time
@@ -3397,6 +3488,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
+          '%ni%' <- Negate('%in%')
+          df_aot <- subset(df_aot, uom %ni% c("dB","lux"))
           flag <- 1
         }
 
@@ -3442,7 +3535,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         labs <-c()
         vals <-c()
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
-          suffx_humidity = ""
+          suffx_humidity = "RH"
           gl <- gl + geom_line(aes(y = df$humidity , x= df$hms, color = "humidity"), size = line_size(), group = 1) +
             geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
@@ -3453,9 +3546,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
-            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$uom)
-            gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
-              geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms , color = "intensity(AOT)"), size = line_size()*3)
+            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$uom)
+            gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
+              geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms , color = "intensity(AOT)"), size = line_size()*3)
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
             vals <-c(vals,"intensity(AOT)" = "#a3d659")
           }
@@ -3473,9 +3566,10 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
+              df_aot$value[df$measure=="temperature(AOT)"] <- (df_aot$value-32)/1.8
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
-              labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",suffx_humidity, sep=" "))
+              labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",temp_suffx, sep=" "))
               vals <-c(vals,"temperature(AOT)" = "#6B1F13")
             }
             else{
@@ -3489,23 +3583,48 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         }
 
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          suffx_windSpeed = ""
+          
+          if(input$switch_units)
+          {
+            suffx_windSpeed = "knots"
+            df$windSpeed <- df$windBearing * 0.51
+            gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
+              geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
+            labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            vals <-c(vals,"windSpeed" = "#1f78b4")
+          }
+          else
+          {
+          suffx_windSpeed = "m/s"
           gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
             geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
           labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
           vals <-c(vals,"windSpeed" = "#1f78b4")
+          }
 
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
-          suffx_windBearing = ""
+          
+          if(input$switch_units){
+            suffx_windBearing = "knots"
+            df$windBearing <- df$windBearing * 0.51
+            gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
+              geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
+            labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            vals <-c(vals,"windBearing" = "#b2df8a")
+          }
+          else
+          {
+          suffx_windBearing = "m/s"
           gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
             geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
           labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
           vals <-c(vals,"windBearing" = "#b2df8a")
+          }
 
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
-          suffx_cloudCover = ""
+          suffx_cloudCover = "%"
           gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
@@ -3513,23 +3632,46 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
-          suffx_visibility =""
+          
+          if(input$switch_units){
+            suffx_visibility ="miles"
+            df$visibility <- df$visibility/1.609
+            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            vals <-c(vals,"visibility" = "#fb9a99")
+          }
+          else
+          {
+          suffx_visibility ="km"
           gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
             geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
           labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
           vals <-c(vals,"visibility" = "#fb9a99")
+          }
 
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          suffx_pressure = ""
+          
+          if(input$switch_units){
+            suffx_pressure = "psi"
+            df$pressure <- df$pressure/68.948
+            gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
+              geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
+            labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            vals <-c(vals,"pressure" = "#e31a1c")          
+            }
+          else
+          {
+          suffx_pressure = "hPa"
           gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
             geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
           labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
           vals <-c(vals,"pressure" = "#e31a1c")
-
+          }
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
-          suffx_ozone  = ""
+          suffx_ozone  = "ppm"
           gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
@@ -3546,7 +3688,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # }
         if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures_darksky){
           if(input$switch_units){
-            temp_suffx= df$""
+            temp_suffx = "(Degrees Fahrenheit)"
+            df$temperature <- (df$temperature-32)/1.8
             gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
@@ -3557,7 +3700,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
 
-            temp_suffx  = ""
+            temp_suffx  = "(Degrees Celsius)"
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
@@ -3605,8 +3748,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     autoInvalidate50()
     time_range <- input$time_range
     irrelevant_variable <- input$map_marker_click
-
-    vsn <- isolate(v$lastvsn)
+    
+    vsn <- v$lastvsn
     # vsn <- input$map_marker_click
     #COMMENTED THIS BECAUSE IT MAKES NO SENSE FOR COMPARISON GRAPH
     # if(!is.null(input$map_marker_click)){
@@ -3619,9 +3762,9 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
     #   vsn <- NULL
     # || input$switch_compare
     if(is.null(vsn)){
-
+      
       plot_title <- "No node selected for previous output"
-
+      
       gl <- ggplot() +
         theme(
           axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3640,7 +3783,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
           legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
         )+labs(title=plot_title,x = "Time", y = "Measurement")
-
+      
       gl
     }
     else {
@@ -3661,7 +3804,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         active <- "active"
       }
       if(!(vsn == "Inactive")){
-
+        
         flag <- -1
         if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
         {
@@ -3688,9 +3831,11 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
           levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
           levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
+          '%ni%' <- Negate('%in%')
+          df_aot <- subset(df_aot, uom %ni% c("dB","lux"))
           flag <- 1
         }
-
+        
         #This is darksky preprocessing
         if(time_range == TIME_RANGE_CURRENT){
           df <- get_and_preprocess_observations_ds(lng,lat)
@@ -3710,7 +3855,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         } else {
           plot_title <- paste("Last 7 days data for node:",as.character(vsn))
         }
-
+        
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3729,29 +3874,29 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-
+        
         labs <-c()
         vals <-c()
         if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
-          suffx_humidity = ""
+          suffx_humidity = "RH"
           gl <- gl + geom_line(aes(y = df$humidity , x= df$hms, color = "humidity"), size = line_size(), group = 1) +
             geom_point(aes(y=df$humidity, x= df$hms , color = "humidity"), size = line_size()*3)
           labs <-c(labs,"humidity" = paste("humidity",suffx_humidity, sep=" "))
           vals <-c(vals,"humidity" = "#a6cee3")
-
+          
         }
-
+        
         if(flag == 1)
         {
           if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
-            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$uom)
-            gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
-              geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "lux")$hms , color = "intensity(AOT)"), size = line_size()*3)
+            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$uom)
+            gl <- gl + geom_line(aes(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms, color = "intensity(AOT)"), size = line_size(), group = 4) +
+              geom_point(aes( y = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$value, x = subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$hms , color = "intensity(AOT)"), size = line_size()*3)
             labs <-c(labs,"intensity(AOT)" = paste("intensity(AOT)",suffx_intensity, sep=" "))
             vals <-c(vals,"intensity(AOT)" = "#a3d659")
           }
-
-
+          
+          
           if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
             suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
             # y = subset(df, measure == "humidity")$value
@@ -3760,13 +3905,14 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             labs <-c(labs,"humidity(AOT)" = paste("humidity(AOT)",suffx_humidity, sep=" "))
             vals <-c(vals,"humidity(AOT)" = "#194649")
           }
-
+          
           if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
             if(input$switch_units){
               temp_suffx = "(Degrees Fahrenheit)"
+              df_aot$value[df$measure=="temperature(AOT)"] <- (df_aot$value-32)/1.8
               gl <- gl + geom_line(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms, color = "temperature(AOT)"), size = line_size(), group = 2) +
                 geom_point(aes(y = subset(df_aot, measure == "temperature(AOT)")$value, x = subset(df_aot, measure == "temperature(AOT)")$hms , color = "temperature(AOT)"), size = line_size()*3)
-              labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",suffx_humidity, sep=" "))
+              labs <-c(labs,"temperature(AOT)" = paste("temperature(AOT)",temp_suffx, sep=" "))
               vals <-c(vals,"temperature(AOT)" = "#6B1F13")
             }
             else{
@@ -3778,54 +3924,102 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             }
           }
         }
-
+        
         if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
-          suffx_windSpeed = ""
-          gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
-            geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
-          labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
-          vals <-c(vals,"windSpeed" = "#1f78b4")
-
+          
+          if(input$switch_units)
+          {
+            suffx_windSpeed = "knots"
+            df$windSpeed <- df$windBearing * 0.51
+            gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
+              geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
+            labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            vals <-c(vals,"windSpeed" = "#1f78b4")
+          }
+          else
+          {
+            suffx_windSpeed = "m/s"
+            gl <- gl + geom_line(aes(y= df$windSpeed, x= df$hms, color = "windSpeed"), size = line_size(), group = 2) +
+              geom_point(aes(y= df$windSpeed, x= df$hms , color = "windSpeed"), size = line_size()*3)
+            labs <-c(labs,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            vals <-c(vals,"windSpeed" = "#1f78b4")
+          }
+          
         }
         if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
-          suffx_windBearing = ""
-          gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
-            geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
-          labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
-          vals <-c(vals,"windBearing" = "#b2df8a")
-
+          
+          if(input$switch_units){
+            suffx_windBearing = "knots"
+            df$windBearing <- df$windBearing * 0.51
+            gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
+              geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
+            labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            vals <-c(vals,"windBearing" = "#b2df8a")
+          }
+          else
+          {
+            suffx_windBearing = "m/s"
+            gl <- gl + geom_line(aes(y= df$windBearing, x= df$hms, color = "windBearing"), size = line_size(), group = 3) +
+              geom_point(aes(y= df$windBearing, x= df$hms , color = "windBearing"), size = line_size()*3)
+            labs <-c(labs,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            vals <-c(vals,"windBearing" = "#b2df8a")
+          }
+          
         }
         if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
-          suffx_cloudCover = ""
+          suffx_cloudCover = "%"
           gl <- gl + geom_line(aes(y= df$cloudCover,x=df$hms, color = "cloudCover"), size = line_size(), group = 4) +
             geom_point(aes(y= df$cloudCover, x= df$hms , color = "cloudCover"), size = line_size()*3)
           labs <-c(labs,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
           vals <-c(vals,"cloudCover" = "#33a02c")
-
+          
         }
         if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
-          suffx_visibility =""
-          gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
-            geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
-          labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
-          vals <-c(vals,"visibility" = "#fb9a99")
-
+          
+          if(input$switch_units){
+            suffx_visibility ="miles"
+            df$visibility <- df$visibility/1.609
+            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            vals <-c(vals,"visibility" = "#fb9a99")
+          }
+          else
+          {
+            suffx_visibility ="km"
+            gl <- gl + geom_line(aes(y= df$visibility, x= df$hms, color = "visibility"), size = line_size(), group = 5) +
+              geom_point(aes(y= df$visibility, x= df$hms , color = "visibility"), size = line_size()*3)
+            labs <-c(labs,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            vals <-c(vals,"visibility" = "#fb9a99")
+          }
+          
         }
         if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
-          suffx_pressure = ""
-          gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
-            geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
-          labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
-          vals <-c(vals,"pressure" = "#e31a1c")
-
+          
+          if(input$switch_units){
+            suffx_pressure = "psi"
+            df$pressure <- df$pressure/68.948
+            gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
+              geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
+            labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            vals <-c(vals,"pressure" = "#e31a1c")          
+          }
+          else
+          {
+            suffx_pressure = "hPa"
+            gl <- gl + geom_line(aes(y= df$pressure, x= df$hms, color = "pressure"), size = line_size(), group = 6) +
+              geom_point(aes(y=df$pressure, x =df$hms , color = "pressure"), size = line_size()*3)
+            labs <-c(labs,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            vals <-c(vals,"pressure" = "#e31a1c")
+          }
         }
         if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
-          suffx_ozone  = ""
+          suffx_ozone  = "ppm"
           gl <- gl + geom_line(aes(y= df$ozone, x= df$hms, color = "ozone"), size = line_size(), group = 7) +
             geom_point(aes(y=df$ozone, x= df$hms , color = "ozone"), size = line_size()*3)
           labs <-c(labs,"ozone" = paste("ozone",suffx_ozone, sep=" "))
           vals <-c(vals,"ozone" = "#fdbf6f")
-
+          
         }
         # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
         #   suffx_summary  = ""
@@ -3837,7 +4031,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         # }
         if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures_darksky){
           if(input$switch_units){
-            temp_suffx= df$""
+            temp_suffx = "(Degrees Fahrenheit)"
+            df$temperature <- (df$temperature-32)/1.8
             gl <- gl + geom_line(aes(y = df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y = df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
@@ -3847,8 +4042,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             # s_county$data_conv <-s_county$"Temperature"
             # s_county$data_conv <- convert_temp_to_metric(s_county$data_conv)
             # names(s_county)[names(s_county)=="data_conv"] <- paste("Temperature","conv",sep="_")
-
-            temp_suffx  = ""
+            
+            temp_suffx  = "(Degrees Celsius)"
             gl <- gl + geom_line(aes(y= df$temperature, x= df$hms, color = "temperature"), size = line_size(), group = 9) +
               geom_point(aes(y= df$temperature, x= df$hms , color = "temperature"), size = line_size()*3)
             labs <-c(labs,"temperature"= paste("temperature",temp_suffx, sep=" "))
@@ -3860,7 +4055,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
         gl
       } else {
         plot_title <- "This node has no observations"
-
+        
         gl <- ggplot() +
           theme(
             axis.text.x = element_text(angle = 45, hjust = 1),
@@ -3879,7 +4074,7 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
             axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
             legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
           )+labs(title=plot_title,x = "Time", y = "Measurement")
-
+        
         gl
       }
     }
