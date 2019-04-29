@@ -1568,6 +1568,7 @@ server <- function(input, output, session) {
         options = layersControlOptions(collapsed = TRUE)
       ) %>%
       addControl(html = html_legend, position = "bottomright") %>%
+      setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
 
       for(i in 1:nrow(congestion_df)){
         map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
