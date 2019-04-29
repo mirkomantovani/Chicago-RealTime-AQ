@@ -2472,7 +2472,7 @@ server <- function(input, output, session) {
         #   vals <-c(vals,"intensity" = "#a3d659")
         # }
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
-          suffx_o3 = unique(subset(df, measure == "o3")$uom)
+          suffx_o3 = "ppm"#unique(subset(df, measure == "o3")$uom)
           labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#ff7f00")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
