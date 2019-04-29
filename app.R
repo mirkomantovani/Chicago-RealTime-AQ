@@ -290,7 +290,7 @@ ui <- dashboardPage(
 
     tags$head(
       # Include custom JS
-      includeScript("sage2responsive.js")
+      includeScript("sage2responsive_new.js")
     ),
     # content of each main tab (selectable from sidebar)
     tabItems(
@@ -1760,7 +1760,7 @@ server <- function(input, output, session) {
       return (NULL);
     }
     else{
-      chiCA <- shapefile("data/ChiComArea.shp")
+      chiCA <- shapefile("data/chicomarea.shp")
 
       if(source=="AoT" || source=="Darksky"){
         active_nodes <- nodes_table[nodes_table$status=="Active",]
