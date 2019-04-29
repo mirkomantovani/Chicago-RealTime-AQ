@@ -1081,7 +1081,7 @@ server <- function(input, output, session) {
     # print(vsn)
     if(vsn=="Kingery")
     {
-      vsn <- "Kingery Near-road+#1"
+      vsn <- "Kingery+Near-road+%231"
     }
     if(vsn=="Portage-Hwy")
     {
@@ -1113,7 +1113,7 @@ server <- function(input, output, session) {
 
     if(vsn=="Kingery")
     {
-      vsn <- "Kingery Near-road+#1"
+      vsn <- "Kingery+Near-road+%231"
     }
     if(vsn=="Portage-Hwy")
     {
@@ -1140,7 +1140,7 @@ server <- function(input, output, session) {
     # build url, send request, get response
     if(vsn=="Kingery")
     {
-      vsn <- "Kingery Near-road+#1"
+      vsn <- "Kingery+Near-road+%231"
     }
     if(vsn=="Portage-Hwy")
     {
