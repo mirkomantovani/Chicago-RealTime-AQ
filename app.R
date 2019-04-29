@@ -2103,7 +2103,7 @@ server <- function(input, output, session) {
 
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = "ppm"#unique(subset(df, measure == "o3")$uom)
-          labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
+          labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#0fa2af")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
@@ -2800,9 +2800,6 @@ server <- function(input, output, session) {
         }
         else
         {
-          print(names(df))
-          print(labs)
-          Sys.sleep(100)
           names(df) = unlist(c("hms",labs))
           DT::datatable({df},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(list(1, 'desc'))
           ), rownames = FALSE,
@@ -2857,7 +2854,8 @@ server <- function(input, output, session) {
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-        
+        lat <- subset(nodes_oaq,vsn==vsn)$latitude[1]
+        lng <- subset(nodes_oaq,vsn==vsn)$longitude[1]
         #get the last two clicks
         
         #check the size of the map_inputs if it is less than 2.
@@ -3369,7 +3367,8 @@ server <- function(input, output, session) {
         selected_row <- nodes_table[row_id,]
         active <- selected_row$status
         vsn <- selected_row$vsn
-
+        lat <- subset(nodes_oaq,vsn==vsn)$latitude[1]
+        lng <- subset(nodes_oaq,vsn==vsn)$longitude[1]
         #get the last two clicks
 
         #check the size of the map_inputs if it is less than 2.
