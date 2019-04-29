@@ -315,7 +315,8 @@ ui <- dashboardPage(
                                                       plotOutput("graphical_data_last",height = "22vmin")
                                              ),
                                              tabPanel("Tabular",
-                                                      div(DT::dataTableOutput("table_data", height = "44vmin"),style = "font-size:80%")
+                                                      div(DT::dataTableOutput("table_data", height = "22vmin"),style = "font-size:80%"),
+                                                      div(DT::dataTableOutput("table_data_last", height = "22vmin"),style = "font-size:80%")
                                              )
                                            ),
                                            checkboxGroupButtons(
@@ -338,7 +339,8 @@ ui <- dashboardPage(
                                                       plotOutput("graphical_data_last_ds",height = "22vmin")
                                              ),
                                              tabPanel("Tabular",
-                                                      div(DT::dataTableOutput("table_data_ds", height = "44vmin"),style = "font-size:80%")
+                                                      div(DT::dataTableOutput("table_data_ds", height = "22vmin"),style = "font-size:80%"),
+                                                      div(DT::dataTableOutput("table_data_last_ds", height = "22vmin"),style = "font-size:80%")
                                              )
                                            ),
 
@@ -1568,21 +1570,21 @@ server <- function(input, output, session) {
       addControl(html = html_legend, position = "bottomright") %>%
       setView(lng = initial_lng, lat = initial_lat, zoom = zoom_level())
 
-      for(i in 1:nrow(congestion_df)){
-        map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
-                           lng = as.numeric(congestion_df[i, c(12, 7)]),
-                           color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
-                           opacity = 0.8,
-                           fillOpacity = 0.5,
-                           group = "Traffic",
-                           popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
-                           highlightOptions = highlightOptions(
-                             # color = "white",
-                             weight = 9, bringToFront = F, opacity = 1)
-
-                           )
-
-       }
+      # for(i in 1:nrow(congestion_df)){
+      #   map <- addPolylines(map, lat = as.numeric(congestion_df[i, c(5, 6)]),
+      #                      lng = as.numeric(congestion_df[i, c(12, 7)]),
+      #                      color = trafficColor(as.numeric(congestion_df[i,"X_traffic"])),
+      #                      opacity = 0.8,
+      #                      fillOpacity = 0.5,
+      #                      group = "Traffic",
+      #                      popup = paste(sep = "<br/>",paste("<b>",congestion_df[i,"street"], "&",congestion_df[i,"X_fromst"],"-",congestion_df[i,"street"], "&",congestion_df[i,"X_tost"],"</b>"),paste("Current speed:",congestion_df[i,"X_traffic"],"mph"),paste("Last updated:",congestion_df[i,"X_last_updt"]), "<a href='https://dev.socrata.com/foundry/data.cityofchicago.org/n4j6-wkkf' target='_blank'>Chicago Traffic Tracker</a>"),
+      #                      highlightOptions = highlightOptions(
+      #                        # color = "white",
+      #                        weight = 9, bringToFront = F, opacity = 1)
+      # 
+      #                      )
+      # 
+      #  }
 
     map
   })
@@ -2197,9 +2199,38 @@ server <- function(input, output, session) {
         #       vals <-c(vals,"temperature" = "#6B1F13")
         #   }
         # }
+        
+        if(length(labs)==0)
+        {
+          plot_title <- paste("No observations found for ",vsn)
+          
+          gl <- ggplot() +
+            theme(
+              axis.text.x = element_text(angle = 45, hjust = 1),
+              axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+              axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+              plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+              panel.border = element_blank(),
+              plot.background = element_rect(color = NA, fill = "#0d2025"),
+              legend.background = element_rect(color = NA, fill = "#0d2025"),
+              legend.key = element_rect(color = NA, fill = "#0d2025"),
+              panel.background = element_rect(fill = "#0d2025", color  =  NA),
+              panel.grid.major = element_line(color = "#FFFFFF"),
+              panel.grid.minor = element_line(color = "#FFFFFF"),
+              legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+              legend.key.size = unit(legend_key_size(), 'line'),
+              axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+              legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+            )+labs(title=plot_title,x = "Time", y = "Measurement")
+          
+          gl
+        }
+        else
+        {
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                       values = vals)
         gl
+        }
       } else {
         plot_title <- "This node has no observations"
 
@@ -2533,9 +2564,39 @@ server <- function(input, output, session) {
             vals <-c(vals,"temperature" = "#6B1F13")
           }
         }
+        
+        if(length(labs)==0)
+        {
+          plot_title <- paste("No observations found for ",vsn)
+          
+          gl <- ggplot() +
+            theme(
+              axis.text.x = element_text(angle = 45, hjust = 1),
+              axis.title.y = element_text(size = axis_title_size(),color = "#FFFFFF"),
+              axis.title.x = element_text(size = axis_title_size(),color = "#FFFFFF"),
+              plot.title = element_text(color = "#FFFFFF",size = axis_title_size(),hjust = 0.5),
+              panel.border = element_blank(),
+              plot.background = element_rect(color = NA, fill = "#0d2025"),
+              legend.background = element_rect(color = NA, fill = "#0d2025"),
+              legend.key = element_rect(color = NA, fill = "#0d2025"),
+              panel.background = element_rect(fill = "#0d2025", color  =  NA),
+              panel.grid.major = element_line(color = "#FFFFFF"),
+              panel.grid.minor = element_line(color = "#FFFFFF"),
+              legend.text = element_text(size = legend_text_size(), color = "#FFFFFF"),
+              legend.key.size = unit(legend_key_size(), 'line'),
+              axis.text = element_text(size = axis_text_size(), color = "#FFFFFF"),
+              legend.title = element_text(size = legend_title_size(), color = "#FFFFFF")
+            )+labs(title=plot_title,x = "Time", y = "Measurement")
+          
+          gl
+        }
+        else
+        {
+        
+        
         gl <- gl + scale_color_manual(name = "Measurements",labels=labs,
                                       values = vals)
-        gl
+        gl}
       } else {
         plot_title <- "This node has no observations"
 
@@ -2791,19 +2852,19 @@ server <- function(input, output, session) {
         # print(df)
         keep <- c("hms",labs2)
         df <- df[unlist(keep)]
-        if(length(keep)==1)
+        if(length(labs2)==0)
         {
           DT::datatable({
             empty <- data.frame()
             empty
-          })
+          },caption = paste('No data available for ',vsn))
         }
         else
         {
           names(df) = unlist(c("hms",labs))
-          DT::datatable({df},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(list(1, 'desc'))
+          DT::datatable({df},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(list(1, 'desc'))
           ), rownames = FALSE,
-          caption = 'Pollutant measures'
+          caption = paste('Pollutant measures for ',vsn)
           )
         }
       }
@@ -2811,6 +2872,184 @@ server <- function(input, output, session) {
 
   })
 
+  #TAB 1 table previous node
+  output$table_data_last <- DT::renderDataTable({
+    autoInvalidate50()
+    time_range <- input$time_range # to delete dependency (maybe isolate) TODO
+    irrelevant_variable <- input$map_marker_click
+    
+    # print("Graphical comparison")
+    
+    vsn <- (v$lastvsn)
+    if(is.null(vsn)){
+      DT::datatable({
+        empty <- data.frame()
+        empty
+      })
+      
+    }
+    
+    else {
+      #some node is selected
+      if(!(vsn == "Inactive")){
+        #TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
+        # TODO check if AoT node or openAQ and get corresponding dataset
+        # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
+        
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations_openaq(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h_openaq(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d_openaq(vsn)
+          }
+        }
+        else
+        {
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df <- get_and_preprocess_observations_7d(vsn)
+          }
+        }
+        
+        df <- as.data.frame(lapply(df, unlist))
+        retrieved_measures <- unique(df$measure)
+        
+        # print(retrieved_measures)
+        labs <- names(df)
+        labs <- labs[ - which(names(labs) == c("vsn","year","month","day","humidity","intensity","temperature","uom"))]
+        labs2 <- list()
+        # print(labs)
+        #add check conditions:
+        #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+        
+        if ("co" %in% c(input$measures1,input$measures2) && "co" %in% retrieved_measures){
+          suffx_co = unique(subset(df, measure == "co")$uom)
+          labs <-c(labs,"co" = paste("co",suffx_co, sep=" "))
+          labs2 = c(labs2,"co")
+        }
+        if ("no2" %in% c(input$measures1,input$measures2) && "no2" %in% retrieved_measures){
+          suffx_no2 = unique(subset(df, measure == "no2")$uom)
+          labs <-c(labs,"no2" = paste("no2",suffx_no2, sep=" "))
+          labs2 = c(labs2,"no2")
+        }
+        
+        if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
+          suffx_o3 = unique(subset(df, measure == "o3")$uom)
+          labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
+          labs2 = c(labs2,c("o3"))
+        }
+        if ("so2" %in% c(input$measures1,input$measures2) && "so2" %in% retrieved_measures){
+          suffx_so2 =  unique(subset(df, measure == "so2")$uom)
+          labs <-c(labs,"so2"=paste("so2",suffx_so2, sep=" "))
+          labs2 = c(labs2,"so2")
+        }
+        if ("bc" %in% c(input$measures1,input$measures2) && "bc" %in% retrieved_measures){
+          
+          if(input$switch_units){
+            df$value[df$measure == "bc"] <- df$value[df$measure == "bc"]*1000000000000* 0.000000035274/35315
+            suffx_bc = "(e-12 oz/ft3)"
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            labs2 = c(labs2,"bc")     
+          }
+          else
+          {
+            suffx_bc = unique(subset(df, measure == "bc")$uom)
+            labs <-c(labs,"bc" = paste("bc",suffx_bc, sep=" "))
+            labs2 = c(labs2,"bc")
+          }
+        }
+        if ("h2s" %in% c(input$measures1,input$measures2) && "h2s" %in% retrieved_measures){
+          suffx_h2s = unique(subset(df, measure == "h2s")$uom)
+          labs <-c(labs,"h2s"=paste("h2s",suffx_h2s, sep=" "))
+          labs2 = c(labs2,"h2s")
+        }
+        
+        # currently the same values is shown for both imperial and metric
+        # to be changed accordingly based on the units in the dataset
+        if ("pm2.5" %in% c(input$measures1,input$measures2) && "pm2.5" %in% retrieved_measures){
+          if(input$switch_units){
+            # df$data_conv <-df$"pm2.5"
+            # df$data_conv <- convert_to_imperial(df$data_conv)
+            # names(df)[names(df)=="data_conv"] <- paste("pm2.5","conv",sep="_")
+            df$value[df$measure == "pm2.5"] <- df$value[df$measure == "pm2.5"]*1000000000000* 0.000000035274/35315
+            suffx_pm2.5 = "(e-12 oz/ft3)"
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            labs2 = c(labs2,c("pm2.5"))
+          }
+          else{
+            
+            suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+            labs <-c(labs,"pm2.5"=paste("pm2.5",suffx_pm2.5, sep=" "))
+            labs2 = c(labs2,c("pm2.5"))
+          }
+        }
+        # currently the same values is shown for both imperial and metric
+        # to be changed accordingly based on the units in the dataset
+        #
+        if ("pm10" %in% c(input$measures1,input$measures2) && "pm10" %in% retrieved_measures){
+          
+          if(input$switch_units){
+            # df$data_conv <-df$"pm10"
+            # df$data_conv <- convert_to_imperial(df$data_conv)
+            # names(df)[names(df)=="data_conv"] <- paste("pm10","conv",sep="_")
+            df$value[df$measure == "pm10"] <- df$value[df$measure == "pm10"]*1000000000000* 0.000000035274/35315
+            suffx_pm10 = "(e-12 oz/ft3)"
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            labs2 = c(labs2,c("pm10"))
+          }
+          else{
+            
+            suffx_pm10 = unique(subset(df, measure == "pm10")$uom)
+            labs <-c(labs,"pm10"= paste("pm10",suffx_pm10, sep=" "))
+            labs2 = c(labs2,"pm10")
+          }
+        }
+        convert_temp_to_metric <- function(values){
+          return((values-32)/1.8)
+        }
+        #
+        #final dataframe which is to be shown as table is df
+        
+        # print(df)
+        drops <- c("vsn","year","month","day","uom")
+        df <- df[ , !(names(df) %in% drops)]
+        # print(df)
+        '%ni%' <- Negate('%in%')
+        df <- subset(df, measure %ni% c("humidity","intensity","temperature"))
+        df <- spread(df, measure, value)
+        
+        # print(df)
+        keep <- c("hms",labs2)
+        df <- df[unlist(keep)]
+        if(length(labs2)==0)
+        {
+          DT::datatable({
+            empty <- data.frame()
+            empty
+          },caption = paste('No data available for ',vsn))
+        }
+        else
+        {
+          names(df) = unlist(c("hms",labs))
+          DT::datatable({df},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(list(1, 'desc'))
+          ), rownames = FALSE,
+          caption = paste('Pollutant measures for ',vsn)
+          )
+        }
+      }
+    }
+    
+  })
+  
   # TAB 2 table
   output$table_data_ds <- DT::renderDataTable({
     autoInvalidate45()
@@ -3169,7 +3408,7 @@ server <- function(input, output, session) {
         else
         {
           
-          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =10, lengthChange = FALSE, order = list(1, 'desc')
+          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(1, 'desc')
           ), rownames = FALSE,
           caption = paste('Measures table for',vsn)
           )
@@ -3177,6 +3416,295 @@ server <- function(input, output, session) {
       }
     }
     
+  })
+  
+  
+  # TAB 2 table previous node
+  output$table_data_last_ds <- DT::renderDataTable({
+    autoInvalidate50()
+    time_range <- input$time_range
+    irrelevant_variable <- input$map_marker_click
+    vsn <- v$lastvsn
+    
+    lat <- subset(nodes,vsn==vsn)$latitude[[1]]
+    lng <- subset(nodes,vsn==vsn)$longitude[[1]]
+    if(is.null(vsn)){
+      
+      DT::datatable({
+        empty <- data.frame()
+        empty
+      })
+      
+    }
+    else {
+      #some node is selected
+      time_range <- input$time_range
+      
+      if(!(vsn == "Inactive")){#TODO A: If node is active, but has values only for temperature/intensity/humidity, graph should show no observations
+        # TODO check if AoT node or openAQ and get corresponding dataset
+        # Suggestion: AoT nodes vsn start with "0" except one that starts with "8", OpenAQ vsn never start with a number
+        
+        flag <- -1
+        if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
+        {
+          #openaq
+          #no data from openaq in tab 2 , so ignore
+          flag <- 0
+        }
+        else
+        {
+          # print(vsn)
+          # df <- get_and_preprocess_observations(vsn)
+          if(time_range == TIME_RANGE_CURRENT){
+            df_aot <- get_and_preprocess_observations(vsn)
+          } else if(time_range == TIME_RANGE_24HOURS){
+            df_aot <- get_and_preprocess_observations_24h(vsn)
+          } else if(time_range == TIME_RANGE_7DAYS){
+            df_aot <- get_and_preprocess_observations_7d(vsn)
+          }
+          df_aot <- as.data.frame(lapply(df_aot, unlist))
+          retrieved_measures <- unique(df_aot$measure)
+          print("RETRIEVED MEASURES:")
+          # print(retrieved_measures)
+          levels(df_aot$measure)[levels(df_aot$measure)=="humidity"] <- "humidity(AOT)"
+          levels(df_aot$measure)[levels(df_aot$measure)=="intensity"] <- "intensity(AOT)"
+          levels(df_aot$measure)[levels(df_aot$measure)=="temperature"] <- "temperature(AOT)"
+          '%ni%' <- Negate('%in%')
+          df_aot <- subset(df_aot, uom %ni% c("dB","lux"))
+          flag <- 1
+          labs <- names(df_aot)
+          labs <- labs[ - which(names(labs) == c("vsn","year","month","day","uom"))]
+        }
+        
+        if(time_range == TIME_RANGE_CURRENT){
+          df <- get_and_preprocess_observations_ds(lng,lat)
+          df <- extract_date_fields(df)
+          df <- as.data.frame(lapply(df, unlist))
+        }
+        if(time_range == TIME_RANGE_24HOURS){
+          df <- get_and_preprocess_observations_24h_ds(lng,lat)
+        } else if(time_range == TIME_RANGE_7DAYS){
+          df <- get_and_preprocess_observations_7d_ds(lng,lat)
+        }
+        
+        retrieved_measures_darksky <- names(df)
+        #print(retrieved_measures)
+        
+        keep <- c("hms","humidity","windSpeed","windBearing","cloudCover","pressure","ozone","temperature","visibility")
+        
+        df <- df[, (colnames(df) %in% keep)]
+        # print(df)
+        
+        #labs and labs2 are the required variables for AoT
+        #labs3 and labs4 are the required variables for openAQ (labs4 contains variable name and labs3 has unit also)
+        labs <- list()
+        labs2 <- list()
+        labs4 <- list()
+        labs1 <- names(df)
+        labs3 <- list()
+        # print(labs3)
+        #add check conditions:
+        #suffx_pm2.5 = unique(subset(df, measure == "pm2.5")$uom)
+        
+        
+        if(flag == 1)
+        {
+          if ("intensity" %in% c(input$measures1_ds,input$measures2_ds) && "intensity" %in% retrieved_measures){
+            suffx_intensity = unique(subset(df_aot, measure == "intensity(AOT)" & uom == "uW/cm^2")$uom)
+            labs <-c(labs,"intensity(AOT)"=paste("intensity(AOT)",suffx_intensity, sep=" "))
+            labs2 = c(labs2,c("intensity(AOT)"))
+          }
+          
+          
+          if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures){
+            suffx_humidity = unique(subset(df_aot, measure == "humidity(AOT)")$uom)
+            labs <-c(labs,"humidity(AOT)"=paste("humidity(AOT)",suffx_humidity, sep=" "))
+            labs2 = c(labs2,c("humidity(AOT)"))
+          }
+          
+          if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures){
+            if(input$switch_units){
+              temp_suffx = "(Degrees Fahrenheit)"
+              df_aot$value[df$measure=="temperature(AOT)"] <- (df_aot$value-32)/1.8
+              labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
+              labs2 = c(labs2,c("temperature(AOT)"))
+            }
+            else{
+              temp_suffx = "(Degrees Celsius)"
+              labs <-c(labs,"temperature(AOT)"= paste("temperature(AOT)",temp_suffx, sep=" "))
+              labs2 = c(labs2,c("temperature(AOT)"))
+            }
+          }
+        }
+        
+        if ("humidity" %in% c(input$measures1_ds,input$measures2_ds) && "humidity" %in% retrieved_measures_darksky){
+          suffx_humidity = "(RH)"
+          labs3 <-c(labs3,"humidity" = paste("humidity",suffx_humidity, sep=" "))
+          labs4 <- c(labs4,"humidity")
+        }
+        if ("windSpeed" %in% c(input$measures1_ds,input$measures2_ds) && "windSpeed" %in% retrieved_measures_darksky){
+          
+          if(input$switch_units)
+          {
+            suffx_windSpeed = "(knots)"
+            df$windSpeed <- df$windBearing * 0.51
+            labs3 <-c(labs3,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            labs4 <- c(labs4,"windSpeed")
+          }
+          else
+          {
+            suffx_windSpeed = "(m/s)"
+            labs3 <-c(labs3,"windSpeed" = paste("windSpeed",suffx_windSpeed, sep=" "))
+            labs4 <- c(labs4,"windSpeed")
+          }
+        }
+        if ("windBearing" %in% c(input$measures1_ds,input$measures2_ds) && "windBearing" %in% retrieved_measures_darksky){
+          if(input$switch_units){
+            suffx_windBearing = "(knots)"
+            df$windBearing <- df$windBearing * 0.51
+            labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            labs4 <- c(labs4,"windBearing")
+          }
+          else
+          {
+            suffx_windBearing = "(m/s)"
+            labs3 <-c(labs3,"windBearing" = paste("windBearing",suffx_windBearing, sep=" "))
+            labs4 <- c(labs4,"windBearing")
+          }
+        }
+        if ("cloudCover" %in% c(input$measures1_ds,input$measures2_ds) && "cloudCover" %in% retrieved_measures_darksky){
+          suffx_cloudCover = "%"
+          labs3 <-c(labs3,"cloudCover" = paste("cloudCover",suffx_cloudCover, sep=" "))
+          labs4 <- c(labs4,"cloudCover")
+        }
+        if ("visibility" %in% c(input$measures1_ds,input$measures2_ds) && "visibility" %in% retrieved_measures_darksky){
+          if(input$switch_units){
+            suffx_visibility ="(miles)"
+            df$visibility <- df$visibility/1.609
+            labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            labs4 <- c(labs4,"visibility")
+          }
+          else
+          {
+            suffx_visibility ="(km)"
+            labs3 <-c(labs3,"visibility" = paste("visibility",suffx_visibility, sep=" "))
+            labs4 <- c(labs4,"visibility")
+          }
+        }
+        if ("pressure" %in% c(input$measures1_ds,input$measures2_ds) && "pressure" %in% retrieved_measures_darksky){
+          
+          if(input$switch_units){
+            suffx_pressure = "psi"
+            df$pressure <- df$pressure/68.948
+            labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            labs4 <- c(labs4,"pressure")
+          }
+          else
+          {
+            suffx_pressure = "(hPa)"
+            labs3 <-c(labs3,"pressure" = paste("pressure",suffx_pressure, sep=" "))
+            labs4 <- c(labs4,"pressure")
+          }
+        }
+        if ("ozone" %in% c(input$measures1_ds,input$measures2_ds) && "ozone" %in% retrieved_measures_darksky){
+          suffx_ozone  = "(ppm)"
+          labs3 <-c(labs3,"ozone" = paste("ozone",suffx_ozone, sep=" "))
+          labs4 <- c(labs4,"ozone")
+        }
+        # if ("summary" %in% c(input$measures1_ds,input$measures2_ds)){
+        #   suffx_summary  = ""
+        #     labs3 <-c(labs3,"summary" = paste("summary",suffx_summary, sep=" "))
+        #
+        # }
+        if ("temperature" %in% c(input$measures1_ds,input$measures2_ds) && "temperature" %in% retrieved_measures_darksky){
+          if(input$switch_units){
+            temp_suffx= "(Degrees Fahrenheit)"
+            df$temperature <- (df$temperature-32)/1.8
+            labs3 <-c(labs3,"temperature" = paste("temperature",temp_suffx, sep=" "))
+            labs4 <- c(labs4,"temperature")
+          }
+          
+          else{
+            temp_suffx  = "(Degrees Celsius)"
+            labs3 <-c(labs3,"temperature"= paste("temperature",temp_suffx, sep=" "))
+            labs4 <- c(labs4,"temperature")
+          }
+        }
+        convert_temp_to_metric <- function(values){
+          return((values-32)/1.8)
+        }
+        #
+        #final dataframe which is to be shown as table is df
+        #keep only variables in lab3 and discard others
+        
+        df <- df[, (colnames(df) %in% unlist(c("hms",labs4)))]
+        
+        if(flag == 1)
+        {
+          drops <- c("vsn","year","month","day","uom")
+          df_aot <- df_aot[ , !(names(df_aot) %in% drops)]
+          '%ni%' <- Negate('%in%')
+          df_aot <- subset(df_aot, measure %ni% c("co","h2s","no2","o3","so2","pm2.5","pm10"))
+          df_aot <- spread(df_aot, measure, value)
+          keep <- c("hms",labs2)
+          df_aot <- df_aot[unlist(keep)]
+          names(df_aot) <- unlist(c("hms",labs))
+          
+          df_combined <- merge(df_aot, df, by="hms", all =TRUE)
+          df_combined <- df_combined %>% dplyr::select(hms, everything())
+        }
+        else
+        {
+          if(length(names(df))>1)
+          {
+            df_combined <- df
+            df_combined <- df_combined %>% dplyr::select(hms, everything())
+          }
+          else
+          {
+            df_combined <- df
+          }
+        }
+        
+        # print(df_combined)
+        labs <- unlist(labs)
+        labs2 <- unlist(labs2)
+        labs3 <- unlist(labs3)
+        labs4 <- unlist(labs4)
+        # print("AoT")
+        # print(labs)
+        # print(labs2)
+        # print("Darksky")
+        # print(labs3)
+        # print(labs4)
+        #replace names of variables with variables+unit
+        #darksky
+        for(i in 1:length(labs3))
+        {
+          names(df_combined)[names(df_combined)==labs4[i]] <- labs3[labs4[i]]
+        }
+        #aot
+        for(i in 1:length(labs))
+        {
+          names(df_combined)[names(df_combined)==labs2[i]] <- labs[i]
+        }
+        if(length(names(df_combined))<=1)
+        {
+          DT::datatable({
+            empty <- data.frame()
+            empty
+          })
+        }
+        else
+        {
+          
+          DT::datatable({df_combined},options = list(searching = FALSE, pageLength =4, lengthChange = FALSE, order = list(1, 'desc')
+          ), rownames = FALSE,
+          caption = paste('Measures table for',vsn)
+          )
+        }
+      }
+    }
   })
 
   # Darksky table for current time
@@ -3762,6 +4290,7 @@ server <- function(input, output, session) {
     }
     else {
       #determine if aot or openaq node was clicked
+      #TODO AA: check if vsn is inactive
       if(!grepl("[^A-Za-z]", substring(vsn, 1, 1)))
       {
         #OpenAQ node
