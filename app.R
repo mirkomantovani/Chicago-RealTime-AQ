@@ -86,7 +86,13 @@ pie_chart_backgrounds <- "white" #bcdae0  1a4756
 bar_chart_backgrounds <- "#bcdae0" #bcdae0
 pie_chart_backgrounds_first <- "#bcdae0" #bcdae0
 
-######################### theme definition #############################
+#Removed any existing files
+if(file.exists("fst/all_nodes_24hours.fst"))
+  file.remove("fst/all_nodes_24hours.fst")
+if(file.exists("fst/all_nodes_7days.fst"))
+  file.remove("fst/all_nodes_7days.fst")
+
+  ######################### theme definition #############################
 
 darker_c <- "rgb(30, 34, 68)"
 middle_c <- "rgb(52, 57, 104)"
@@ -271,7 +277,7 @@ ui <- dashboardPage(
       ),
       menuItem("Heatmap Inputs",
                div(
-               selectizeInput("heatmap_measure","Select measure",all_measures,selected="AoT-temperature",multiple=FALSE,options=NULL,width = "200%"),
+               selectizeInput("heatmap_measure","Select measure",all_measures,selected="OpenAQ-o3",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
       menuItem("About", tabName = "about")
@@ -1661,9 +1667,6 @@ server <- function(input, output, session) {
     }
     else if(source=="Darksky"){
       if(time_range == TIME_RANGE_CURRENT){
-        if(file.exists("fst/all_nodes_current.fst"))
-          df <- read_fst("fst/all_nodes_current.fst")
-        else
           df <- get_and_preprocess_observations_all_nodes_ds()
       } else if(time_range == TIME_RANGE_24HOURS){
         if(file.exists("fst/all_nodes_24hours.fst"))
@@ -1687,15 +1690,13 @@ server <- function(input, output, session) {
       }
     }
 
-    # print(nrow(df))
-
     # Show alert if no current available for the measure
     if(nrow(df)==0)
       shinyalert(paste0("No data for ", source, " for this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
 
     #get the specific value aggregation
     if(source=="AoT" || source=="OpenAQ"){
-
+      
       if(sel_value_type=="average"){
         df[df$measure==selected,]%>%
           group_by(vsn) %>%
@@ -1716,68 +1717,37 @@ server <- function(input, output, session) {
       }
     }
     else if(source=="Darksky"){
-      if(time_range!=TIME_RANGE_CURRENT){
-
-        if(sel_value_type=="average"){
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
-
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = mean(measure))%>%
-            {. ->> results}
-        }
-        else if (sel_value_type=="min"){
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
-
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = min(measure))%>%
-            {. ->> results}
-        }
-        else{
-          df1 <- data.frame(df$vsn)
-          names(df1) <- c("vsn")
-          df1$measure <- df[[selected]]
-
-          df1 %>%
-            group_by(vsn) %>%
-            summarize(req_measure = max(measure))%>%
-            {. ->> results}
-        }
+      if(sel_value_type=="average"){
+        df1 <- data.frame(df$vsn)
+        names(df1) <- c("vsn")
+        df1$measure <- df[[selected]]
+        
+        df1 %>%
+          group_by(vsn) %>%
+          summarize(req_measure = mean(measure))%>%
+          {. ->> results}
       }
-
+      else if (sel_value_type=="min"){
+        df1 <- data.frame(df$vsn)
+        names(df1) <- c("vsn")
+        df1$measure <- df[[selected]]
+        
+        df1 %>%
+          group_by(vsn) %>%
+          summarize(req_measure = min(measure))%>%
+          {. ->> results}
+      }
       else{
-        #current has different format
-
-        #TODO current has one records
-        #fix this by querying multiple records for current time for darksky
-
-        if(sel_value_type=="average"){
-          df[df$measures==selected,]%>%
-            group_by(vsn) %>%
-            summarize(req_measure = mean(value))%>%
-            {. ->> results}
-        }
-        else if (sel_value_type=="min"){
-          df[df$measures==selected,]%>%
-            group_by(vsn) %>%
-            summarize(req_measure = min(value))%>%
-            {. ->> results}
-        }
-        else{
-          df[df$measures==selected,]%>%
-            group_by(vsn) %>%
-            summarize(req_measure = max(value))%>%
-            {. ->> results}
-        }
-
+        df1 <- data.frame(df$vsn)
+        names(df1) <- c("vsn")
+        df1$measure <- df[[selected]]
+        
+        df1 %>%
+          group_by(vsn) %>%
+          summarize(req_measure = max(measure))%>%
+          {. ->> results}
       }
     }
-
 
     # print(nrow(results))
 
@@ -1831,10 +1801,15 @@ server <- function(input, output, session) {
         return (NULL);
       }
 
+      assign("last.warning", NULL, envir = baseenv()) # clear the previous warning
+      
+      fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph")))
 
-fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = TRUE))
-
-
+      if(length(warnings())>0){ # or !is.null(warnings())
+        shinyalert(paste0("Not enough data for ", source, " of this measure"), type = "error",closeOnEsc = TRUE,closeOnClickOutside = TRUE)
+        return (NULL);
+      }
+      
       chi.grid <- pt2grid((chiCA),30)
 
       chi.grid <- pt2grid((chiCA),100)
@@ -3270,8 +3245,6 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
     res <- res %>% unnest()
 
-    save_df_as_fst(res,"fst/all_nodes_current.fst")
-
     return(res)
   }
 
@@ -3341,6 +3314,8 @@ fit.sph <- fit.variogram(tmp.vgm,vgm(c("Exp", "Mat", "Ste","Sph"),fit.ranges = T
 
     df <- mutate(active_nodes,map2(lng,lat,get_and_preprocess_observations_7d_ds)) %>% unnest()
 
+    df["temperature"] <- (df["temperatureMin"]+df["temperatureMax"])/2
+    
     save_df_as_fst(df,"fst/all_nodes_7days.fst")
 
     return (df)
