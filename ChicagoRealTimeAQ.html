@@ -365,16 +365,9 @@ The Heatmap can be use be used to visualize the various measure intensity across
                 Each tab consists of a graphical and tabular view. The graphical view displays the metrics for node which is currently selected and it also shows the graph for the node which was previously selected. Similarly, the tabular view shows metrics for currently selected node in a data table and it also shows the the data table for previously selected node.<br/>
                 <b>Tab 1 - Pollutants</b><br/>
                 The following are the metrics which can be displayed in the first tab:
-                <ol>
-                  <li>CO</li>
-                  <li>H2S</li>
-                  <li>NO2</li>
-                  <li>O3</li>
-                  <li>SO2</li>
-                  <li>PM2.5</li>
-                  <li>PM10</li>
-                  <li>BC</li>
-                </ol>
+                <br/>
+                1)CO, 2) H2S, 3) NO2, 4)O3, 5)SO2, 6)PM2.5, 7) PM10, 8) BC
+                <br/>
                 The metrics can be filtered/removed from the graph using the checkbox given at the end of the second graph output. Following screenshot shows a sample graph shown in the first tab:
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
@@ -388,18 +381,8 @@ The Heatmap can be use be used to visualize the various measure intensity across
                     <img src="/images/p3viz/tab1_table.png" alt="Screen" class="responsive"> <!-- ADD IMAGE -->
                 </div>
                 <b>Tab 2 - Weather measures</b><br/>
-                Similar to tab 1, we have graphs and tables for tab 2. The following are the measures which can be displayed for tab 2:
-                <ol>
-                  <li>Temperature</li>
-                  <li>Humidity</li>
-                  <li>Intensity</li>
-                  <li>Wind Speed</li>
-                  <li>Wind Bearing</li>
-                  <li>Cloud coverage</li>
-                  <li>Visibility</li>
-                  <li>Pressure</li>
-                  <li>Ozone</li>
-                </ol>
+                Similar to tab 1, we have graphs and tables for tab 2. The following are the measures which can be displayed for tab 2:<br/>
+                  1)Temperature, 2) Humidity, 3) Intensity, 4) Wind Speed, 5) Cloud coverage, 6) Visibility, 7) Pressure, 8) Ozone<br/>
                   Note that temperature, humidity and intensity are available in both darksky and Array of Things data, hence the distinction used in the legend is that AoT measures have the trailing text "(AOT)" in their name while darksky measures do not have any trailing text. This can be seen in the example graph below:
                   <div class="testimonials__slide">
                       <div class="testimonials__info">
@@ -505,6 +488,15 @@ The Heatmap can be use be used to visualize the various measure intensity across
                     <img src="/images/p3viz/ii2.png" alt="Screen" class="responsive">
                 </div>
 
+
+                <h4>Data obtained openAQ</h4>
+                OpenAQ reports more or less the same level of values for the weather measures. This is possibly because the weather is constant throughout Chicago or it is possible that the sensors report inaccurate values. The following table shows two openAQ nodes which have almost same values for many of the metrics.
+
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/openaq_table.png" alt="Screen" class="responsive">
+                </div>
                 <!--
                 <div class="row clients-testimonials" data-aos="fade-up">
                     <div class="col-full">
