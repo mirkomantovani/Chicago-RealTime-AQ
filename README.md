@@ -1,6 +1,7 @@
 # Chicago Real-time Air Quality
 
-This is the third project repository for the CS 424 Visualization and Visual Analytics class at UIC. It consists in Chicago real-time air quality and weather data visualizations in an interactive web application created using the Shiny R library. 
+This is the repository for the third project of the CS 424 - (Visualization and Visual Analytics) course at UIC. It consists in 
+Chicago real-time air quality and weather data visualizations in an interactive web application created using the R Shiny library. 
 
 Learn more at the webpage of the project:
 [Go to website of project](https://mirkomantovani.com/projects/ChicagoRealTimeAQ.html)

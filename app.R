@@ -3763,7 +3763,7 @@ server <- function(input, output, session) {
     ds <-seq(curr, now,by="min")[1:10]
     ds <-ymd_hms(ds)
     force_tz(ds, "America/Chicago")%>%
-      map(~get_forecast_for(lng, lat,.x))%>%
+      map(~get_forecast_for(lat, lng,.x))%>%
       map_df("currently")%>%
       {. ->> response}
 
@@ -3806,7 +3806,7 @@ server <- function(input, output, session) {
     ds <-seq(yes, now,by="hour")[1:25]
     ds <-ymd_hms(ds)
     force_tz(ds, "America/Chicago")%>%
-      map(~get_forecast_for(lng, lat,.x))%>%
+      map(~get_forecast_for(lat, lng,.x))%>%
       map_df("hourly")%>%
       distinct()%>%
       {. ->> response}
@@ -3844,7 +3844,7 @@ server <- function(input, output, session) {
     Sys.setenv(DARKSKY_API_KEY = sample(dark_sky_keys,1) )
     
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
-      map(~get_forecast_for(lng, lat, .x)) %>%
+      map(~get_forecast_for(lat, lng, .x)) %>%
       map_df("daily") %>%
       {. ->> last_7 }
     last_7 <- extract_date_fields_d(last_7)
