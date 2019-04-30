@@ -11,7 +11,7 @@ body {
     opacity: .8;
     color: whitesmoke;
     background-color: black;
-    zoom: 200%;
+    /* zoom: 200%; */
   }
   
   /* .leaflet-popup-content-wrapper .leaflet-popup-content {
@@ -210,7 +210,7 @@ div.outer {
 }
 .leaflet-control-layers {
   background: rgb(52, 57, 104);
-  zoom: 200% !important;
+  zoom: 100% !important;
 }
 
 .leaflet-control-attribution {

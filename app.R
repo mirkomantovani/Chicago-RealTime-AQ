@@ -272,13 +272,13 @@ ui <- dashboardPage(
       menuItem("Options",
                materialSwitch(inputId = "switch_units", label = "Switch to Imperial units", status = "primary"),
                materialSwitch(inputId = "heat_map", label = "Visualize heat map", status = "primary"),
-               materialSwitch(inputId = "nodes_table_switch", label = "Hide tabular nodes panel", status = "primary",value=FALSE)
+               materialSwitch(inputId = "nodes_table_switch", label = "Hide tabular nodes panel", status = "primary",value=TRUE)
       ),
       menuItem("Heatmap Inputs",
                div(
                selectizeInput("heatmap_measure","Select measure",all_measures,selected="OpenAQ-o3",multiple=FALSE,options=NULL,width = "200%"),
                selectizeInput("measure_type","Select value type",value_types,selected="average",multiple=FALSE,options=NULL,width = "200%"),
-               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%"),style = "font-size: 50%;"),
+               selectizeInput("map_time_range","Select time range",time_ranges,selected=TIME_RANGE_CURRENT,multiple=FALSE,options=NULL),width = "200%")),
       menuItem("About", tabName = "about")
 
     ),
@@ -301,7 +301,7 @@ ui <- dashboardPage(
                   # Shiny versions prior to 0.11 should use class = "modal" instead.
                   absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                                 draggable = TRUE, top = 90, left = "auto", right = 20, bottom = "auto",
-                                width = 1300, height = "auto",
+                                width = 600, height = "auto",
                                 br(),
                                 # h2("Node Data"),
                                 selectizeInput(inputId = "time_range", "Select time range", time_ranges, selected = time_ranges[1],width = "100%"),

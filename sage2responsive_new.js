@@ -48,6 +48,9 @@ $(document).on("shiny:connected", function (e) {
     //     }
     // };
 
+    document.getElementById("nodes").hidden = true;
+
+
      nodes_table_switch.onclick = function() {
          if(nodes_table_switch.checked)
              document.getElementById("nodes").hidden = true;
