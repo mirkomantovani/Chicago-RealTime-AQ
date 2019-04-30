@@ -268,11 +268,11 @@
                 </div>
 
                 <h4>Nodes Table</h4>
-The different Array of Things nodes along with their location are shown in tabular form on the left. The table can be shown and hidden based on the user preference. The table show the information about the various AoT nodes, what measures they are reporting and the node overall status active or inactive. The nodes which are reporting measures have "True" corresponding for that measure. The user can filter using the checkboxes below in the panel to show and hide sites based on the measures selected.
+The different Array of Things nodes along with their location are shown in tabular form on the left. The table can be shown and hidden based on the user preference. The table show the information about the various AoT nodes, what measures they are reporting and the node overall status active or inactive. The nodes which are reporting measures have "True" corresponding for that measure. The user can filter using the checkboxes below in the panel to show and hide sites based on the measures selected. The user can select any node from the table and visualize the measures for that site in form of graphical and tabular form. The comparison for two different sites can be done by selecting one row at a time and then the visualization for them show up in the current and previous section in the graphical and tabular panel.
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/8.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/9.png" alt="Screen" class="responsive">
                 </div>
 
 
@@ -347,7 +347,7 @@ The different Array of Things nodes along with their location are shown in tabul
 
 
                 <h2>Heatmap</h2>
-The Heatmap can be use be used to visualize the various measure intensity across the city of Chicago. The Heatmap has three inputs : Type of Measure, Value Type (min,max,averga) and time range (current, last 24 hours and last 7 days). The user can select any measure from the dropdown for the three data sources and visualize it for various values type and time duration. The Heatmap is created by interpolation all the nodes data for a particular data source in order to get better data for visualization for the entire city of chicago. Based on the amount of data available, the interpolation is not possible because of very less number of nodes reporting and a message is shown indicating that on the screen. There is a legend available for the heatmap which tell about the value being shown on the heatmap.
+The Heatmap can be use be used to visualize the various measure intensity across the city of Chicago. The Heatmap has three inputs : Type of Measure, Value Type (min,max,average) and time range (current, last 24 hours and last 7 days). The user can select any measure from the dropdown for the three data sources and visualize it for various values type and time duration. The Heatmap is created by interpolation all the nodes data for a particular data source in order to get better data for visualization for the entire city of chicago. Based on the amount of data available, the interpolation is not possible for some of the measures if we have very less number of nodes reporting for them and a message is shown to the user on the screen. There is a legend available for the heatmap which tell about the value being shown on the heatmap.
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
@@ -498,6 +498,33 @@ The Heatmap can be use be used to visualize the various measure intensity across
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p3viz/ii2.png" alt="Screen" class="responsive">
+                </div>
+
+                <h4>Heatmap for Particulate Matter 2.5 over the week</h4>
+                I tried comparing the average PM2.5 measurement value from the OpenAQ source for the last week and it looks like that south side of Chicago has more PM2.5 particles as compare to north side of Chicago. The reason might be due to presence of scrap yards, distribution warehouses and low income neighborhoods in south part of chicago.
+                
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/openaq_pm2.5_last7.png" alt="Screen" class="responsive">
+                </div>
+
+                <h4>Heatmap for Light Intensity over the last week</h4>
+                I tried comparing the light intensity for Chicago area for the last week. It can be seen that few areas have a compartively very high light intensity as compared to the rest of the city. It may be due to the fact that some locations have better access to light as compared to other places leading to better intensity for those locations.
+                
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/light_intensity_7days.png" alt="Screen" class="responsive">
+                </div>
+
+                <h4>Temperature over the last week using Darksky</h4>
+I tried comparing the Temperature values for the last weeek using Darksky API using the Heatmap and sometimes darksky shows absurd values for Temperature (-60 F) like shown in the figure. The reason behind this might be faulty sensors. I came to know by reading more that darksky sensors are prone to errors and can give wrong measurement sometimes.
+
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/faulty_sensors.png" alt="Screen" class="responsive">
                 </div>
 
                 <!--
