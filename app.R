@@ -2473,7 +2473,7 @@ server <- function(input, output, session) {
         # }
         if ("o3" %in% c(input$measures1,input$measures2) && "o3" %in% retrieved_measures){
           suffx_o3 = "ppm"#unique(subset(df, measure == "o3")$uom)
-          labs <-c(labs,"03" = paste("o3",suffx_o3, sep=" "))
+          labs <-c(labs,"o3" = paste("o3",suffx_o3, sep=" "))
           vals <-c(vals,"o3" = "#ff7f00")
           gl <- gl + geom_line(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms, color = "o3"), size = line_size(), group = 5) +
             geom_point(aes(y = subset(df, measure == "o3")$value, x = subset(df, measure == "o3")$hms , color = "o3"), size = line_size()*3)
@@ -3842,6 +3842,7 @@ server <- function(input, output, session) {
       map_df("daily") %>%
       {. ->> last_7 }
     last_7 <- extract_date_fields_d(last_7)
+    last_7["temperature"] <- (last_7["temperatureMin"]+last_7["temperatureMax"])/2
     return (last_7)
   }
 
