@@ -188,7 +188,7 @@ div.outer {
   }
 
   .leaflet-control {
-      zoom: 120%;
+      /* zoom: 120%; */
   }
   
   /* Position and style citation */
