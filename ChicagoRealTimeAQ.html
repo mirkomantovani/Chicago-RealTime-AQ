@@ -360,25 +360,57 @@ The Heatmap can be use be used to visualize the various measure intensity across
 
                 This is the most important panel of the application. It shows the data queried by the various nodes in the form of line charts or tabular form.
                 The inputs present in this panel are two: the first one is the time range, which can be selected from current (or most recent data), last 24 hours and last 7 days data. The second one is a set of checkboxes that allow the users to select only the pollutants features that they want to visualize.<br>
-                The first plot shows the last clicked node data. The bottom one, instead, shows the previously selected node. This allows a comparison between nodes data.
 
-
+                It is divided into two tabs: First tab lists the pollutants metrics and the second one lists weather/climate metrics.<br>
+                Each tab consists of a graphical and tabular view. The graphical view displays the metrics for node which is currently selected and it also shows the graph for the node which was previously selected. Similarly, the tabular view shows metrics for currently selected node in a data table and it also shows the the data table for previously selected node.<br/>
+                <b>Tab 1 - Pollutants</b><br/>
+                The following are the metrics which can be displayed in the first tab:
+                <ol>
+                  <li>CO</li>
+                  <li>H2S</li>
+                  <li>NO2</li>
+                  <li>O3</li>
+                  <li>SO2</li>
+                  <li>PM2.5</li>
+                  <li>PM10</li>
+                  <li>BC</li>
+                </ol>
+                The metrics can be filtered/removed from the graph using the checkbox given at the end of the second graph output. Following screenshot shows a sample graph shown in the first tab:
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/9.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/tab1_graph.png" alt="Screen" class="responsive"> <!-- ADD IMAGE -->
                 </div>
-
-                <h4>Table Panel</h4>
-
-                The table panel is a different kind of representation for the nodes. Instead of clicking on the nodes on the map, the rows of the table can be clicked. blah blah
-
-
+                The legend shows what colors are used for each metric along with the units (note that imperial units can be triggered from the main panel on the left). Distinct colors are used for each metric. Similarly, the same data can be viewed in tabular format:
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
                     </div>
-                    <img src="/images/p3viz/10.png" alt="Screen" class="responsive">
+                    <img src="/images/p3viz/tab1_table.png" alt="Screen" class="responsive"> <!-- ADD IMAGE -->
                 </div>
+                <b>Tab 2 - Weather measures</b><br/>
+                Similar to tab 1, we have graphs and tables for tab 2. The following are the measures which can be displayed for tab 2:
+                <ol>
+                  <li>Temperature</li>
+                  <li>Humidity</li>
+                  <li>Intensity</li>
+                  <li>Wind Speed</li>
+                  <li>Wind Bearing</li>
+                  <li>Cloud coverage</li>
+                  <li>Visibility</li>
+                  <li>Pressure</li>
+                  <li>Ozone</li>
+                </ol>
+                  Note that temperature, humidity and intensity are available in both darksky and Array of Things data, hence the distinction used in the legend is that AoT measures have the trailing text "(AOT)" in their name while darksky measures do not have any trailing text. This can be seen in the example graph below:
+                  <div class="testimonials__slide">
+                      <div class="testimonials__info">
+                      </div>
+                      <img src="/images/p3viz/tab2_graph.png" alt="Screen" class="responsive"> <!-- ADD IMAGE -->
+                  </div>
+                  As usual, you can convert the units to imperial and this is showed in the legend text. We can also visualize the data in tabular format as shown by the example table shown below. As there are many weather metrics, this tab is best visualized by filtering out variabls using the checkboxes at the end of the panel.<br/>
+                <b>NOTE</b> that all these graphs and tables have data which is real time and the data is refreshed every minute. No data is stored locally. Even for displaying data for previously selected node's output graph/table, the data is fetched real time.
+
+
+
 
                 <h4>Layers menu</h4>
                 The layers menu can be opened by hovering over or clicking on the corresponding menu on the top right corner.
@@ -393,6 +425,10 @@ The Heatmap can be use be used to visualize the various measure intensity across
 
                 <h2>Units of measure</h2>
                 To allow users from both the United States and the rest of the world to give a meaning to all of this data we provided a practical switch on the sidebar under the inputs tabs so that the User can choose to convert data from Metric to Imperial and viceversa.
+                Pollutants having the ppm unit (part per million) do not have any equivalent in the imperial system and hence remain the same. The conversion details for other pollutants are listed below:
+
+                <INSERT LIST>
+                  <LIST IN NOTEBOOK>
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
@@ -555,7 +591,7 @@ The Heatmap can be use be used to visualize the various measure intensity across
 
 
                 <h2>Abhishek</h2>
-
+                Successfully merged AoT, openAQ and darksky into one panel. This would involve querying darksky and openaq simultaneously as parameters from both sites are displayed on the graph. I also added tables for displaying metrics and values for current node and also a comparison table for the previous node chosen.
                 <h2>Ashwani</h2>
                 During this week, I changed the sensor table presentation to make it visually better. I fixed the filtering of sites from sensor table to show sites based on measure availability. I added a button to hide the table based on user preference. I fixed various issues related to graphical plots for Darksky. I started working on the heatmaps and preprocessed the Array of Things API data required for its heatmap.
 
@@ -564,11 +600,11 @@ The Heatmap can be use be used to visualize the various measure intensity across
                 <h2>Mirko</h2>
                 For the final week I adjusted all the sizes to make the application work well on the class wall, fixed some recurrent bugs. I also tried to decrease the loading time for the last 24 hours data for the Array of Things by getting all the entries in the last 24 hours, the advantage of this over the method in which I get samples of data for each hour is that only 1 request has to be made, and AoT has a slow response time so 1 request with a lot more data is faster than 24 requests with small data. The problem here was that if you pass as query parameters the instants defining the interval between now and 24 hours ago and don't modify the maximum size of the retrieved data, you will only get 200 results. If instead you modify the size, there is a limit of 100k in the API that is not enought for some nodes that could have more than 100k entries in the last 24 hours. In the end I decided to just switch back to the old and slow method. There is not much we can do to improve the speed of data gathering and plot generation for AoT since their APIs are the main bottleneck and they are also not working as expected.
                 <h2>Abhishek</h2>
-
+                Fixed various minor bugs. I changed colors for all variables used in the graph so that they all have colors which are easily differentiable. I also added documentation on the website related to the merged panel and also how the data is being displayed from the various sources into one panel.
                 <h2>Ashwani</h2>
                 During this week, I worked on completing the heatmaps for all the three data sources, Array of Things, Darksky and OpenAq.
                 I did preprocessing for all the three data source to get data for all the nodese for them. I created the various inputs for heatmaps for all the required measures. The heatmaps are created for various type of values min,max,average, for all time ranges current, last 24 hours and last 7 days. The randomization of Darksky key is done to select any key at random for a given set of keys. I fixed the slowness of previous click on the graphical plots. I explored the possibility of saving the previous data but it might causes some problems so the data is queried in real time which might affect performance depending on the response time of API and amount of data requested.
-                
+
                 <!--
                     <h1 style="font-size: 32pt">Week 4</h1>
                     <h2>Mirko</h2>
