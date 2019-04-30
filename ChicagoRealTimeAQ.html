@@ -227,7 +227,7 @@
                 </p>
                 <h2>Hosting the web application locally</h2>
 
-                Clone the project repository. Open app.R with RStudio, download <a href="https://www.rstudio.com/" style="text-decoration: underline">RStudio</a> and <a href="https://www.r-project.org/" style="text-decoration: underline">R</a> if you don't have them installed on your machine. Download all the R libraries used in the project executing the command install.packages("library") in the RStudio console. The application needs the data from the EPA website to be converted in to R data objects for better performance. The data required for the application can be downloaded from the data link provided at the start of the page. Please follow the below steps to do the required preprocessing before running the application to generate the data again.
+                Clone the project repository. Open app.R with RStudio, download <a href="https://www.rstudio.com/" style="text-decoration: underline">RStudio</a> and <a href="https://www.r-project.org/" style="text-decoration: underline">R</a> if you don't have them installed on your machine. Download all the R libraries used in the project executing the command install.packages("library") in the RStudio console. The application. The application queires data realtime from the various data sources Array of Things, Darksky , Open AQ and Chicago Traffic Tracker in order to perform various visualizations. Please follow the below steps to do the required preprocessing before running the application to generate the data again.
                 <ul>
                     <li>There are n preprocessing required to generate the necessary data files for the application:<h4> blah blah</h4>
                     </li>
@@ -242,7 +242,7 @@
 
                 <h2>Getting started and Sidebar</h2>
 
-                The application starts in full screen. You can open the menu items for different categories in the sidebar to see more options. The inputs item helps the user to switch between metric or imperial units for the whole application.
+                The application starts in full screen. You can open the menu items for different categories in the sidebar to see more options. The inputs item helps the user to switch between metric or imperial units for the whole application , to enable or disable the heatmap visualization and to show/hide the sensor nodes in the tabular form.
 
                 <h2>Map</h2>
 
@@ -265,6 +265,14 @@
                     <div class="testimonials__info">
                     </div>
                     <img src="/images/p3viz/2.png" alt="Screen" class="responsive">
+                </div>
+
+                <h4>Nodes Table</h4>
+The different Array of Things nodes along with their location are shown in tabular form on the left. The table can be shown and hidden based on the user preference. The table show the information about the various AoT nodes, what measures they are reporting and the node overall status active or inactive. The nodes which are reporting measures have "True" corresponding for that measure. The user can filter using the checkboxes below in the panel to show and hide sites based on the measures selected.
+                <div class="testimonials__slide">
+                    <div class="testimonials__info">
+                    </div>
+                    <img src="/images/p3viz/8.png" alt="Screen" class="responsive">
                 </div>
 
 
@@ -339,7 +347,7 @@
 
 
                 <h2>Heatmap</h2>
-                TODO
+The Heatmap can be use be used to visualize the various measure intensity across the city of Chicago. The Heatmap has three inputs : Type of Measure, Value Type (min,max,averga) and time range (current, last 24 hours and last 7 days). The user can select any measure from the dropdown for the three data sources and visualize it for various values type and time duration. The Heatmap is created by interpolation all the nodes data for a particular data source in order to get better data for visualization for the entire city of chicago. Based on the amount of data available, the interpolation is not possible because of very less number of nodes reporting and a message is shown indicating that on the screen. There is a legend available for the heatmap which tell about the value being shown on the heatmap.
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
@@ -437,7 +445,7 @@
 
                 <h1 class="display-2">Interesting Insights</h1>
                 <h4>Using traffic data</h4>
-                As explain in the documentation, using traffic data could help explain and give a cause to the real-time variations of pollutants such as CO, PM2.5, PM10, NO2 that are also produced by vehicles. A strategy to do this kind of visual analytics with the application would be to select in the layers the nodes that give information about thos pollutants, then select nodes with different type of traffic and compare the current pollutants value. Unfortunately, the data provided by the nodes is not really good, the CO measurement is most of the times negative (and the APIs don't explain what could be the meaning of negative values, it could be that it means that it is 0), the NO2 is 0 everywhere in Chicago, and the pm2.5 and pm10 are almost not provided by any sensor. For the sake of explaining the application's functionalities, I provide a screenshot of what the application looks like when interactions of this type are performed.
+                As explain in the documentation, using traffic data could help explain and give a cause to the real-time variations of pollutants such as CO, PM2.5, PM10, NO2 that are also produced by vehicles. A strategy to do this kind of visual analytics with the application would be to select in the layers the nodes that give information about those pollutants, then select nodes with different type of traffic and compare the current pollutants value. Unfortunately, the data provided by the nodes is not really good, the CO measurement is most of the times negative (and the APIs don't explain what could be the meaning of negative values, it could be that it means that it is 0), the NO2 is 0 everywhere in Chicago, and the pm2.5 and pm10 are almost not provided by any sensor. For the sake of explaining the application's functionalities, I provide a screenshot of what the application looks like when interactions of this type are performed.
 
                 <div class="testimonials__slide">
                     <div class="testimonials__info">
