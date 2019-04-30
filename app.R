@@ -47,8 +47,7 @@ library(gstat)
 
 # Sys.setenv(DARKSKY_API_KEY = "3a786ec08cd24ff6a6f807d957d5cfff")
 
-dark_sky_keys = c("17b13339acc2cb53e53ea50ea4142528","03ef91f707e08fe3b5ee58c41aaf8ac8","0f7f0150c770440e7e08122f989ffccb","2a59f67744c4cf2b3acd83e539881940","3a786ec08cd24ff6a6f807d957d5cfff")
-
+dark_sky_keys = c("17b13339acc2cb53e53ea50ea4142528","03ef91f707e08fe3b5ee58c41aaf8ac8","0f7f0150c770440e7e08122f989ffccb","2a59f67744c4cf2b3acd83e539881940","3a786ec08cd24ff6a6f807d957d5cfff","5ba09d7b0b3669a512befe6433d35f33")
 Sys.setenv(DARKSKY_API_KEY = sample(dark_sky_keys,1) )
 
            ########################################### PREPROCESSING and VARIABLES DEFINITION #########################################
@@ -59,7 +58,7 @@ TIME_RANGE_CURRENT = "Current"
 TIME_RANGE_24HOURS = "Last 24 hours"
 TIME_RANGE_7DAYS = "Last 7 days"
 
-UPDATE_NODES_STATUS <- FALSE
+UPDATE_NODES_STATUS <- TRUE
 
 time_ranges <- c(TIME_RANGE_CURRENT,TIME_RANGE_24HOURS,TIME_RANGE_7DAYS)
 tracked_measures <- c("co","h2s","no2","o3","so2","pm2.5","pm10","temperature","humidity","intensity")
@@ -3755,6 +3754,9 @@ server <- function(input, output, session) {
   # get current data for darksky
 
   get_and_preprocess_observations_ds <- function(lng,lat) {
+    dark_sky_keys = c("17b13339acc2cb53e53ea50ea4142528","03ef91f707e08fe3b5ee58c41aaf8ac8","0f7f0150c770440e7e08122f989ffccb","2a59f67744c4cf2b3acd83e539881940","3a786ec08cd24ff6a6f807d957d5cfff","5ba09d7b0b3669a512befe6433d35f33")
+    Sys.setenv(DARKSKY_API_KEY = sample(dark_sky_keys,1) )
+    
     now <-Sys.time()
     curr <-ymd_hms(now) - lubridate::minutes(10)
     curr<-force_tz(curr, "America/Chicago")
@@ -3794,7 +3796,9 @@ server <- function(input, output, session) {
 
   #preprocess darksky data for last 24 hours
   get_and_preprocess_observations_24h_ds <- function(lng,lat){
-
+    dark_sky_keys = c("17b13339acc2cb53e53ea50ea4142528","03ef91f707e08fe3b5ee58c41aaf8ac8","0f7f0150c770440e7e08122f989ffccb","2a59f67744c4cf2b3acd83e539881940","3a786ec08cd24ff6a6f807d957d5cfff","5ba09d7b0b3669a512befe6433d35f33")
+    Sys.setenv(DARKSKY_API_KEY = sample(dark_sky_keys,1) )
+    
     # print("in preprocess")
     now <-Sys.time()
     yes <-ymd_hms(now) - lubridate::hours(24)
@@ -3836,7 +3840,9 @@ server <- function(input, output, session) {
 
   #preprocess darksky data for last 7 days
   get_and_preprocess_observations_7d_ds <- function(lng,lat){
-
+    dark_sky_keys = c("17b13339acc2cb53e53ea50ea4142528","03ef91f707e08fe3b5ee58c41aaf8ac8","0f7f0150c770440e7e08122f989ffccb","2a59f67744c4cf2b3acd83e539881940","3a786ec08cd24ff6a6f807d957d5cfff","5ba09d7b0b3669a512befe6433d35f33")
+    Sys.setenv(DARKSKY_API_KEY = sample(dark_sky_keys,1) )
+    
     seq(Sys.Date()-7, Sys.Date(), "1 day") %>%
       map(~get_forecast_for(lng, lat, .x)) %>%
       map_df("daily") %>%
